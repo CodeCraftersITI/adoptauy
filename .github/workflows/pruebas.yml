@@ -49,3 +49,31 @@ jobs:
         run: php artisan migrate --force
       - name: PHPUnit
         run: php artisan test
+
+  entorno-docker:
+    # Verifica que "git clone + docker compose up" deje el sitio funcionando
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose up
+        run: |
+          printf 'UID=%s\nGID=%s\n' "$(id -u)" "$(id -g)" > .env   # el runner no usa el UID 1000
+          docker compose up -d --build
+      - name: Esperar a que Laravel esté listo
+        run: |
+          for i in $(seq 1 60); do
+            if docker compose exec -T app test -f storage/.preparado; then echo "Laravel listo"; exit 0; fi
+            sleep 5
+          done
+          docker compose logs app; exit 1
+      - name: El sitio responde por HTTPS y HTTP redirige
+        run: |
+          curl -skf -o /dev/null -w "HTTPS %{http_code}\n" https://localhost/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost/)" = "301"
+      - name: Mailpit responde
+        run: curl -sf -o /dev/null http://localhost:8025/
+      - name: Pruebas dentro del contenedor
+        run: docker compose exec -T app php artisan test
+      - name: Logs si algo falló
+        if: failure()
+        run: docker compose logs

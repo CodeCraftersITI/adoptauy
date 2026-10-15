@@ -18,6 +18,12 @@ ENV COMPOSER_HOME=/tmp/composer
 RUN groupmod -o -g ${GID} www-data && usermod -o -u ${UID} -g ${GID} www-data
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-adoptauy.ini
+COPY docker/php/entrypoint.sh /usr/local/bin/adoptauy-entrypoint
+RUN chmod +x /usr/local/bin/adoptauy-entrypoint
 
 WORKDIR /var/www/laravel
 USER www-data
+
+# La primera vez prepara Laravel (ver entrypoint.sh); después arranca PHP-FPM
+ENTRYPOINT ["adoptauy-entrypoint"]
+CMD ["php-fpm"]
