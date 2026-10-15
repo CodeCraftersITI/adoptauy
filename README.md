@@ -153,6 +153,8 @@ Scrum con seis sprints (dos por hito), backlog en Trello y revisión de código 
 4. Los defectos se registran en la lista «Defectos» de Trello.
 5. Los datos de prueba son siempre ficticios (Ley N.º 18.331 de Protección de Datos Personales).
 
+El detalle (nombres de ramas, mensajes de commit, revisión y entregas) está en [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Documentación
 
 | Documento | Contenido |
@@ -185,6 +187,7 @@ adoptauy/
 ├── .claude/rules/        # Reglas para Claude Code por área
 ├── .github/workflows/    # Integración continua (PHPUnit sobre MySQL)
 ├── CLAUDE.md             # Contexto del proyecto para Claude Code
+├── CONTRIBUTING.md       # Cómo trabajamos con ramas y pull requests
 └── README.md
 ```
 
