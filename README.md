@@ -95,40 +95,53 @@ Todos los servicios corren en contenedores Docker sobre una VM con **Ubuntu Serv
 
 ## Puesta en marcha
 
-### Requisitos
+### En tu máquina (desarrollo)
 
-- Una VM con **Ubuntu Server 24.04 LTS** (2 vCPU, 4 GB de RAM, 30 GB de disco).
-- En VirtualBox, red **NAT** con reenvío de puertos `2222→22`, `8080→80`, `8443→443` y `8025→8025`.
-
-### Instalación
+Necesitás **Docker** con Docker Compose (en Windows, Docker Desktop y una terminal de WSL o Git Bash).
 
 ```bash
-# Desde la VM, con un usuario con sudo (no root)
+git clone https://github.com/CodeCraftersITI/adoptauy.git
+cd adoptauy
+bash scripts/iniciar.sh
+```
+
+El script crea los archivos `.env` con contraseñas aleatorias, genera un certificado HTTPS autofirmado, construye la imagen de PHP, instala las dependencias de Laravel y migra la base. Después, cada día alcanza con `docker compose up -d`.
+
+| Servicio | Dirección |
+|---|---|
+| AdoptaUY | https://localhost |
+| Correos de desarrollo (Mailpit) | http://localhost:8025 |
+| MySQL (DBeaver, Workbench) | `127.0.0.1:3307` · usuario y clave en `.env` |
+
+> Si el puerto 80 o el 443 ya están ocupados en tu máquina, cambiá `HTTP_PORT` y `HTTPS_PORT` en `.env` (por ejemplo, 8080 y 8443).
+
+### En el servidor local (VM Ubuntu Server 24.04)
+
+En VirtualBox, red **NAT** con reenvío `2222→22`, `8080→80`, `8443→443` y `8025→8025`. Dentro de la VM:
+
+```bash
 git clone https://github.com/CodeCraftersITI/adoptauy.git
 cd adoptauy
 bash infra/setup.sh
 ```
 
-El script instala Docker, configura el firewall, genera un certificado HTTPS autofirmado, crea el `.env` con contraseñas aleatorias, levanta los contenedores, ejecuta las migraciones y programa el respaldo diario.
-
-| Servicio | URL desde la PC anfitriona |
-|---|---|
-| AdoptaUY | https://localhost:8443 |
-| Correos de desarrollo (Mailpit) | http://localhost:8025 |
-| SSH a la VM | `ssh -p 2222 usuario@localhost` |
+Instala Docker y el firewall, ejecuta `scripts/iniciar.sh` y programa un respaldo diario a las 02:00.
 
 ### Comandos frecuentes
 
 ```bash
-docker compose ps                                 # estado de los contenedores
-docker compose exec app php artisan migrate       # migraciones
-docker compose exec app php artisan test          # pruebas unitarias e integración
-docker compose exec app php artisan dusk          # pruebas funcionales
-docker compose logs -f web app queue              # logs
-./scripts/respaldo.sh                             # respaldo manual
+docker compose up -d                                  # levantar todo
+docker compose ps                                     # estado de los contenedores
+docker compose exec app php artisan migrate           # migraciones
+docker compose exec app php artisan test              # pruebas (base adoptauy_test)
+docker compose exec app composer require paquete      # agregar una dependencia
+docker compose run --rm node npm install              # dependencias de CSS/JS
+docker compose run --rm node npm run build            # compilar CSS/JS con Vite
+docker compose logs -f web app queue                  # logs
+docker compose down                                   # apagar (los datos quedan)
 ```
 
-> ⚠️ El archivo `.env` contiene contraseñas y **nunca** se sube al repositorio.
+> ⚠️ Los archivos `.env` contienen contraseñas y **nunca** se suben al repositorio.
 
 ## Cómo trabajamos
 
@@ -158,17 +171,22 @@ La fuente oficial es el **Documento integrador 2.0**; los archivos de `docs/cont
 
 ```
 adoptauy/
-├── .claude/rules/        # Reglas para Claude Code por área (base de datos, pruebas, vistas)
-├── .github/workflows/    # Integración continua (PHPUnit sobre MySQL)
+├── src/laravel/          # Aplicación Laravel 13 (app, routes, resources, database, tests)
+├── docker/
+│   ├── php/              # Dockerfile y php.ini (PHP-FPM 8.4)
+│   ├── nginx/            # default.conf (HTTPS) y certificados locales (no se suben)
+│   └── mysql/init/       # crea la base de pruebas adoptauy_test
+├── docker-compose.yml    # app, queue, scheduler, web, db, mailpit (+ node y mail por perfil)
+├── scripts/              # iniciar.sh (primera vez) y respaldo.sh
+├── infra/setup.sh        # Preparación de la VM del servidor local
 ├── docs/
 │   ├── contexto/         # Extractos del integrador 2.0 y del plan de pruebas
 │   └── diagramas/        # Diagrama de implementación
-├── infra/setup.sh        # Preparación de la VM y del entorno Docker
+├── .claude/rules/        # Reglas para Claude Code por área
+├── .github/workflows/    # Integración continua (PHPUnit sobre MySQL)
 ├── CLAUDE.md             # Contexto del proyecto para Claude Code
 └── README.md
 ```
-
-El código de la aplicación Laravel se incorpora en los próximos commits.
 
 ## Equipo
 

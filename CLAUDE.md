@@ -16,7 +16,8 @@ La fuente de verdad es el **Documento integrador 2.0**. En `docs/contexto/` hay 
 - Laravel 13 sobre PHP 8.4 (FPM), MySQL 8.4, Nginx 1.27, Docker Compose. Vistas Blade con HTML5 y CSS3, web adaptable desde 360 px. Sin app móvil ni PWA.
 - Colas y planificador de Laravel en contenedores propios (`queue`, `scheduler`). Correo: Mailpit en desarrollo; Postfix como relay en producción (perfil `produccion`).
 - Mapas: OpenStreetMap con Leaflet.
-- Entorno: `infra/setup.sh` prepara la VM (Ubuntu Server 24.04 en VirtualBox) y genera el docker-compose.
+- **Laravel vive en `src/laravel/`** (en los contenedores: `/var/www/laravel`). La configuración de Docker está en la raíz: `docker-compose.yml` y `docker/`.
+- Primera vez en cualquier máquina: `bash scripts/iniciar.sh`. En la VM del servidor local: `bash infra/setup.sh` (instala Docker y después llama a `iniciar.sh`).
 
 ```bash
 docker compose up -d                              # levantar
@@ -25,6 +26,7 @@ docker compose exec app php artisan test          # PHPUnit
 docker compose exec app php artisan dusk          # funcionales (Dusk)
 docker compose exec app php artisan schedule:run  # correr las tareas programadas a mano
 docker compose logs -f web app queue
+docker compose run --rm node npm install && docker compose run --rm node npm run build   # CSS/JS con Vite
 ```
 
 Sitio: https://localhost:8443 (certificado autofirmado). Correos de desarrollo: http://localhost:8025.

@@ -1,7 +1,7 @@
 ---
 paths:
-  - "database/**"
-  - "app/Models/**"
+  - "src/laravel/database/**"
+  - "src/laravel/app/Models/**"
 ---
 
 # Migraciones y modelos

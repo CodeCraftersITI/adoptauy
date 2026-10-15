@@ -9,7 +9,9 @@ on:
 jobs:
   phpunit:
     runs-on: ubuntu-24.04
-    if: ${{ hashFiles('artisan') != '' }}   # se activa cuando el proyecto Laravel está en el repo
+    defaults:
+      run:
+        working-directory: src/laravel
     services:
       mysql:
         image: mysql:8.4

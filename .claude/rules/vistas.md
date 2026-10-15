@@ -1,10 +1,10 @@
 ---
 paths:
-  - "resources/views/**"
-  - "resources/css/**"
-  - "resources/js/**"
-  - "routes/**"
-  - "app/Http/**"
+  - "src/laravel/resources/views/**"
+  - "src/laravel/resources/css/**"
+  - "src/laravel/resources/js/**"
+  - "src/laravel/routes/**"
+  - "src/laravel/app/Http/**"
 ---
 
 # Vistas, rutas y controladores

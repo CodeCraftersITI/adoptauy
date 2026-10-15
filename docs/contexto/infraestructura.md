@@ -127,7 +127,7 @@ La topología de la sección 16 y este despliegue son una misma solución, monta
 
 ## Entorno local (servidor de pruebas y demos)
 
-`infra/setup.sh` deja lista la VM y genera todo el entorno. Decisiones D73 a D77.
+El repositorio trae `docker-compose.yml` y `docker/` en la raíz, y Laravel en `src/laravel/`. En cualquier máquina con Docker, `bash scripts/iniciar.sh` crea los `.env`, el certificado, construye la imagen y migra la base. En la VM del servidor local, `bash infra/setup.sh` instala antes Docker y el firewall y programa el respaldo. Decisiones D73 a D77.
 
 | Elemento | Detalle |
 |---|---|
@@ -137,5 +137,7 @@ La topología de la sección 16 y este despliegue son una misma solución, monta
 | Correo | Desarrollo: Mailpit captura todo. Producción: Postfix relay al SMTP externo por el 587 (D54, D75); variables SMTP_RELAY_HOST, SMTP_RELAY_USER y SMTP_RELAY_PASSWORD |
 | HTTPS | Certificado autofirmado en docker/nginx/certs; HTTP redirige a HTTPS (D73) |
 | Tareas programadas | Contenedor scheduler; avisos y vencimientos a las 03:00, días corridos (D71) |
-| Respaldo | cron del host a las 02:00: scripts/respaldo.sh (mysqldump + storage/app), 7 días de retención (D76) |
+| Respaldo | cron del host a las 02:00: scripts/respaldo.sh (mysqldump + src/laravel/storage/app) en respaldos/, 7 días de retención (D76) |
+| Base de pruebas | adoptauy_test, creada por docker/mysql/init/ y forzada en phpunit.xml |
+| Puertos configurables | HTTP_PORT, HTTPS_PORT, DB_PORT_LOCAL (3307, solo 127.0.0.1) y MAILPIT_PORT en el .env de la raíz |
 | Firewall | ufw: 22, 80, 443, 8025 |
