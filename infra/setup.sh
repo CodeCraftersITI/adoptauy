@@ -47,13 +47,13 @@ sudo systemctl enable --now docker >/dev/null
 sudo usermod -aG docker "$USER"
 ok "$(sudo docker --version)"
 
-paso "3/4 Firewall: SSH, HTTP, HTTPS y Mailpit"
+paso "3/4 Firewall: SSH, HTTP (8080), HTTPS (8443) y Mailpit"
 sudo ufw allow OpenSSH >/dev/null
-sudo ufw allow 80/tcp >/dev/null
-sudo ufw allow 443/tcp >/dev/null
+sudo ufw allow 8080/tcp >/dev/null
+sudo ufw allow 8443/tcp >/dev/null
 sudo ufw allow 8025/tcp >/dev/null
 sudo ufw --force enable >/dev/null
-ok "ufw activo: 22, 80, 443, 8025"
+ok "ufw activo: 22, 8080, 8443, 8025"
 
 paso "4/4 AdoptaUY y respaldo diario"
 # sg aplica el grupo docker sin tener que cerrar la sesión

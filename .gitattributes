@@ -1,0 +1,10 @@
+# Finales de línea LF en todo el repo: los scripts y configs se ejecutan dentro de contenedores Linux.
+# Sin esto, Git en Windows los convierte a CRLF y el contenedor no arranca.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.pdf binary

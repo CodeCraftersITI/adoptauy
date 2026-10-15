@@ -29,7 +29,7 @@ docker compose logs -f web app queue
 docker compose run --rm node npm install && docker compose run --rm node npm run build   # CSS/JS con Vite
 ```
 
-Sitio: https://localhost (certificado autofirmado; en la VM, desde la PC anfitriona: https://localhost:8443). Correos de desarrollo: http://localhost:8025. MySQL: 127.0.0.1:3307 (adoptauy / adoptauy_dev).
+Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige a HTTPS). Los puertos 8080/8443 evitan chocar con XAMPP u otros servidores locales. Correos de desarrollo: http://localhost:8025. MySQL: 127.0.0.1:3307 (adoptauy / adoptauy_dev).
 
 ## Contexto detallado (leer cuando la tarea lo toque)
 

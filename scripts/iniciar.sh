@@ -21,4 +21,4 @@ echo "Preparando Laravel (la primera vez tarda unos minutos)..."
 until docker compose exec -T app test -f storage/.preparado 2>/dev/null; do sleep 5; printf '.'; done
 echo
 docker compose ps
-echo "✔ AdoptaUY listo: https://localhost  ·  correos: http://localhost:8025"
+echo "✔ AdoptaUY listo: https://localhost:8443  ·  correos: http://localhost:8025"
