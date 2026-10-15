@@ -17,7 +17,7 @@ La fuente de verdad es el **Documento integrador 2.0**. En `docs/contexto/` hay 
 - Colas y planificador de Laravel en contenedores propios (`queue`, `scheduler`). Correo: Mailpit en desarrollo; Postfix como relay en producción (perfil `produccion`).
 - Mapas: OpenStreetMap con Leaflet.
 - **Laravel vive en `src/laravel/`** (en los contenedores: `/var/www/laravel`). La configuración de Docker está en la raíz: `docker-compose.yml` y `docker/`.
-- Primera vez en cualquier máquina: `bash scripts/iniciar.sh`. En la VM del servidor local: `bash infra/setup.sh` (instala Docker y después llama a `iniciar.sh`).
+- Primera vez en cualquier máquina: `docker compose up -d --build` (el contenedor `app` instala Composer, genera APP_KEY y migra; ver `docker compose logs -f app`). En la VM del servidor local: `bash infra/setup.sh`.
 
 ```bash
 docker compose up -d                              # levantar
@@ -29,7 +29,7 @@ docker compose logs -f web app queue
 docker compose run --rm node npm install && docker compose run --rm node npm run build   # CSS/JS con Vite
 ```
 
-Sitio: https://localhost:8443 (certificado autofirmado). Correos de desarrollo: http://localhost:8025.
+Sitio: https://localhost (certificado autofirmado; en la VM, desde la PC anfitriona: https://localhost:8443). Correos de desarrollo: http://localhost:8025. MySQL: 127.0.0.1:3307 (adoptauy / adoptauy_dev).
 
 ## Contexto detallado (leer cuando la tarea lo toque)
 

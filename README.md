@@ -97,23 +97,26 @@ Todos los servicios corren en contenedores Docker sobre una VM con **Ubuntu Serv
 
 ### En tu máquina (desarrollo)
 
-Necesitás **Docker** con Docker Compose (en Windows, Docker Desktop y una terminal de WSL o Git Bash).
+Necesitás **Docker** con Docker Compose (en Windows y macOS, Docker Desktop).
 
 ```bash
 git clone https://github.com/CodeCraftersITI/adoptauy.git
 cd adoptauy
-bash scripts/iniciar.sh
+docker compose up -d --build
+docker compose logs -f app        # esperá el mensaje "[adoptauy] Laravel listo" y salí con Ctrl+C
 ```
 
-El script crea los archivos `.env` con contraseñas aleatorias, genera un certificado HTTPS autofirmado, construye la imagen de PHP, instala las dependencias de Laravel y migra la base. Después, cada día alcanza con `docker compose up -d`.
+La primera vez el contenedor `app` instala las dependencias de Laravel, genera la clave de la aplicación y migra la base; el contenedor `web` genera un certificado HTTPS autofirmado. Tarda unos minutos. Después, cada día alcanza con `docker compose up -d`.
 
 | Servicio | Dirección |
 |---|---|
-| AdoptaUY | https://localhost |
+| AdoptaUY | https://localhost (el navegador avisa del certificado autofirmado: aceptalo) |
 | Correos de desarrollo (Mailpit) | http://localhost:8025 |
-| MySQL (DBeaver, Workbench) | `127.0.0.1:3307` · usuario y clave en `.env` |
+| MySQL (DBeaver, Workbench) | `127.0.0.1:3307` · usuario `adoptauy` · clave `adoptauy_dev` |
 
-> Si el puerto 80 o el 443 ya están ocupados en tu máquina, cambiá `HTTP_PORT` y `HTTPS_PORT` en `.env` (por ejemplo, 8080 y 8443).
+> **Linux:** si tu usuario no tiene el UID 1000 (`id -u`), creá un `.env` con `UID=` y `GID=` de tu usuario antes del primer `up`, para no tener problemas de permisos.
+>
+> **Puertos ocupados:** si el 80, el 443 o el 3307 están en uso, definí `HTTP_PORT`, `HTTPS_PORT` o `DB_PORT_LOCAL` en un `.env` (ver `.env.example`).
 
 ### En el servidor local (VM Ubuntu Server 24.04)
 
@@ -125,7 +128,7 @@ cd adoptauy
 bash infra/setup.sh
 ```
 
-Instala Docker y el firewall, ejecuta `scripts/iniciar.sh` y programa un respaldo diario a las 02:00.
+Instala Docker y el firewall, crea un `.env` con contraseñas aleatorias, levanta los contenedores y programa un respaldo diario a las 02:00.
 
 ### Comandos frecuentes
 
@@ -175,11 +178,11 @@ La fuente oficial es el **Documento integrador 2.0**; los archivos de `docs/cont
 adoptauy/
 ├── src/laravel/          # Aplicación Laravel 13 (app, routes, resources, database, tests)
 ├── docker/
-│   ├── php/              # Dockerfile y php.ini (PHP-FPM 8.4)
-│   ├── nginx/            # default.conf (HTTPS) y certificados locales (no se suben)
+│   ├── php/              # Dockerfile, php.ini y entrypoint (prepara Laravel la primera vez)
+│   ├── nginx/            # Dockerfile, default.conf (HTTPS) y certificado autofirmado (no se sube)
 │   └── mysql/init/       # crea la base de pruebas adoptauy_test
 ├── docker-compose.yml    # app, queue, scheduler, web, db, mailpit (+ node y mail por perfil)
-├── scripts/              # iniciar.sh (primera vez) y respaldo.sh
+├── scripts/              # iniciar.sh (con contraseñas propias) y respaldo.sh
 ├── infra/setup.sh        # Preparación de la VM del servidor local
 ├── docs/
 │   ├── contexto/         # Extractos del integrador 2.0 y del plan de pruebas

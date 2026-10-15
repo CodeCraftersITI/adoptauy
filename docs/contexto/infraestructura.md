@@ -127,7 +127,7 @@ La topología de la sección 16 y este despliegue son una misma solución, monta
 
 ## Entorno local (servidor de pruebas y demos)
 
-El repositorio trae `docker-compose.yml` y `docker/` en la raíz, y Laravel en `src/laravel/`. En cualquier máquina con Docker, `bash scripts/iniciar.sh` crea los `.env`, el certificado, construye la imagen y migra la base. En la VM del servidor local, `bash infra/setup.sh` instala antes Docker y el firewall y programa el respaldo. Decisiones D73 a D77.
+El repositorio trae `docker-compose.yml` y `docker/` en la raíz, y Laravel en `src/laravel/`. En cualquier máquina con Docker alcanza con `docker compose up -d --build`: el contenedor app instala Composer, genera APP_KEY y migra la base, y web genera el certificado autofirmado. `scripts/iniciar.sh` hace lo mismo con contraseñas aleatorias en un `.env`. En la VM del servidor local, `bash infra/setup.sh` instala antes Docker y el firewall y programa el respaldo. Decisiones D73 a D77.
 
 | Elemento | Detalle |
 |---|---|

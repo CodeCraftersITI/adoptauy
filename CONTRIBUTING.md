@@ -44,7 +44,7 @@ Mové la tarjeta de Trello a «En curso» y pegale el nombre de la rama.
 ### 2. Trabajar y hacer commits chicos
 
 ```bash
-docker compose up -d
+docker compose up -d          # la primera vez: docker compose up -d --build
 # ... programar ...
 docker compose exec app php artisan test        # antes de cada commit
 git add -A
