@@ -71,7 +71,7 @@ El catálogo completo (57 requisitos funcionales vigentes y 14 no funcionales, c
 
 ```mermaid
 flowchart LR
-    U["Navegador<br/>(escritorio o celular)"] -- "HTTPS :443" --> W["web<br/>Nginx 1.27"]
+    U["Navegador<br/>(escritorio o celular)"] -- "HTTPS :8443" --> W["web<br/>Nginx 1.27"]
     U -- "HTTPS" --> OSM[("OpenStreetMap")]
     W -- "FastCGI :9000" --> A["app<br/>PHP 8.4 + Laravel 13"]
     A -- "TCP :3306" --> D[("db<br/>MySQL 8.4")]
@@ -110,17 +110,17 @@ La primera vez el contenedor `app` instala las dependencias de Laravel, genera l
 
 | Servicio | Dirección |
 |---|---|
-| AdoptaUY | https://localhost (el navegador avisa del certificado autofirmado: aceptalo) |
+| AdoptaUY | https://localhost:8443 (el navegador avisa del certificado autofirmado: aceptalo) |
 | Correos de desarrollo (Mailpit) | http://localhost:8025 |
 | MySQL (DBeaver, Workbench) | `127.0.0.1:3307` · usuario `adoptauy` · clave `adoptauy_dev` |
 
 > **Linux:** si tu usuario no tiene el UID 1000 (`id -u`), creá un `.env` con `UID=` y `GID=` de tu usuario antes del primer `up`, para no tener problemas de permisos.
 >
-> **Puertos ocupados:** si el 80, el 443 o el 3307 están en uso, definí `HTTP_PORT`, `HTTPS_PORT` o `DB_PORT_LOCAL` en un `.env` (ver `.env.example`).
+> **Puertos:** se usan 8080 y 8443 para no chocar con XAMPP, IIS u otros servidores que ocupan el 80 y el 443. Si alguno de los puertos (8080, 8443, 3307, 8025) está en uso, cambialo en un `.env` (ver `.env.example`).
 
 ### En el servidor local (VM Ubuntu Server 24.04)
 
-En VirtualBox, red **NAT** con reenvío `2222→22`, `8080→80`, `8443→443` y `8025→8025`. Dentro de la VM:
+En VirtualBox, red **NAT** con reenvío `2222→22`, `8080→8080`, `8443→8443` y `8025→8025`. Dentro de la VM:
 
 ```bash
 git clone https://github.com/CodeCraftersITI/adoptauy.git

@@ -34,7 +34,7 @@ x-php: &php
     MAIL_MAILER: smtp
     MAIL_HOST: ${MAIL_HOST:-mailpit}
     MAIL_PORT: ${MAIL_PORT:-1025}
-    APP_URL: ${APP_URL:-https://localhost}
+    APP_URL: ${APP_URL:-https://localhost:8443}
   depends_on:
     db:
       condition: service_healthy
@@ -62,12 +62,14 @@ services:
     image: adoptauy/nginx:dev
     restart: unless-stopped
     ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
+      - "${HTTP_PORT:-8080}:80"               # 8080/8443 para no chocar con XAMPP, IIS u otros
+      - "${HTTPS_PORT:-8443}:443"
     volumes:
       - ./src:/var/www:ro
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./docker/nginx/certs:/etc/nginx/certs
+    environment:
+      HTTPS_PORT: ${HTTPS_PORT:-8443}         # para que la redirección de HTTP vaya al puerto correcto
     depends_on: [app]
     networks: [backend]
 
