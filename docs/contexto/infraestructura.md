@@ -132,12 +132,12 @@ El repositorio trae `docker-compose.yml` y `docker/` en la raíz, y Laravel en `
 | Elemento | Detalle |
 |---|---|
 | Host | PC del equipo con Oracle VirtualBox; VM Ubuntu Server 24.04 LTS (2 vCPU, 4 GB, 30 GB) |
-| Red de la VM | NAT con reenvío 2222→22 (SSH), 8080→80, 8443→443, 8025→8025 (D77) |
+| Red de la VM | NAT con reenvío 2222→22 (SSH), 8080→8080, 8443→8443, 8025→8025 (D77, ajustado el 15/10/2026) |
 | Contenedores | web (nginx:1.27-alpine, HTTPS con certificado autofirmado), app (php:8.4-fpm + Laravel 13), queue, scheduler, db (mysql:8.4, volumen db_data), mailpit (desarrollo), mail (boky/postfix, perfil produccion) |
 | Correo | Desarrollo: Mailpit captura todo. Producción: Postfix relay al SMTP externo por el 587 (D54, D75); variables SMTP_RELAY_HOST, SMTP_RELAY_USER y SMTP_RELAY_PASSWORD |
 | HTTPS | Certificado autofirmado en docker/nginx/certs; HTTP redirige a HTTPS (D73) |
 | Tareas programadas | Contenedor scheduler; avisos y vencimientos a las 03:00, días corridos (D71) |
 | Respaldo | cron del host a las 02:00: scripts/respaldo.sh (mysqldump + src/laravel/storage/app) en respaldos/, 7 días de retención (D76) |
 | Base de pruebas | adoptauy_test, creada por docker/mysql/init/ y forzada en phpunit.xml |
-| Puertos configurables | HTTP_PORT, HTTPS_PORT, DB_PORT_LOCAL (3307, solo 127.0.0.1) y MAILPIT_PORT en el .env de la raíz |
-| Firewall | ufw: 22, 80, 443, 8025 |
+| Puertos | Por defecto HTTP 8080 y HTTPS 8443 en todos los entornos, para no chocar con XAMPP u otros servidores locales. Configurables: HTTP_PORT, HTTPS_PORT, DB_PORT_LOCAL (3307, solo 127.0.0.1) y MAILPIT_PORT en el .env de la raíz |
+| Firewall | ufw: 22, 8080, 8443, 8025 |

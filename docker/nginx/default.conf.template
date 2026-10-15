@@ -1,8 +1,9 @@
-# HTTP redirige siempre a HTTPS (RNF:0013, D73)
+# HTTP redirige siempre a HTTPS (RNF:0013, D73).
+# Plantilla: la imagen de Nginx reemplaza ${HTTPS_PORT} al arrancar.
 server {
     listen 80;
     server_name _;
-    return 301 https://$host$request_uri;
+    return 301 https://$host:${HTTPS_PORT}$request_uri;
 }
 
 server {
