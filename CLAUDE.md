@@ -35,6 +35,7 @@ Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige
 
 - `docs/contexto/requisitos.md`: actores, RF:0001 a RF:0063 (57 vigentes, 6 dados de baja) y RNF:0001 a RNF:0014, con criterios de aceptación.
 - `docs/contexto/modelo-datos.md`: cambios del DER, restricciones RNE01 a RNE24 y pasaje a tablas (15.2.1).
+- `docs/base-de-datos/adoptauy.sql`: modelo físico en MySQL con esas restricciones (CHECK, triggers y procedimientos). Las migraciones de Laravel deben respetar las mismas reglas.
 - `docs/contexto/diseno-ui.md`: pantallas por actor y sistema de diseño.
 - `docs/contexto/plan-pruebas.md`: estrategia, herramientas y casos CP-01 a CP-46.
 - `docs/contexto/infraestructura.md`: stack, red, servidores, servicios y entorno local.
