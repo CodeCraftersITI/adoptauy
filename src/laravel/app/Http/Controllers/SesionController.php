@@ -10,9 +10,10 @@ use Illuminate\Support\Facades\Hash;
  * Inicio de sesión (RF:0022) y cierre de sesión (RF:0023), como en el teórico:
  * Hash::check() para la contraseña y los datos del usuario guardados en la sesión.
  *
- * Hito 2: se controla solo el correo y la contraseña (D67). Desde el Sprint 5 también
- * se rechaza el correo sin confirmar, la cuenta inhabilitada o dada de baja y el
- * refugio que no está Validado, con el mismo mensaje.
+ * Hito 2: se controla el correo, la contraseña y que el refugio esté Validado
+ * (adelantado porque el registro de refugios entra en este hito). Desde el Sprint 5
+ * también se rechaza el correo sin confirmar y la cuenta inhabilitada o dada de baja,
+ * con el mismo mensaje (D67).
  */
 class SesionController extends Controller
 {
@@ -42,6 +43,13 @@ class SesionController extends Controller
         $usuario = Usuario::where('Email', strtolower($request->input('email')))->first();
 
         if (!$usuario || !Hash::check($request->input('password'), $usuario->Contraseña))
+        {
+            return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
+        }
+
+        // Un refugio solo entra si el Administrador ya lo validó (13.2.1). Se usa el mismo
+        // mensaje para no revelar que el correo existe ni en qué estado está la solicitud.
+        if ($usuario->Tipo_Usuario == 'Refugio' && $usuario->refugio->Estado_Validacion != 'Validado')
         {
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }

@@ -1,4 +1,4 @@
-{{-- Registro de Particular (RF:0039). El registro de refugio (RF:0034) se suma después. --}}
+{{-- Registro de Particular (RF:0039). El de refugio está en registro-refugio.blade.php (RF:0034). --}}
 @extends('layouts.app')
 
 @section('titulo', 'Crear cuenta')
@@ -6,6 +6,8 @@
 @section('contenido')
 <div class="formulario-angosto formulario-ancho">
     <h1 class="pagina-titulo">Crear cuenta</h1>
+
+    @include('partials.pestanas-registro')
 
     {{-- old('campo') vuelve a mostrar lo que el usuario escribió si hubo un error --}}
     <form action="/registro" method="POST" class="tarjeta formulario formulario-grilla">

@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\RegistroController;
+use App\Http\Controllers\RegistroRefugioController;
 use App\Http\Controllers\SesionController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,10 @@ Route::get('/', [InicioController::class, 'index']);
 // Registro de Particular (RF:0039)
 Route::get('/registro', [RegistroController::class, 'create']);
 Route::post('/registro', [RegistroController::class, 'store']);
+
+// Solicitud de registro de refugio (RF:0034)
+Route::get('/registro-refugio', [RegistroRefugioController::class, 'create']);
+Route::post('/registro-refugio', [RegistroRefugioController::class, 'store']);
 
 // Inicio y cierre de sesión (RF:0022, RF:0023)
 Route::get('/ingresar', [SesionController::class, 'create']);
@@ -33,4 +38,9 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
 Route::middleware('rol:Administrador')->group(function ()
 {
     Route::get('/admin', [AdminController::class, 'index']);
+
+    // Solicitudes de refugio: ver documentos, validar (RF:0005) y rechazar (RF:0044)
+    Route::get('/admin/refugios/{id}/documento/{tipo}', [AdminController::class, 'verDocumento']);
+    Route::put('/admin/refugios/{id}/validar', [AdminController::class, 'validar']);
+    Route::put('/admin/refugios/{id}/rechazar', [AdminController::class, 'rechazar']);
 });

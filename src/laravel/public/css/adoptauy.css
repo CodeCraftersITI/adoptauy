@@ -154,6 +154,42 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .ocupa-todo { grid-column: 1 / -1; }
 .texto-centro { margin: 0; text-align: center; }
 
+/* ---------- Pestañas (registro Particular / Refugio) ---------- */
+.pestanas { display: flex; gap: 6px; flex-wrap: wrap; }
+.pestana {
+    font-weight: 700;
+    font-size: 15px;
+    border-radius: 14px;
+    padding: 10px 18px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    background: var(--rosa-pastel);
+    color: var(--rosa-texto);
+}
+.pestana:hover { color: var(--rosa-texto); background: #F2C3D5; }
+.pestana-activa, .pestana-activa:hover { background: var(--bordo); color: var(--blanco); }
+
+/* ---------- Tablas del panel ---------- */
+.tabla-caja { overflow-x: auto; }
+.tabla { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 720px; }
+.tabla th {
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--apagado);
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--rosa-borde);
+}
+.tabla td { padding: 12px; border-bottom: 1px solid var(--rosa-borde); vertical-align: top; }
+.tabla form { margin: 0; }
+.acciones-fila { display: flex; flex-direction: column; gap: 8px; }
+.btn-chico { padding: 8px 14px; min-height: 40px; font-size: 14px; border-radius: 12px; }
+.btn-peligro { background: #BF4747; color: var(--blanco); }
+.btn-peligro:hover { background: #A33B3B; color: var(--blanco); }
+.rechazo { display: flex; flex-direction: column; gap: 6px; }
+
 /* ---------- Mensajes ---------- */
 .mensaje {
     border-radius: var(--radio);

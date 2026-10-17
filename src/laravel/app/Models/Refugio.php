@@ -29,4 +29,10 @@ class Refugio extends Model
     {
         return $this->belongsTo(Usuario::class, 'ID_Usuario');
     }
+
+    // Un refugio tiene uno o más datos de contacto
+    public function contactos()
+    {
+        return $this->hasMany(RefugioDatoContacto::class, 'ID_Usuario');
+    }
 }
