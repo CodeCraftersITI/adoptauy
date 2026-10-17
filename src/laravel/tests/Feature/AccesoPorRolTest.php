@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
@@ -11,6 +12,8 @@ use Tests\TestCase;
  */
 class AccesoPorRolTest extends TestCase
 {
+    use RefreshDatabase;
+
     private function sesionDe($tipo)
     {
         return ['id_usuario' => 1, 'tipo' => $tipo, 'nombre' => 'Nombre de prueba'];
