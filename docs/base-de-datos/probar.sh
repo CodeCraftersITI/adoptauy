@@ -2,7 +2,7 @@
 # Pruebas de las restricciones de adoptauy.sql sobre una base vacía.
 # Uso: bash probar.sh
 # Por defecto usa "mysql -uroot" local. Para otro servidor, definir MYSQL, por ejemplo:
-#   MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot -proot_dev" bash probar.sh
+#   MYSQL_PWD=root_dev MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot" bash probar.sh
 # ATENCIÓN: borra y vuelve a crear la base adoptauy. No usar contra datos reales.
 cd "$(dirname "$0")"
 MYSQL="${MYSQL:-mysql -uroot}"
@@ -11,7 +11,7 @@ H='$2y$12$abcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwxyz01234'
 pass=0; fail=0
 ok()  { if out=$($M "$2" 2>&1); then echo "PASA  $1"; pass=$((pass+1)); else echo "FALLA $1 -> $out"; fail=$((fail+1)); fi; }
 err() { if out=$($M "$2" 2>&1); then echo "FALLA $1 (debía rechazarse)"; fail=$((fail+1)); else echo "PASA  $1 -> ${out#*: }"; pass=$((pass+1)); fi; }
-chk() { out=$($M "SELECT ($2)" 2>&1); if [ "$out" = "1" ]; then echo "PASA  $1"; pass=$((pass+1)); else echo "FALLA $1 -> $out"; fail=$((fail+1)); fi; }
+chk() { out=$($M "SELECT ($2)" 2>&1 | grep -v "Using a password"); if [ "$out" = "1" ]; then echo "PASA  $1"; pass=$((pass+1)); else echo "FALLA $1 -> $out"; fail=$((fail+1)); fi; }
 usr() { $M "SELECT ID_Usuario FROM Usuario WHERE Email='$1'"; }
 nuevo() { $M "INSERT INTO Usuario(Email,\`Contraseña\`,Tipo_Usuario) VALUES('$1','$H','$2')"; usr "$1"; }
 
