@@ -67,7 +67,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Script SQL y pruebas de restricciones
         env:
-          MYSQL: mysql -h 127.0.0.1 -P 3306 -uroot -proot
+          MYSQL: mysql -h 127.0.0.1 -P 3306 -uroot
+          MYSQL_PWD: root
         run: bash docs/base-de-datos/probar.sh
 
   entorno-docker:

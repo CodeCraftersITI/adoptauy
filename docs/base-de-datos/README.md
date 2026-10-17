@@ -14,7 +14,7 @@ Modelo físico en MySQL del pasaje a tablas (15.2.1) y de las restricciones RNE0
 mysql -h 127.0.0.1 -P 3307 -uroot -p < docs/base-de-datos/adoptauy.sql
 
 # Pruebas (borran y recrean la base adoptauy: no usar contra datos reales)
-MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot -proot_dev" bash docs/base-de-datos/probar.sh
+MYSQL_PWD=root_dev MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot" bash docs/base-de-datos/probar.sh
 ```
 
 > **Atención:** el script empieza con `DROP DATABASE IF EXISTS adoptauy`. En el entorno de Docker esa es la base de desarrollo de Laravel: las migraciones y este script no conviven en la misma base. Para probarlo sin perder datos, cambiá el nombre de la base en las primeras líneas.
