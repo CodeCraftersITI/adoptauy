@@ -11,7 +11,8 @@
 #
 #  Hace: actualiza Ubuntu, instala Docker Engine y Compose (repositorio oficial),
 #  configura el firewall, ejecuta scripts/iniciar.sh y programa el respaldo
-#  diario (D76). Se puede volver a ejecutar sin perder datos.
+#  diario (D76). Deja el sitio en los puertos 80 y 443 (D83). Se puede volver
+#  a ejecutar sin perder datos.
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -47,17 +48,19 @@ sudo systemctl enable --now docker >/dev/null
 sudo usermod -aG docker "$USER"
 ok "$(sudo docker --version)"
 
-paso "3/4 Firewall: SSH, HTTP (8080), HTTPS (8443) y Mailpit"
+paso "3/4 Firewall: SSH, HTTP (80), HTTPS (443) y Mailpit"
 sudo ufw allow OpenSSH >/dev/null
-sudo ufw allow 8080/tcp >/dev/null
-sudo ufw allow 8443/tcp >/dev/null
+sudo ufw allow 80/tcp >/dev/null
+sudo ufw allow 443/tcp >/dev/null
 sudo ufw allow 8025/tcp >/dev/null
 sudo ufw --force enable >/dev/null
-ok "ufw activo: 22, 8080, 8443, 8025"
+ok "ufw activo: 22, 80, 443, 8025"
 
 paso "4/4 AdoptaUY y respaldo diario"
+# D83: en la VM el sitio usa los puertos estándar 80 y 443 (en las PC de desarrollo, 8080 y 8443)
+IP_VM="$(hostname -I | awk '{print $1}')"
 # sg aplica el grupo docker sin tener que cerrar la sesión
-sg docker -c "bash '$REPO_DIR/scripts/iniciar.sh'"
+sg docker -c "HTTP_PORT=80 HTTPS_PORT=443 APP_URL=https://$IP_VM bash '$REPO_DIR/scripts/iniciar.sh'"
 LINEA="0 2 * * * cd $REPO_DIR && ./scripts/respaldo.sh >> $REPO_DIR/respaldos/respaldo.log 2>&1"
 mkdir -p "$REPO_DIR/respaldos"
 ( crontab -l 2>/dev/null | grep -v 'scripts/respaldo.sh' ; echo "$LINEA" ) | crontab -
@@ -65,9 +68,9 @@ ok "Respaldo diario a las 02:00 en $REPO_DIR/respaldos (7 días)"
 
 cat <<FIN
 
-Servidor listo. Desde la PC anfitriona (NAT de VirtualBox, D77):
-  Sitio ........ https://localhost:8443
-  Correos ...... http://localhost:8025
-  SSH .......... ssh -p 2222 $USER@localhost
+Servidor listo. Con el adaptador puente de VirtualBox (D83), desde cualquier PC de la red:
+  Sitio ........ https://$IP_VM
+  Correos ...... http://$IP_VM:8025
+  SSH .......... ssh $USER@$IP_VM
 Cerrá la sesión SSH y volvé a entrar para usar "docker" sin sudo.
 FIN

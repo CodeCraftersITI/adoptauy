@@ -16,9 +16,19 @@ if [[ ! -f .env ]]; then
   echo "✔ .env creado con contraseñas aleatorias"
 fi
 
+# Puertos y URL opcionales (infra/setup.sh los pasa para la VM: 80, 443 y su IP, D83)
+for clave in HTTP_PORT HTTPS_PORT APP_URL; do
+  valor="${!clave:-}"
+  [[ -z "$valor" ]] && continue
+  if grep -q "^$clave=" .env; then sed -i.bak "s|^$clave=.*|$clave=$valor|" .env; else echo "$clave=$valor" >> .env; fi
+  rm -f .env.bak
+done
+
 docker compose up -d --build
 echo "Preparando Laravel (la primera vez tarda unos minutos)..."
 until docker compose exec -T app test -f storage/.preparado 2>/dev/null; do sleep 5; printf '.'; done
 echo
 docker compose ps
-echo "✔ AdoptaUY listo: https://localhost:8443  ·  correos: http://localhost:8025"
+PUERTO=$(grep -E '^HTTPS_PORT=' .env 2>/dev/null | cut -d= -f2); PUERTO=${PUERTO:-8443}
+[[ "$PUERTO" == 443 ]] && SUFIJO="" || SUFIJO=":$PUERTO"
+echo "✔ AdoptaUY listo: https://localhost$SUFIJO  ·  correos: http://localhost:8025"
