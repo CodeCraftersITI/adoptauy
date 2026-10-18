@@ -3,7 +3,7 @@
 --  Equipo CodeCrafters · TC4, ITI CETP-UTU
 --
 --  Base: pasaje a tablas (15.2.1) y restricciones RNE01 a RNE24 del Documento
---  integrador 2.0. Los nombres de tablas y columnas son los del DER.
+--  integrador 2.1. Los nombres de tablas y columnas son los del DER.
 --
 --  Motor: MySQL 8.4 (probado también en MySQL 8.0). Juego de caracteres utf8mb4.
 --  Ejecutar con un usuario con permiso para crear funciones y triggers, por
@@ -152,7 +152,8 @@ CREATE TABLE Cuenta_Bancaria (
 --        el trigger tr_publicacion_bu.
 -- RNE12: Edad_Meses no negativa (UNSIGNED) y Tamaño de lista cerrada.
 -- RNE17: Fecha_Vencimiento solo en Perdida (el trigger la calcula al crear).
--- Largos de raza (2 a 50), ubicación y zona (3 a 100): D80.
+-- Largos de raza (2 a 50), ubicación y zona (3 a 100): D80. Contacto: D86.
+-- Sin Temperamento (D87).
 CREATE TABLE Publicacion_Animal (
   ID_Publicacion          INT UNSIGNED NOT NULL AUTO_INCREMENT,
   ID_Usuario              INT UNSIGNED NOT NULL,
@@ -163,7 +164,6 @@ CREATE TABLE Publicacion_Animal (
   Edad_Meses              SMALLINT UNSIGNED NULL,
   `Tamaño`                ENUM('Pequeño', 'Mediano', 'Grande') NULL,
   Estado_Salud            VARCHAR(255) NULL,
-  Temperamento            VARCHAR(255) NULL,
   Estado_Esterilizacion   ENUM('Esterilizado', 'No esterilizado') NULL,
   Ubicacion_Aproximada    VARCHAR(100) NULL,
   Descripcion             TEXT NULL COMMENT 'En Perdida guarda las características de la mascota',
@@ -174,20 +174,21 @@ CREATE TABLE Publicacion_Animal (
   Nombre_Mascota          VARCHAR(50)  NULL,
   Fecha_Extravio          DATE NULL,
   Zona_Extravio           VARCHAR(100) NULL,
-  Contacto                VARCHAR(100) NULL,
+  Contacto                VARCHAR(9)   NULL COMMENT 'Teléfono de 8 o 9 dígitos (D86)',
   CONSTRAINT pk_publicacion PRIMARY KEY (ID_Publicacion),
   CONSTRAINT fk_publicacion_usuario FOREIGN KEY (ID_Usuario)
     REFERENCES Usuario (ID_Usuario) ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT ck_publicacion_raza CHECK (CHAR_LENGTH(Raza) BETWEEN 2 AND 50),
   CONSTRAINT ck_publicacion_ubicacion CHECK (Ubicacion_Aproximada IS NULL OR CHAR_LENGTH(Ubicacion_Aproximada) BETWEEN 3 AND 100),
   CONSTRAINT ck_publicacion_zona CHECK (Zona_Extravio IS NULL OR CHAR_LENGTH(Zona_Extravio) BETWEEN 3 AND 100),
+  CONSTRAINT ck_publicacion_contacto CHECK (Contacto IS NULL OR REGEXP_LIKE(Contacto, '^[0-9]{8,9}$')),
   CONSTRAINT ck_publicacion_extravio CHECK (Fecha_Extravio IS NULL OR Fecha_Extravio <= DATE(Fecha_Creacion)),
   -- RNE02 y RNE17: campos y estados según el tipo.
   CONSTRAINT ck_publicacion_tipo CHECK (
     (Tipo_Publicacion = 'Adopción'
       AND Estado_Publicacion IN ('En adopción', 'Adoptado', 'Archivado')
       AND Edad_Meses IS NOT NULL AND `Tamaño` IS NOT NULL
-      AND Estado_Salud IS NOT NULL AND Temperamento IS NOT NULL
+      AND Estado_Salud IS NOT NULL
       AND Estado_Esterilizacion IS NOT NULL AND Ubicacion_Aproximada IS NOT NULL
       AND Fecha_Vencimiento IS NULL AND Nombre_Mascota IS NULL
       AND Fecha_Extravio IS NULL AND Zona_Extravio IS NULL AND Contacto IS NULL)
@@ -196,7 +197,7 @@ CREATE TABLE Publicacion_Animal (
       AND Estado_Publicacion IN ('Perdida', 'Encontrada', 'Archivada')
       AND Nombre_Mascota IS NOT NULL AND Fecha_Extravio IS NOT NULL
       AND Zona_Extravio IS NOT NULL AND Contacto IS NOT NULL
-      AND Estado_Salud IS NULL AND Temperamento IS NULL AND Estado_Esterilizacion IS NULL)),
+      AND Estado_Salud IS NULL AND Estado_Esterilizacion IS NULL)),
   INDEX ix_publicacion_listado (Tipo_Publicacion, Estado_Publicacion, Estado_Moderacion, Fecha_Creacion),
   INDEX ix_publicacion_filtros (Especie, Sexo, Edad_Meses),
   INDEX ix_publicacion_vencimiento (Tipo_Publicacion, Estado_Publicacion, Fecha_Vencimiento)
@@ -672,7 +673,7 @@ DELIMITER ;
 CREATE VIEW v_publicaciones_en_adopcion AS
 SELECT p.ID_Publicacion, p.Especie, p.Raza, p.Sexo, p.Edad_Meses,
        (p.Edad_Meses < 12) AS Es_Cachorro,
-       p.`Tamaño`, p.Estado_Salud, p.Temperamento, p.Estado_Esterilizacion,
+       p.`Tamaño`, p.Estado_Salud, p.Estado_Esterilizacion,
        p.Ubicacion_Aproximada, p.Descripcion, p.Fecha_Creacion, p.ID_Usuario
   FROM Publicacion_Animal p
  WHERE p.Tipo_Publicacion = 'Adopción'

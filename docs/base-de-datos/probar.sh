@@ -35,19 +35,20 @@ ADM=$(nuevo admin@prueba.uy Administrador); $M "INSERT INTO Administrador(ID_Usu
 err "Un Administrador no puede ser también Particular (RNE10)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($ADM,'31415921','Otro','Admin','099000222')"
 
 # --- Publicaciones -------------------------------------------------------------
-ADOP="INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Edad_Meses,\`Tamaño\`,Estado_Salud,Temperamento,Estado_Esterilizacion,Ubicacion_Aproximada,Estado_Publicacion) VALUES"
+ADOP="INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Edad_Meses,\`Tamaño\`,Estado_Salud,Estado_Esterilizacion,Ubicacion_Aproximada,Estado_Publicacion) VALUES"
 PERD="INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Descripcion,Nombre_Mascota,Fecha_Extravio,Zona_Extravio,Contacto,Estado_Publicacion) VALUES"
-ok  "Publicación en adopción válida (CP-06)" "$ADOP($ANA,'Adopción','Perro','Mestizo','Macho',8,'Mediano','Sano','Tranquilo','Esterilizado','Pocitos','Archivado')"
+ok  "Publicación en adopción válida (CP-06)" "$ADOP($ANA,'Adopción','Perro','Mestizo','Macho',8,'Mediano','Sano','Esterilizado','Pocitos','Archivado')"
 P1=$($M "SELECT MAX(ID_Publicacion) FROM Publicacion_Animal")
 chk "  nace En adopción aunque se envíe otro estado (RNE02)" "SELECT Estado_Publicacion='En adopción' FROM Publicacion_Animal WHERE ID_Publicacion=$P1"
-err "Adopción sin tamaño" "INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Edad_Meses,Estado_Salud,Temperamento,Estado_Esterilizacion,Ubicacion_Aproximada,Estado_Publicacion) VALUES($ANA,'Adopción','Perro','Mestizo','Macho',8,'Sano','Tranquilo','Esterilizado','Pocitos','En adopción')"
-err "Edad negativa (RNE12)" "$ADOP($ANA,'Adopción','Perro','Mestizo','Macho',-1,'Mediano','Sano','Tranquilo','Esterilizado','Pocitos','En adopción')"
-err "Especie fuera de la lista" "$ADOP($ANA,'Adopción','Conejo','Mestizo','Macho',8,'Mediano','Sano','Tranquilo','Esterilizado','Pocitos','En adopción')"
-err "Raza de 51 caracteres (D80)" "$ADOP($ANA,'Adopción','Perro',REPEAT('a',51),'Macho',8,'Mediano','Sano','Tranquilo','Esterilizado','Pocitos','En adopción')"
+err "Adopción sin tamaño" "INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Edad_Meses,Estado_Salud,Estado_Esterilizacion,Ubicacion_Aproximada,Estado_Publicacion) VALUES($ANA,'Adopción','Perro','Mestizo','Macho',8,'Sano','Esterilizado','Pocitos','En adopción')"
+err "Edad negativa (RNE12)" "$ADOP($ANA,'Adopción','Perro','Mestizo','Macho',-1,'Mediano','Sano','Esterilizado','Pocitos','En adopción')"
+err "Especie fuera de la lista" "$ADOP($ANA,'Adopción','Conejo','Mestizo','Macho',8,'Mediano','Sano','Esterilizado','Pocitos','En adopción')"
+err "Raza de 51 caracteres (D80)" "$ADOP($ANA,'Adopción','Perro',REPEAT('a',51),'Macho',8,'Mediano','Sano','Esterilizado','Pocitos','En adopción')"
 ok  "Mascota perdida válida (CP-09)" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra','Collar rojo','Luna',CURRENT_DATE - INTERVAL 6 DAY,'Malvín','098765432','Perdida')"
 P2=$($M "SELECT MAX(ID_Publicacion) FROM Publicacion_Animal")
 chk "  vence 30 días después de creada (RNE17)" "SELECT Fecha_Vencimiento = CURRENT_DATE + INTERVAL 30 DAY FROM Publicacion_Animal WHERE ID_Publicacion=$P2"
 err "Fecha de extravío futura" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE + INTERVAL 1 DAY,'Malvín','098765432','Perdida')"
+err "Contacto con espacios (D86)" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE,'Malvín','098 765 432','Perdida')"
 err "Zona de 2 caracteres (D80)" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE,'Ab','098765432','Perdida')"
 err "El Administrador no publica" "$PERD($ADM,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE,'Malvín','098765432','Perdida')"
 
@@ -104,12 +105,12 @@ chk "  Inhabilitada (RNE15)" "SELECT Estado_Usuario='Inhabilitado' FROM Usuario 
 RF=$(nuevo refugio@prueba.uy Refugio)
 $M "INSERT INTO Refugio(ID_Usuario,Nombre_Refugio,Certificado_Personeria,Comprobante_Domicilio,Ubicacion) VALUES($RF,'Refugio de prueba','cert.pdf','dom.pdf','Montevideo')"
 err "Refugio pendiente no publica cuenta (RNE04)" "INSERT INTO Cuenta_Bancaria(ID_Usuario,Banco,Tipo_Cuenta,Numero_Cuenta,Titular) VALUES($RF,'Banco X','Caja de ahorro','001234','Refugio de prueba')"
-err "Refugio pendiente no publica mascotas (RNE04)" "$ADOP($RF,'Adopción','Gato','Mestizo','Hembra',11,'Pequeño','Sana','Juguetona','No esterilizado','Cordón','En adopción')"
+err "Refugio pendiente no publica mascotas (RNE04)" "$ADOP($RF,'Adopción','Gato','Mestizo','Hembra',11,'Pequeño','Sana','No esterilizado','Cordón','En adopción')"
 err "Rechazo sin motivo (RNE05)" "UPDATE Refugio SET Estado_Validacion='Rechazado' WHERE ID_Usuario=$RF"
 err "Pendiente → Suspendido (RNE24)" "UPDATE Refugio SET Estado_Validacion='Suspendido' WHERE ID_Usuario=$RF"
 ok  "Validar el refugio" "UPDATE Refugio SET Estado_Validacion='Validado' WHERE ID_Usuario=$RF"
 chk "  registra la fecha de resolución" "SELECT Fecha_Resolucion IS NOT NULL FROM Refugio WHERE ID_Usuario=$RF"
-ok  "Refugio validado publica cuenta y mascota" "INSERT INTO Cuenta_Bancaria(ID_Usuario,Banco,Tipo_Cuenta,Numero_Cuenta,Titular) VALUES($RF,'Banco X','Caja de ahorro','001234','Refugio de prueba'); $ADOP($RF,'Adopción','Gato','Mestizo','Hembra',11,'Pequeño','Sana','Juguetona','No esterilizado','Cordón','En adopción')"
+ok  "Refugio validado publica cuenta y mascota" "INSERT INTO Cuenta_Bancaria(ID_Usuario,Banco,Tipo_Cuenta,Numero_Cuenta,Titular) VALUES($RF,'Banco X','Caja de ahorro','001234','Refugio de prueba'); $ADOP($RF,'Adopción','Gato','Mestizo','Hembra',11,'Pequeño','Sana','No esterilizado','Cordón','En adopción')"
 chk "Vista pública: el gato de 11 meses es cachorro (D63)" "SELECT Es_Cachorro=1 FROM v_publicaciones_en_adopcion WHERE ID_Usuario=$RF"
 ok  "3 reportes al refugio" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Usuario_Reportado,Motivo) VALUES(${R[0]},$RF,'Otro'),(${R[1]},$RF,'Otro'),(${R[2]},$RF,'Otro')"
 chk "  Suspendido (RNE15)" "SELECT Estado_Validacion='Suspendido' FROM Refugio WHERE ID_Usuario=$RF"
