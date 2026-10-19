@@ -1,122 +1,75 @@
 #!/usr/bin/env bash
-# Pruebas de las restricciones de adoptauy.sql sobre una base vacía.
-# Uso: bash probar.sh
-# Por defecto usa "mysql -uroot" local. Para otro servidor, definir MYSQL, por ejemplo:
-#   MYSQL_PWD=root_dev MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot" bash probar.sh
-# ATENCIÓN: borra y vuelve a crear la base adoptauy. No usar contra datos reales.
+# AdoptaUY · Prueba básica del script de la base de datos.
+# Crea la base desde cero y comprueba tablas, columnas, claves y valores por defecto.
+# ATENCIÓN: borra y recrea la base adoptauy. No usar contra datos reales.
+#
+# Uso:  MYSQL_PWD=<clave> MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot" bash probar.sh
+set -uo pipefail
 cd "$(dirname "$0")"
 MYSQL="${MYSQL:-mysql -uroot}"
-M="$MYSQL --default-character-set=utf8mb4 adoptauy -N -e"
-H='$2y$12$abcdefghijklmnopqrstuvabcdefghijklmnopqrstuvwxyz01234'
-pass=0; fail=0
-ok()  { if out=$($M "$2" 2>&1); then echo "PASA  $1"; pass=$((pass+1)); else echo "FALLA $1 -> $out"; fail=$((fail+1)); fi; }
-err() { if out=$($M "$2" 2>&1); then echo "FALLA $1 (debía rechazarse)"; fail=$((fail+1)); else echo "PASA  $1 -> ${out#*: }"; pass=$((pass+1)); fi; }
-chk() { out=$($M "SELECT ($2)" 2>&1 | grep -v "Using a password"); if [ "$out" = "1" ]; then echo "PASA  $1"; pass=$((pass+1)); else echo "FALLA $1 -> $out"; fail=$((fail+1)); fi; }
-usr() { $M "SELECT ID_Usuario FROM Usuario WHERE Email='$1'"; }
-nuevo() { $M "INSERT INTO Usuario(Email,\`Contraseña\`,Tipo_Usuario) VALUES('$1','$H','$2')"; usr "$1"; }
+ok=0; fallas=0
 
-$MYSQL < adoptauy.sql
+sql()  { $MYSQL --default-character-set=utf8mb4 -N -B adoptauy -e "$1" 2>&1 | grep -v 'Using a password'; }
+chk()  { # chk "descripción" "valor esperado" "consulta"
+  local r; r="$(sql "$3")"
+  if [[ "$r" == "$2" ]]; then ok=$((ok+1)); else fallas=$((fallas+1)); echo "FALLA: $1 (esperado: $2, obtenido: $r)"; fi; }
+error() { # error "descripción" "sentencia que debe fallar"
+  if [[ "$(sql "$2")" == ERROR* ]]; then ok=$((ok+1)); else fallas=$((fallas+1)); echo "FALLA: $1 (no dio error)"; fi; }
 
-# --- Usuarios -----------------------------------------------------------------
-ANA=$(nuevo ana@prueba.uy Particular)
-ok  "Alta de Particular válido (CP-01)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($ANA,'12345672','Ana','Suárez','099123456')"
-BRU=$(nuevo bruno@prueba.uy Particular)
-ok  "Cédula de 7 dígitos y teléfono fijo" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($BRU,'1234561','Bruno','Pereira','22001234')"
-err "Correo repetido" "INSERT INTO Usuario(Email,\`Contraseña\`,Tipo_Usuario) VALUES('ana@prueba.uy','$H','Particular')"
-err "Contraseña sin hash (RNE13)" "INSERT INTO Usuario(Email,\`Contraseña\`,Tipo_Usuario) VALUES('x@prueba.uy','Clave2026','Particular')"
-CAR=$(nuevo carla@prueba.uy Particular)
-err "Dígito verificador incorrecto (RNE23)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($CAR,'12345673','Carla','Díaz','099000111')"
-err "Cédula repetida (RNE23)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($CAR,'12345672','Carla','Díaz','099000111')"
-err "Cédula con puntos y guion (D79)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($CAR,'1234567-2','Carla','Díaz','099000111')"
-err "Teléfono de 7 dígitos (D81)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($CAR,'45678905','Carla','Díaz','0981112')"
-err "Nombre de 1 carácter (D80)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($CAR,'45678905','C','Díaz','099000111')"
-ok  "Particular con cédula 45678905" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($CAR,'45678905','Carla','Díaz','099000111')"
-ADM=$(nuevo admin@prueba.uy Administrador); $M "INSERT INTO Administrador(ID_Usuario) VALUES($ADM)"
-err "Un Administrador no puede ser también Particular (RNE10)" "INSERT INTO Particular(ID_Usuario,CI,Nombre,Apellido,Telefono) VALUES($ADM,'31415921','Otro','Admin','099000222')"
+$MYSQL --default-character-set=utf8mb4 < adoptauy.sql 2>&1 | grep -v 'Using a password' && { echo "El script dio error"; exit 1; }
 
-# --- Publicaciones -------------------------------------------------------------
-ADOP="INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Edad_Meses,\`Tamaño\`,Estado_Salud,Estado_Esterilizacion,Ubicacion_Aproximada,Estado_Publicacion) VALUES"
-PERD="INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Descripcion,Nombre_Mascota,Fecha_Extravio,Zona_Extravio,Contacto,Estado_Publicacion) VALUES"
-ok  "Publicación en adopción válida (CP-06)" "$ADOP($ANA,'Adopción','Perro','Mestizo','Macho',8,'Mediano','Sano','Esterilizado','Pocitos','Archivado')"
-P1=$($M "SELECT MAX(ID_Publicacion) FROM Publicacion_Animal")
-chk "  nace En adopción aunque se envíe otro estado (RNE02)" "SELECT Estado_Publicacion='En adopción' FROM Publicacion_Animal WHERE ID_Publicacion=$P1"
-err "Adopción sin tamaño" "INSERT INTO Publicacion_Animal(ID_Usuario,Tipo_Publicacion,Especie,Raza,Sexo,Edad_Meses,Estado_Salud,Estado_Esterilizacion,Ubicacion_Aproximada,Estado_Publicacion) VALUES($ANA,'Adopción','Perro','Mestizo','Macho',8,'Sano','Esterilizado','Pocitos','En adopción')"
-err "Edad negativa (RNE12)" "$ADOP($ANA,'Adopción','Perro','Mestizo','Macho',-1,'Mediano','Sano','Esterilizado','Pocitos','En adopción')"
-err "Especie fuera de la lista" "$ADOP($ANA,'Adopción','Conejo','Mestizo','Macho',8,'Mediano','Sano','Esterilizado','Pocitos','En adopción')"
-err "Raza de 51 caracteres (D80)" "$ADOP($ANA,'Adopción','Perro',REPEAT('a',51),'Macho',8,'Mediano','Sano','Esterilizado','Pocitos','En adopción')"
-ok  "Mascota perdida válida (CP-09)" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra','Collar rojo','Luna',CURRENT_DATE - INTERVAL 6 DAY,'Malvín','098765432','Perdida')"
-P2=$($M "SELECT MAX(ID_Publicacion) FROM Publicacion_Animal")
-chk "  vence 30 días después de creada (RNE17)" "SELECT Fecha_Vencimiento = CURRENT_DATE + INTERVAL 30 DAY FROM Publicacion_Animal WHERE ID_Publicacion=$P2"
-err "Fecha de extravío futura" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE + INTERVAL 1 DAY,'Malvín','098765432','Perdida')"
-err "Contacto con espacios (D86)" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE,'Malvín','098 765 432','Perdida')"
-err "Zona de 2 caracteres (D80)" "$PERD($ANA,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE,'Ab','098765432','Perdida')"
-err "El Administrador no publica" "$PERD($ADM,'Perdida','Gato','Siamés','Hembra',NULL,'Luna',CURRENT_DATE,'Malvín','098765432','Perdida')"
+# Estructura
+chk "14 tablas" 14 "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='adoptauy'"
+chk "dos subtipos de publicación" 2 "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='adoptauy' AND table_name IN ('Publicacion_Adopcion','Publicacion_Perdida')"
+chk "sin Temperamento" 0 "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='adoptauy' AND column_name LIKE 'Temperamento%'"
+chk "sin triggers" 0 "SELECT COUNT(*) FROM information_schema.triggers WHERE trigger_schema='adoptauy'"
+chk "sin procedimientos ni funciones" 0 "SELECT COUNT(*) FROM information_schema.routines WHERE routine_schema='adoptauy'"
 
-ok  "6 fotos en adopción (RNE01)" "INSERT INTO Foto_Animal(ID_Publicacion,URL_Foto) VALUES($P1,'a.jpg'),($P1,'b.png'),($P1,'c.webp'),($P1,'d.JPG'),($P1,'e.jpeg'),($P1,'f.jpg')"
-err "7.ª foto en adopción (RNE01)" "INSERT INTO Foto_Animal(ID_Publicacion,URL_Foto) VALUES($P1,'g.jpg')"
-err "Foto GIF (RNE01)" "INSERT INTO Foto_Animal(ID_Publicacion,URL_Foto) VALUES($P2,'a.gif')"
-ok  "3 fotos en perdida" "INSERT INTO Foto_Animal(ID_Publicacion,URL_Foto) VALUES($P2,'a.jpg'),($P2,'b.jpg'),($P2,'c.jpg')"
-err "4.ª foto en perdida (RNE01)" "INSERT INTO Foto_Animal(ID_Publicacion,URL_Foto) VALUES($P2,'d.jpg')"
+# Datos ficticios
+sql "INSERT INTO Usuario (Email, Contraseña, Tipo_Usuario) VALUES ('ana@ejemplo.test','hash','Particular'),('refugio@ejemplo.test','hash','Refugio')" >/dev/null
+chk "Estado_Usuario por defecto" "Activo" "SELECT Estado_Usuario FROM Usuario WHERE Email='ana@ejemplo.test'"
+chk "Email_Verificado vacío al registrarse" "NULL" "SELECT IFNULL(Email_Verificado,'NULL') FROM Usuario WHERE Email='ana@ejemplo.test'"
+error "Email repetido" "INSERT INTO Usuario (Email, Contraseña, Tipo_Usuario) VALUES ('ana@ejemplo.test','hash','Particular')"
 
-err "Transición Perdida → En adopción (RNE02)" "UPDATE Publicacion_Animal SET Estado_Publicacion='En adopción' WHERE ID_Publicacion=$P2"
-ok  "Archivar y renovar una mascota perdida (D70)" "UPDATE Publicacion_Animal SET Estado_Publicacion='Archivada' WHERE ID_Publicacion=$P2; CALL sp_renovar_perdida($P2,$ANA)"
-chk "  vuelve a Perdida con 30 días desde hoy" "SELECT Estado_Publicacion='Perdida' AND Fecha_Vencimiento=CURRENT_DATE + INTERVAL 30 DAY FROM Publicacion_Animal WHERE ID_Publicacion=$P2"
-$M "UPDATE Publicacion_Animal SET Fecha_Vencimiento=CURRENT_DATE WHERE ID_Publicacion=$P2; CALL sp_archivar_perdidas_vencidas()" >/dev/null
-chk "Tarea diaria archiva la vencida" "SELECT Estado_Publicacion='Archivada' FROM Publicacion_Animal WHERE ID_Publicacion=$P2"
-chk "Vistas públicas: 1 en adopción y 0 perdidas" "SELECT (SELECT COUNT(*) FROM v_publicaciones_en_adopcion)=1 AND (SELECT COUNT(*) FROM v_mascotas_perdidas)=0"
+sql "INSERT INTO Particular VALUES (1,'12345672','Ana','Pérez','099123456')" >/dev/null
+error "CI repetida" "INSERT INTO Particular VALUES (2,'12345672','Otro','Nombre','099000000')"
+error "Particular sin Usuario" "INSERT INTO Particular VALUES (99,'11111111','X','Y','099000000')"
 
-# --- Adopción y seguimiento ---------------------------------------------------
-err "Solicitar la propia publicación (RNE18)" "INSERT INTO Solicitud_Adopcion(ID_Publicacion,ID_Usuario) VALUES($P1,$ANA)"
-err "Solicitar una mascota perdida (RNE18)" "INSERT INTO Solicitud_Adopcion(ID_Publicacion,ID_Usuario) VALUES($P2,$BRU)"
-err "El Administrador no solicita" "INSERT INTO Solicitud_Adopcion(ID_Publicacion,ID_Usuario) VALUES($P1,$ADM)"
-ok  "Dos solicitudes de usuarios distintos" "INSERT INTO Solicitud_Adopcion(ID_Publicacion,ID_Usuario) VALUES($P1,$BRU),($P1,$CAR)"
-err "Segunda solicitud pendiente del mismo usuario" "INSERT INTO Solicitud_Adopcion(ID_Publicacion,ID_Usuario) VALUES($P1,$BRU)"
-SB=$($M "SELECT ID_Solicitud FROM Solicitud_Adopcion WHERE ID_Usuario=$BRU")
-SC=$($M "SELECT ID_Solicitud FROM Solicitud_Adopcion WHERE ID_Usuario=$CAR")
-err "Concretar quien no es el publicante (RNE03)" "CALL sp_concretar_adopcion($SB,$BRU)"
-ok  "Concretar la adopción eligiendo a Bruno (RNE19)" "CALL sp_concretar_adopcion($SB,$ANA)"
-chk "  Bruno Adoptada, Carla Rechazada, publicación Adoptado" "SELECT (SELECT Estado_Solicitud FROM Solicitud_Adopcion WHERE ID_Solicitud=$SB)='Adoptada' AND (SELECT Estado_Solicitud FROM Solicitud_Adopcion WHERE ID_Solicitud=$SC)='Rechazada' AND (SELECT Estado_Publicacion FROM Publicacion_Animal WHERE ID_Publicacion=$P1)='Adoptado'"
-chk "  seguimiento: aviso día 15 y límite día 22 (RNE20)" "SELECT Fecha_Aviso=CURRENT_DATE + INTERVAL 15 DAY AND Fecha_Limite=CURRENT_DATE + INTERVAL 22 DAY FROM Seguimiento"
-err "Adoptado no vuelve a En adopción (RNE02)" "UPDATE Publicacion_Animal SET Estado_Publicacion='En adopción' WHERE ID_Publicacion=$P1"
-err "Una solicitud Rechazada no cambia" "UPDATE Solicitud_Adopcion SET Estado_Solicitud='Pendiente' WHERE ID_Solicitud=$SC"
-ok  "Bruno publica antes del día 22" "$PERD($BRU,'Perdida','Perro','Mestizo','Macho',NULL,'Toby',CURRENT_DATE,'Centro','099123456','Perdida')"
-$M "UPDATE Seguimiento SET Fecha_Aviso=CURRENT_DATE - INTERVAL 8 DAY, Fecha_Limite=CURRENT_DATE - INTERVAL 1 DAY"
-chk "Pasado el día 22 sin foto, Bruno queda restringido" "SELECT fn_usuario_restringido($BRU)"
-err "  y no puede publicar (RNE21)" "$PERD($BRU,'Perdida','Gato','Siamés','Hembra',NULL,'Mia',CURRENT_DATE,'Centro','099123456','Perdida')"
-ok  "Al enviar la foto se levanta la restricción" "UPDATE Seguimiento SET URL_Foto='seguimiento.jpg', Fecha_Envio=NOW(), Estado_Evidencia='Enviada'; $PERD($BRU,'Perdida','Gato','Siamés','Hembra',NULL,'Mia',CURRENT_DATE,'Centro','099123456','Perdida')"
+sql "INSERT INTO Refugio (ID_Usuario, Nombre_Refugio, Certificado_Personeria, Comprobante_Domicilio, Ubicacion) VALUES (2,'Refugio de prueba','cert.pdf','dom.pdf','Montevideo')" >/dev/null
+chk "Estado_Validacion por defecto" "Pendiente de validación" "SELECT Estado_Validacion FROM Refugio WHERE ID_Usuario=2"
+sql "INSERT INTO Cuenta_Bancaria VALUES (2,1,'Banco de prueba','Caja de ahorro','000123-4','Refugio de prueba')" >/dev/null
+error "Cuenta de un usuario que no es refugio" "INSERT INTO Cuenta_Bancaria VALUES (1,1,'Banco','Caja de ahorro','1','Ana')"
 
-# --- Reportes -----------------------------------------------------------------
-R=(); for i in $(seq 1 11); do u=$(nuevo "rep$i@prueba.uy" Particular); R+=("$u"); done
-ok  "2 reportes a una publicación" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Publicacion_Reportada,Motivo) VALUES(${R[0]},$P2,'Publicación duplicada o spam'),(${R[1]},$P2,'Publicación duplicada o spam')"
-chk "  sigue Visible" "SELECT Estado_Moderacion='Visible' FROM Publicacion_Animal WHERE ID_Publicacion=$P2"
-ok  "3.er reporte" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Publicacion_Reportada,Motivo) VALUES(${R[2]},$P2,'Publicación duplicada o spam')"
-chk "  pasa a En revisión (RNE15)" "SELECT Estado_Moderacion='En revisión' FROM Publicacion_Animal WHERE ID_Publicacion=$P2"
-err "Reportar dos veces lo mismo (RNE22)" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Publicacion_Reportada,Motivo) VALUES(${R[0]},$P2,'Otro')"
-err "Reportarse a sí mismo (RNE22)" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Usuario_Reportado,Motivo) VALUES($ANA,$ANA,'Otro')"
-err "Reporte sin objeto (RNE22)" "INSERT INTO Reporte(ID_Usuario_Reportante,Motivo) VALUES($ANA,'Otro')"
-ok  "4 reportes a Carla" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Usuario_Reportado,Motivo) VALUES(${R[0]},$CAR,'Otro'),(${R[1]},$CAR,'Otro'),(${R[2]},$CAR,'Otro'),(${R[3]},$CAR,'Otro')"
-chk "  sigue Activa" "SELECT Estado_Usuario='Activo' FROM Usuario WHERE ID_Usuario=$CAR"
-ok  "5.º reporte" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Usuario_Reportado,Motivo) VALUES(${R[4]},$CAR,'Otro')"
-chk "  En revisión (RNE15)" "SELECT Estado_Usuario='En revisión' FROM Usuario WHERE ID_Usuario=$CAR"
-ok  "Reportes 6 a 10" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Usuario_Reportado,Motivo) VALUES(${R[5]},$CAR,'Otro'),(${R[6]},$CAR,'Otro'),(${R[7]},$CAR,'Otro'),(${R[8]},$CAR,'Otro'),(${R[9]},$CAR,'Otro')"
-chk "  Inhabilitada (RNE15)" "SELECT Estado_Usuario='Inhabilitado' FROM Usuario WHERE ID_Usuario=$CAR"
+# Publicación en adopción: supertipo + subtipo
+sql "INSERT INTO Publicacion_Animal (ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo) VALUES (1,'Adopción','Perro','Mestizo','Macho')" >/dev/null
+sql "INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada) VALUES (1,8,'Mediano','Sano','Esterilizado','Cordón')" >/dev/null
+chk "Estado_Adopcion por defecto" "En adopción" "SELECT Estado_Adopcion FROM Publicacion_Adopcion WHERE ID_Publicacion=1"
+chk "Estado_Moderacion por defecto" "Visible" "SELECT Estado_Moderacion FROM Publicacion_Animal WHERE ID_Publicacion=1"
+error "Subtipo sin supertipo" "INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada) VALUES (50,8,'Mediano','Sano','Esterilizado','Cordón')"
+error "Tamaño fuera de la lista" "UPDATE Publicacion_Adopcion SET Tamaño='Gigante' WHERE ID_Publicacion=1"
+error "Edad negativa" "UPDATE Publicacion_Adopcion SET Edad_Meses=-1 WHERE ID_Publicacion=1"
+sql "INSERT INTO Foto_Animal VALUES (1,1,'fotos/1-1.jpg')" >/dev/null
+error "Foto repetida" "INSERT INTO Foto_Animal VALUES (1,1,'fotos/1-1b.jpg')"
 
-# --- Refugios -----------------------------------------------------------------
-RF=$(nuevo refugio@prueba.uy Refugio)
-$M "INSERT INTO Refugio(ID_Usuario,Nombre_Refugio,Certificado_Personeria,Comprobante_Domicilio,Ubicacion) VALUES($RF,'Refugio de prueba','cert.pdf','dom.pdf','Montevideo')"
-err "Refugio pendiente no publica cuenta (RNE04)" "INSERT INTO Cuenta_Bancaria(ID_Usuario,Banco,Tipo_Cuenta,Numero_Cuenta,Titular) VALUES($RF,'Banco X','Caja de ahorro','001234','Refugio de prueba')"
-err "Refugio pendiente no publica mascotas (RNE04)" "$ADOP($RF,'Adopción','Gato','Mestizo','Hembra',11,'Pequeño','Sana','No esterilizado','Cordón','En adopción')"
-err "Rechazo sin motivo (RNE05)" "UPDATE Refugio SET Estado_Validacion='Rechazado' WHERE ID_Usuario=$RF"
-err "Pendiente → Suspendido (RNE24)" "UPDATE Refugio SET Estado_Validacion='Suspendido' WHERE ID_Usuario=$RF"
-ok  "Validar el refugio" "UPDATE Refugio SET Estado_Validacion='Validado' WHERE ID_Usuario=$RF"
-chk "  registra la fecha de resolución" "SELECT Fecha_Resolucion IS NOT NULL FROM Refugio WHERE ID_Usuario=$RF"
-ok  "Refugio validado publica cuenta y mascota" "INSERT INTO Cuenta_Bancaria(ID_Usuario,Banco,Tipo_Cuenta,Numero_Cuenta,Titular) VALUES($RF,'Banco X','Caja de ahorro','001234','Refugio de prueba'); $ADOP($RF,'Adopción','Gato','Mestizo','Hembra',11,'Pequeño','Sana','No esterilizado','Cordón','En adopción')"
-chk "Vista pública: el gato de 11 meses es cachorro (D63)" "SELECT Es_Cachorro=1 FROM v_publicaciones_en_adopcion WHERE ID_Usuario=$RF"
-ok  "3 reportes al refugio" "INSERT INTO Reporte(ID_Usuario_Reportante,ID_Usuario_Reportado,Motivo) VALUES(${R[0]},$RF,'Otro'),(${R[1]},$RF,'Otro'),(${R[2]},$RF,'Otro')"
-chk "  Suspendido (RNE15)" "SELECT Estado_Validacion='Suspendido' FROM Refugio WHERE ID_Usuario=$RF"
-ok  "Baja del refugio" "UPDATE Refugio SET Estado_Validacion='Dado de baja' WHERE ID_Usuario=$RF"
-chk "  sus publicaciones pasan a Archivado (RNE24)" "SELECT COUNT(*)=1 AND MIN(Estado_Publicacion)='Archivado' FROM Publicacion_Animal WHERE ID_Usuario=$RF"
-err "Dado de baja es definitivo (RNE24)" "UPDATE Refugio SET Estado_Validacion='Validado' WHERE ID_Usuario=$RF"
+# Publicación perdida
+sql "INSERT INTO Publicacion_Animal (ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo, Descripcion) VALUES (1,'Perdida','Gato','Siamés','Hembra','Collar rojo')" >/dev/null
+sql "INSERT INTO Publicacion_Perdida (ID_Publicacion, Nombre_Mascota, Fecha_Extravio, Zona_Extravio, Contacto, Fecha_Vencimiento) VALUES (2,'Mishi',CURDATE(),'Pocitos','099123456',CURDATE()+INTERVAL 30 DAY)" >/dev/null
+chk "Estado_Perdida por defecto" "Perdida" "SELECT Estado_Perdida FROM Publicacion_Perdida WHERE ID_Publicacion=2"
 
-echo; echo "Resultado: $pass pasaron, $fail fallaron"
-[ "$fail" -eq 0 ]
+# Solicitud, adopción y seguimiento
+error "Solicitud sobre una publicación perdida" "INSERT INTO Solicitud_Adopcion (ID_Publicacion, ID_Usuario) VALUES (2,1)"
+error "Solicitud de un refugio" "INSERT INTO Solicitud_Adopcion (ID_Publicacion, ID_Usuario) VALUES (1,2)"
+sql "INSERT INTO Solicitud_Adopcion (ID_Publicacion, ID_Usuario) VALUES (1,1)" >/dev/null
+chk "Estado_Solicitud por defecto" "Pendiente" "SELECT Estado_Solicitud FROM Solicitud_Adopcion WHERE ID_Publicacion=1 AND ID_Usuario=1"
+sql "INSERT INTO Adopcion (ID_Solicitud, Fecha_Adopcion) SELECT ID_Solicitud, CURDATE() FROM Solicitud_Adopcion WHERE ID_Publicacion=1 AND ID_Usuario=1" >/dev/null
+error "Dos adopciones de la misma solicitud" "INSERT INTO Adopcion (ID_Solicitud, Fecha_Adopcion) SELECT ID_Solicitud, CURDATE() FROM Solicitud_Adopcion WHERE ID_Publicacion=1 AND ID_Usuario=1"
+sql "INSERT INTO Seguimiento (ID_Adopcion, Fecha_Aviso, Fecha_Limite) SELECT ID_Adopcion, CURDATE()+INTERVAL 15 DAY, CURDATE()+INTERVAL 22 DAY FROM Adopcion" >/dev/null
+chk "Estado_Evidencia por defecto" "Pendiente" "SELECT Estado_Evidencia FROM Seguimiento"
+
+# Reporte
+sql "INSERT INTO Reporte (ID_Usuario_Reportante, ID_Publicacion_Reportada, Motivo) VALUES (2,1,'Publicación duplicada o spam')" >/dev/null
+chk "Estado_Reporte por defecto" "Pendiente" "SELECT Estado_Reporte FROM Reporte"
+error "Medida fuera de la lista" "UPDATE Reporte SET Medida='Multa'"
+
+echo "Pruebas correctas: $ok · fallas: $fallas"
+[[ $fallas -eq 0 ]]

@@ -1,11 +1,22 @@
 # Base de datos de AdoptaUY (script SQL)
 
-Modelo físico en MySQL del pasaje a tablas (15.2.1) y de las restricciones RNE01 a RNE24 del Documento integrador 2.0. Los nombres de tablas y columnas son los del DER (`Publicacion_Animal`, `ID_Usuario`, `Estado_Validacion`).
+Tablas en MySQL según el DER y el diccionario de datos. `Publicacion_Animal` guarda los datos comunes de toda publicación y tiene dos subtipos: `Publicacion_Adopcion` y `Publicacion_Perdida`.
 
 | Archivo | Qué es |
 |---|---|
-| [`adoptauy.sql`](adoptauy.sql) | Crea la base `adoptauy`: 12 tablas, 2 funciones, 13 triggers, 3 procedimientos y 3 vistas |
-| [`probar.sh`](probar.sh) | 74 pruebas de las restricciones sobre una base vacía (también corren en GitHub Actions, job `base-de-datos`) |
+| [`adoptauy.sql`](adoptauy.sql) | Crea la base `adoptauy` con sus 14 tablas: claves primarias y foráneas, NOT NULL, UNIQUE, DEFAULT y ENUM |
+| [`probar.sh`](probar.sh) | 26 pruebas básicas sobre una base vacía: tablas, claves y valores por defecto (también corren en GitHub Actions, job `base-de-datos`) |
+
+Por ahora el script no tiene triggers, procedimientos, funciones ni vistas: las restricciones RNE que no resuelven las claves las valida Laravel. Esos objetos se agregan en el Hito 3.
+
+## Tablas
+
+| Grupo | Tablas |
+|---|---|
+| Usuarios | `Usuario` (supertipo), `Particular`, `Refugio`, `Administrador`, `Refugio_Datos_Contacto`, `Cuenta_Bancaria` |
+| Publicaciones | `Publicacion_Animal` (supertipo), `Publicacion_Adopcion`, `Publicacion_Perdida`, `Foto_Animal` |
+| Adopción | `Solicitud_Adopcion` (sobre `Publicacion_Adopcion`, solo de un `Particular`), `Adopcion`, `Seguimiento` |
+| Moderación | `Reporte` |
 
 ## Cómo usarlo
 
@@ -17,28 +28,18 @@ mysql -h 127.0.0.1 -P 3307 -uroot -p < docs/base-de-datos/adoptauy.sql
 MYSQL_PWD=root_dev MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot" bash docs/base-de-datos/probar.sh
 ```
 
-> **Atención:** el script empieza con `DROP DATABASE IF EXISTS adoptauy`. En el entorno de Docker esa es la base de desarrollo de Laravel: las migraciones y este script no conviven en la misma base. Para probarlo sin perder datos, cambiá el nombre de la base en las primeras líneas.
+> **Atención:** el script empieza con `DROP DATABASE IF EXISTS adoptauy`. En el entorno de Docker esa es la base de desarrollo de Laravel. Para probarlo sin perder datos, cambiá el nombre de la base en las primeras líneas.
 
-## Dónde se cumple cada restricción
+## Valores y largos que toma del documento integrador
 
-| Mecanismo | Restricciones |
-|---|---|
-| CHECK, claves únicas y foráneas | RNE05, RNE10, RNE12, RNE13, RNE22, formato de CI, teléfono, contacto y largos de campos (D79 a D81, D86), campos y estados según el tipo de publicación (RNE02, RNE17) |
-| Triggers | RNE01 (máximo de fotos), RNE02 (transiciones), RNE04, RNE14, RNE15 (umbrales de reportes), RNE16, RNE18, RNE20, RNE21, RNE23 (dígito verificador), RNE24 |
-| Procedimientos | `sp_concretar_adopcion` (RNE19, RNE20), `sp_renovar_perdida` (RNE17, D70), `sp_archivar_perdidas_vencidas` (tarea diaria de las 03:00, D71) |
-| Aplicación (Laravel) | Mínimo de 1 foto y tamaño de 8 MB (RNE01), fila de subtipo de cada usuario (RNE11), plazo de 5 días hábiles (RNE06), motivos de reporte según el objeto |
+- Sin `Temperamento`.
+- `Nombre` y `Apellido`: hasta 50 caracteres. `CI`: 7 u 8 dígitos. `Telefono` y `Contacto` (mascota perdida): 8 o 9 dígitos.
+- `Raza`: hasta 50 caracteres. `Ubicacion_Aproximada` y `Zona_Extravio`: hasta 100.
+- `Email_Verificado` guarda la fecha de confirmación; `NULL` significa sin confirmar.
+- `Estado_Validacion`: Pendiente de validación, Validado, Rechazado, Suspendido o Dado de baja.
+- `Tipo_Cuenta`: texto libre.
+- `Estado_Reporte`: Pendiente, Desestimado o Confirmado. `Medida`: Aviso, Suspensión o Baja lógica.
 
 Ninguna clave foránea borra en cascada: las bajas son lógicas (cambio de estado).
-
-## Decisiones del equipo que aplica el script
-
-1. `Estado_Esterilizacion`: «Esterilizado» o «No esterilizado» (D84).
-2. `Tipo_Cuenta`: texto libre (D84).
-3. `Estado_Reporte`: Pendiente, Desestimado o Confirmado. `Medida`: Aviso, Suspensión o Baja lógica (D84).
-4. Los reportes desestimados no cuentan para los umbrales de RNE15 (D85).
-5. `Email_Verificado` guarda la fecha de confirmación; `NULL` significa sin confirmar (D84).
-6. `Contacto` de una mascota perdida: teléfono de 8 o 9 dígitos (D86).
-7. La publicación en adopción no tiene `Temperamento` (D87).
-8. Los nombres con tilde o ñ (`Contraseña`, `Tamaño`) se mantienen como en el DER; por eso el script empieza con `SET NAMES utf8mb4`.
 
 Responsable de revisión: Camilo Blanco (base de datos).

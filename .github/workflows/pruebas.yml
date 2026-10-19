@@ -52,7 +52,7 @@ jobs:
 
   base-de-datos:
     # Crea la base con docs/base-de-datos/adoptauy.sql en MySQL 8.4 y prueba
-    # sus restricciones (RNE01 a RNE24)
+    # tablas, claves y valores por defecto
     runs-on: ubuntu-24.04
     services:
       mysql:
