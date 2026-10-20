@@ -98,6 +98,17 @@ for linea in "${INTEGRANTES[@]}"; do
   fi
 done
 
+# Administrador del servidor: sudo completo, sin SSH (no está en codecrafters);
+# solo entra por la consola de VirtualBox. Es la única cuenta con privilegios totales
+if ! id admin >/dev/null 2>&1; then
+  useradd --create-home --shell /bin/bash --comment "Administrador del servidor" --groups sudo,adm admin
+  clave="$(openssl rand -base64 12 | tr -d '/+=\n')-7"
+  echo "admin:$clave" | chpasswd; chage -d 0 admin
+  NUEVAS+=("admin  $clave")
+fi
+chage -M 90 -m 1 -W 7 -I 14 admin
+chmod 0750 /home/admin
+
 # umask 027 para las sesiones: lo nuevo no queda legible para "otros"
 cat > /etc/profile.d/adoptauy-umask.sh <<'EOF'
 # AdoptaUY: archivos nuevos 640 y directorios 750 por defecto
@@ -219,6 +230,10 @@ ufw delete allow 22/tcp    >/dev/null 2>&1 || true
 ufw delete allow 8025/tcp  >/dev/null 2>&1 || true
 ufw allow 80/tcp  comment 'AdoptaUY HTTP (redirige a HTTPS)' >/dev/null
 ufw allow 443/tcp comment 'AdoptaUY HTTPS' >/dev/null
+# Si cambió la red de administración, se borran las reglas anteriores de SSH y Zabbix
+while n=$(ufw status numbered | grep -E 'SSH red de administracion|Zabbix agente' | head -1 | sed -E 's/^\[ *([0-9]+)\].*/\1/'); [[ -n "$n" ]]; do
+  ufw --force delete "$n" >/dev/null
+done
 ufw limit from "$RED_ADMIN" to any port 22 proto tcp comment 'SSH red de administracion' >/dev/null
 [[ -n "${IP_ZABBIX:-}" ]] && ufw allow from "$IP_ZABBIX" to any port 10050 proto tcp comment 'Zabbix agente' >/dev/null
 ufw logging low >/dev/null

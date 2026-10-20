@@ -27,6 +27,7 @@ for u in camilo leandro inaki rodrigo; do
   chk "$u fuera de docker y sudo"                  bash -c "! id -nG $u | grep -Eqw 'docker|sudo'"
   chk "$u: contraseña vence a los 90 días"         bash -c "chage -l $u | grep -q 'Maximum.*: 90'"
 done
+chk "admin con sudo y sin SSH (fuera de codecrafters)" bash -c "id -nG admin | grep -qw sudo && ! id -nG admin | grep -qw codecrafters"
 chk "adoptauy es cuenta de servicio sin shell"     bash -c "getent passwd adoptauy | grep -q ':/usr/sbin/nologin$'"
 chk "sudoers válido"                               visudo -cf /etc/sudoers.d/adoptauy
 chk "sudoers 440 root:root"                        modo /etc/sudoers.d/adoptauy "440 root:root"
