@@ -1,0 +1,16 @@
+# /etc/sudoers.d/adoptauy · 0440 root:root · validar con: visudo -cf /etc/sudoers.d/adoptauy
+# Privilegio mínimo: cada rol ejecuta como root solo los comandos de su tarea.
+# Nadie del equipo tiene "ALL" ni pertenece al grupo docker (equivale a root).
+# Los registros se leen sin sudo: rodrigo y leandro están en el grupo adm.
+
+Defaults:%codecrafters  use_pty, timestamp_timeout=5, logfile=/var/log/adoptauy/sudo.log
+
+Cmnd_Alias DESPLIEGUE = /usr/local/sbin/adoptauy-desplegar
+Cmnd_Alias RESPALDO   = /usr/local/sbin/adoptauy-respaldo, /usr/local/sbin/adoptauy-restaurar
+Cmnd_Alias INFRA      = /usr/sbin/ufw, \
+                        /usr/bin/systemctl restart ssh, \
+                        /usr/bin/systemctl --no-pager status *
+
+%adoptauy-dev    ALL=(root) DESPLIEGUE
+%adoptauy-bd     ALL=(root) RESPALDO
+%adoptauy-infra  ALL=(root) DESPLIEGUE, RESPALDO, INFRA
