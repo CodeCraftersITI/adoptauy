@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# /usr/local/sbin/adoptauy-restaurar · restaura un respaldo de AdoptaUY.
+#
+#   sudo adoptauy-restaurar --listar
+#   sudo adoptauy-restaurar AAAA-MM-DD_HHMM               # PRUEBA: no toca producción
+#   sudo adoptauy-restaurar AAAA-MM-DD_HHMM --produccion  # restaura de verdad
+#
+# La prueba extrae todo en /srv/adoptauy/restauracion-prueba y carga la base en
+# adoptauy_restauracion, para comparar sin detener el sistema (RNF:0014: una
+# restauración probada por sprint).
+set -euo pipefail
+umask 0077
+APP=${APP:-/srv/adoptauy/app}
+BASE=${RESPALDO_BASE:-/var/backups/adoptauy}
+LOG=${RESPALDO_LOG:-/var/log/adoptauy/respaldo.log}
+PRUEBA=${PRUEBA_DIR:-/srv/adoptauy/restauracion-prueba}
+XT=(--acls --xattrs --xattrs-include='*' --numeric-owner)
+log() { echo "$(date -Is) $*" >>"$LOG"; }
+
+if [[ "${1:-}" == "--listar" ]]; then ls -1 "$BASE/diario" "$BASE/semanal"; exit 0; fi
+FECHA="${1:-}"; MODO="${2:---prueba}"
+[[ "$FECHA" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{4}$ ]] || { echo "Uso: adoptauy-restaurar AAAA-MM-DD_HHMM [--produccion]" >&2; exit 2; }
+[[ "$MODO" == --prueba || "$MODO" == --produccion ]] || { echo "Modo inválido: $MODO" >&2; exit 2; }
+ORIG="$BASE/diario/$FECHA"; [[ -d "$ORIG" ]] || ORIG="$BASE/semanal/$FECHA"
+[[ -d "$ORIG" ]] || { echo "No existe el respaldo $FECHA" >&2; exit 1; }
+
+# 1. Integridad
+(cd "$ORIG" && sha256sum --quiet -c SHA256SUMS) || { echo "Las sumas SHA-256 no coinciden: respaldo dañado" >&2; exit 1; }
+
+if [[ "$MODO" == --prueba ]]; then
+  rm -rf "$PRUEBA"; install -d -m 0700 "$PRUEBA"
+  tar "${XT[@]}" -xpzf "$ORIG/storage.tar.gz" -C "$PRUEBA"
+  tar "${XT[@]}" -xpzf "$ORIG/config.tar.gz"  -C "$PRUEBA"
+  if [[ -f "$ORIG/bd.sql.gz" && "${SIN_BD:-0}" != 1 ]]; then
+    (cd "$APP" && docker compose exec -T db sh -c \
+      'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS adoptauy_restauracion; CREATE DATABASE adoptauy_restauracion"')
+    gunzip -c "$ORIG/bd.sql.gz" | (cd "$APP" && docker compose exec -T db sh -c \
+      'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" adoptauy_restauracion')
+    echo "Base cargada en adoptauy_restauracion. Comparar, por ejemplo:"
+    echo "  SELECT COUNT(*) FROM adoptauy.Usuario; SELECT COUNT(*) FROM adoptauy_restauracion.Usuario;"
+  fi
+  log "restauración de PRUEBA de $FECHA por ${SUDO_USER:-root} en $PRUEBA"
+  echo "Prueba extraída en $PRUEBA (permisos y ACL preservados: getfacl -R $PRUEBA/storage)"
+  exit 0
+fi
+
+# --- Producción -------------------------------------------------------------
+read -r -p "Esto reemplaza los datos actuales con el respaldo $FECHA. Escribí RESTAURAR: " ok
+[[ "$ok" == RESTAURAR ]] || { echo "Cancelado"; exit 1; }
+log "restauración de PRODUCCIÓN de $FECHA iniciada por ${SUDO_USER:-root}"
+cd "$APP"
+docker compose stop web app queue scheduler
+
+# 2. Archivos subidos, con permisos, dueños, ACL y xattr
+TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
+tar "${XT[@]}" -xpzf "$ORIG/storage.tar.gz" -C "$TMP"
+rsync -aAXH --delete "$TMP/storage/app/" "$APP/src/laravel/storage/app/"
+
+# 3. Base de datos
+[[ -f "$ORIG/bd.sql.gz" ]] && gunzip -c "$ORIG/bd.sql.gz" | docker compose exec -T db sh -c \
+  'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'
+
+# 4. ACL guardadas (por si el destino se recreó) y atributos chattr
+setfacl --restore="$ORIG/acl.txt" 2>/dev/null || true
+while read -r attrs archivo; do
+  [[ -e "$archivo" ]] || continue
+  [[ "$attrs" == *i* ]] && chattr +i "$archivo"
+  [[ "$attrs" == *a* ]] && chattr +a "$archivo"
+done < "$ORIG/atributos.txt"
+
+docker compose start db web app queue scheduler
+log "restauración de PRODUCCIÓN de $FECHA terminada"
+echo "Restauración terminada. Verificar el sitio y los conteos de tablas."
