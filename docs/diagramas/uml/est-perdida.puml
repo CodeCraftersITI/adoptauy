@@ -1,0 +1,11 @@
+@startuml est-perdida
+!include _estilo.iuml
+title Estados de la publicación de mascota perdida
+[*] --> Perdida : publicar (RF:0046)\nvence = hoy + 30
+Perdida --> Perdida : renovar antes del vencimiento\nvence = hoy + 30
+Perdida --> Encontrada : publicante (la mascota apareció)
+Perdida --> Archivada : sistema: 30 días sin renovar
+Perdida --> Archivada : publicante o Administrador la retira
+Archivada --> Perdida : publicante renueva\nvence = hoy + 30
+Encontrada --> [*]
+@enduml

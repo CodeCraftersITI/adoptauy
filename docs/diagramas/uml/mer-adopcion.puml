@@ -1,0 +1,42 @@
+@startchen mer-adopcion
+' MER de AdoptaUY, módulo Adopción y seguimiento (con atributos)
+skinparam defaultFontName DejaVu Sans
+skinparam backgroundColor white
+left to right direction
+entity PARTICULAR {
+}
+entity PUBLICACION_ADOPCION {
+}
+entity SOLICITUD_ADOPCION {
+  ID_Solicitud <<key>>
+  Fecha_Solicitud
+  Estado_Solicitud
+}
+entity ADOPCION {
+  ID_Adopcion <<key>>
+  Fecha_Adopcion
+}
+entity SEGUIMIENTO <<weak>> {
+  Fecha_Aviso
+  Fecha_Limite
+  URL_Foto
+  Fecha_Envio
+  Estado_Evidencia
+}
+relationship SOLICITA {
+}
+SOLICITA -1- PARTICULAR
+SOLICITA =N= SOLICITUD_ADOPCION
+relationship RECIBE {
+}
+RECIBE -1- PUBLICACION_ADOPCION
+RECIBE =N= SOLICITUD_ADOPCION
+relationship CONCRETA {
+}
+CONCRETA -1- SOLICITUD_ADOPCION
+CONCRETA =1= ADOPCION
+relationship CONTROLA <<identifying>> {
+}
+CONTROLA -1- ADOPCION
+CONTROLA =1= SEGUIMIENTO
+@endchen

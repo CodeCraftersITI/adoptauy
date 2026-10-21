@@ -1,0 +1,10 @@
+@startuml est-solicitud
+!include _estilo.iuml
+title Estados de la solicitud de adopción
+[*] --> Pendiente : particular solicita (RF:0049)
+Pendiente --> Adoptada : publicante la elige (RF:0052)
+Pendiente --> Rechazada : publicante la rechaza (RF:0051)
+Pendiente --> Rechazada : sistema: se eligió a otro solicitante
+Adoptada --> [*]
+Rechazada --> [*]
+@enduml

@@ -1,0 +1,10 @@
+@startuml est-adopcion
+!include _estilo.iuml
+title Estados de la publicación en adopción
+[*] --> EnAdopcion : publicar (RF:0017)
+state "En adopción" as EnAdopcion
+EnAdopcion --> Adoptado : publicante elige al adoptante (RF:0052)
+EnAdopcion --> Archivado : publicante o Administrador la retira
+Archivado --> EnAdopcion : publicante la reactiva
+Adoptado --> [*] : definitivo
+@enduml

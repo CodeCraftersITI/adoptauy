@@ -1,0 +1,73 @@
+@startchen mer-general
+' MER de AdoptaUY, vista general (sin atributos). Coincide con docs/base-de-datos/adoptauy.sql
+skinparam defaultFontName DejaVu Sans
+skinparam backgroundColor white
+entity USUARIO {
+}
+entity PARTICULAR {
+}
+entity REFUGIO {
+}
+entity ADMINISTRADOR {
+}
+entity CUENTA_BANCARIA <<weak>> {
+}
+entity PUBLICACION_ANIMAL {
+}
+entity PUBLICACION_ADOPCION {
+}
+entity PUBLICACION_PERDIDA {
+}
+entity FOTO_ANIMAL <<weak>> {
+}
+entity SOLICITUD_ADOPCION {
+}
+entity ADOPCION {
+}
+entity SEGUIMIENTO <<weak>> {
+}
+entity REPORTE {
+}
+USUARIO =>= d { PARTICULAR, REFUGIO, ADMINISTRADOR }
+PUBLICACION_ANIMAL =>= d { PUBLICACION_ADOPCION, PUBLICACION_PERDIDA }
+relationship POSEE <<identifying>> {
+}
+POSEE -1- REFUGIO
+POSEE =N= CUENTA_BANCARIA
+relationship PUBLICA {
+}
+PUBLICA -1- USUARIO
+PUBLICA =N= PUBLICACION_ANIMAL
+relationship TIENE <<identifying>> {
+}
+TIENE -1- PUBLICACION_ANIMAL
+TIENE =N= FOTO_ANIMAL
+relationship SOLICITA {
+}
+SOLICITA -1- PARTICULAR
+SOLICITA =N= SOLICITUD_ADOPCION
+relationship RECIBE {
+}
+RECIBE -1- PUBLICACION_ADOPCION
+RECIBE =N= SOLICITUD_ADOPCION
+relationship CONCRETA {
+}
+CONCRETA -1- SOLICITUD_ADOPCION
+CONCRETA =1= ADOPCION
+relationship CONTROLA <<identifying>> {
+}
+CONTROLA -1- ADOPCION
+CONTROLA =1= SEGUIMIENTO
+relationship REALIZA {
+}
+REALIZA -1- USUARIO
+REALIZA =N= REPORTE
+relationship REPORTA_USUARIO {
+}
+REPORTA_USUARIO -1- USUARIO
+REPORTA_USUARIO -N- REPORTE
+relationship REPORTA_PUBLICACION {
+}
+REPORTA_PUBLICACION -1- PUBLICACION_ANIMAL
+REPORTA_PUBLICACION -N- REPORTE
+@endchen

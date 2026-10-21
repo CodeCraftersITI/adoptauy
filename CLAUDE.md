@@ -39,7 +39,7 @@ Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige
 - `docs/contexto/plan-pruebas.md`: estrategia, herramientas y casos CP-01 a CP-46.
 - `docs/contexto/infraestructura.md`: stack, red, servidores, servicios y entorno local.
 - `docs/contexto/alcance.md`: objetivos, alcance, hitos, decisiones D1 a D77 y temas pendientes.
-- `docs/diagramas/`: diagrama de implementación.
+- `docs/diagramas/`: diagrama de implementación; `docs/diagramas/uml/`: MER, casos de uso, clases, secuencia y estados (PlantUML).
 
 Las reglas de negocio (estados, plazos y umbrales) se cargan siempre:
 

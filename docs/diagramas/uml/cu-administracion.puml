@@ -1,0 +1,49 @@
+@startuml cu-administracion
+!include _estilo.iuml
+left to right direction
+title Casos de uso: administración y moderación
+actor "Administrador" as A
+actor "Sistema\n(al registrarse un reporte)" as S <<sistema>>
+actor "Sistema de correo" as M <<sistema>>
+rectangle AdoptaUY {
+  package "Refugios" {
+    usecase "Validar solicitud y\ndar de alta al Refugio\nRF:0005" as UC05
+    usecase "Rechazar solicitud\nde refugio\nRF:0044" as UC44
+    usecase "Dar de baja Refugio\nRF:0006" as UC06
+    usecase "Modificar Refugio\nRF:0007" as UC07
+    usecase "Consultar refugios\nRF:0008" as UC08
+    usecase "Listar refugios\nRF:0009" as UC09
+  }
+  package "Particulares" {
+    usecase "Baja lógica de Particular\nRF:0010" as UC10
+    usecase "Modificar Particular\nRF:0013" as UC13
+    usecase "Listar Particulares\nRF:0014" as UC14
+  }
+  package "Publicaciones" {
+    usecase "Dar de baja publicación\nRF:0001" as UC01
+    usecase "Consultar publicaciones\nRF:0002, RF:0011, RF:0012" as UC02
+    usecase "Modificar publicación\nRF:0003" as UC03
+    usecase "Listar publicaciones\nRF:0004" as UC04
+  }
+  package "Moderación" {
+    usecase "Resolver reportes\nRF:0060" as UC60
+    usecase "Aplicar umbrales\nde reportes\nRF:0061" as UC61
+  }
+}
+A --> UC05
+A --> UC44
+A --> UC06
+A --> UC07
+A --> UC08
+A --> UC09
+A --> UC10
+A --> UC13
+A --> UC14
+A --> UC01
+A --> UC02
+A --> UC03
+A --> UC04
+A --> UC60
+S --> UC61
+UC05 --> M
+@enduml
