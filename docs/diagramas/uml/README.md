@@ -10,6 +10,7 @@ Fuentes `.puml` y PNG generados. El MER coincide con [`docs/base-de-datos/adopta
 | `clases` | Clases del dominio, asociaciones, multiplicidades y enumeraciones | 14 |
 | `sec-registro`, `sec-login`, `sec-publicar-adopcion`, `sec-publicar-perdida` | Secuencia de los flujos de la demo del Hito 2 | 14 |
 | `est-adopcion`, `est-perdida`, `est-solicitud`, `est-refugio`, `est-seguimiento` | Máquinas de estado de 13.2 | 14 |
+| `red-microsoft` | Entorno Microsoft: SRV-AD, PC del dominio e integración con los servidores de AdoptaUY | 17 |
 
 Notación del MER: rectángulo doble = entidad débil; rombo doble = relación identificadora; línea gruesa = participación total; círculo «d» = especialización disjunta y total; elipse doble = atributo multivaluado; atributo subrayado = clave.
 
