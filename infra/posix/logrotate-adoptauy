@@ -1,0 +1,19 @@
+# /etc/logrotate.d/adoptauy
+# Los registros tienen chattr +a (solo agregar): no se pueden renombrar ni truncar,
+# así que se quita el atributo para rotar y se vuelve a poner al terminar.
+/var/log/adoptauy/*.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root adm
+    sharedscripts
+    prerotate
+        chattr -a /var/log/adoptauy/*.log
+    endscript
+    postrotate
+        chattr +a /var/log/adoptauy/*.log
+    endscript
+}

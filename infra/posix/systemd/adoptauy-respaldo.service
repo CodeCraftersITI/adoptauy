@@ -1,0 +1,11 @@
+# /etc/systemd/system/adoptauy-respaldo.service (RNF:0014)
+[Unit]
+Description=Respaldo diario de AdoptaUY (base de datos, archivos y configuración)
+Wants=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/adoptauy-respaldo
+Nice=10
+IOSchedulingClass=idle
