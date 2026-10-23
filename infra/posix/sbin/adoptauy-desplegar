@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# /usr/local/sbin/adoptauy-desplegar · actualiza el código y reconstruye los contenedores.
+# Lo ejecutan por sudo los grupos adoptauy-dev y adoptauy-infra. No recibe argumentos:
+# así sudo no habilita nada más que esta tarea.
+set -euo pipefail
+umask 0022                                   # el código queda legible para el Nginx del contenedor
+APP=/srv/adoptauy/app
+LOG=/var/log/adoptauy/despliegue.log
+(( $# == 0 )) || { echo "adoptauy-desplegar no recibe argumentos" >&2; exit 2; }
+
+{
+  echo "$(date -Is) inicio del despliegue por ${SUDO_USER:-root}"
+  git -C "$APP" -c safe.directory="$APP" pull --ff-only
+  cd "$APP" && docker compose up -d --build --remove-orphans
+  echo "$(date -Is) despliegue terminado"
+} >>"$LOG" 2>&1 || { echo "Falló el despliegue: ver $LOG" >&2; exit 1; }
+echo "Despliegue terminado (detalle en $LOG)"

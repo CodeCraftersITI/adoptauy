@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# /usr/local/sbin/adoptauy-respaldo · respaldo diario de AdoptaUY (RNF:0014).
+# Lo ejecuta adoptauy-respaldo.timer a las 02:00; también a mano: sudo adoptauy-respaldo
+#
+#   Qué:        base de datos (mysqldump), archivos subidos (storage/app),
+#               configuración del servidor y secretos, ACL y atributos chattr.
+#   Dónde:      /var/backups/adoptauy (segundo disco virtual) y, si está definido,
+#               una copia externa por rsync sobre SSH (DESTINO_REMOTO en red.conf).
+#   Retención:  7 respaldos diarios y 4 semanales (los del domingo).
+#
+# tar guarda permisos, dueños, ACL y atributos extendidos (--acls --xattrs);
+# rsync -aAXH mantiene un espejo con lo mismo. Los atributos de chattr (+i, +a)
+# no viajan en ninguno de los dos: se guardan con lsattr y se reaplican al restaurar.
+set -euo pipefail
+umask 0077                                    # los respaldos contienen secretos: solo root
+APP=${APP:-/srv/adoptauy/app}
+BASE=${RESPALDO_BASE:-/var/backups/adoptauy}
+LOG=${RESPALDO_LOG:-/var/log/adoptauy/respaldo.log}
+CONF=${RED_CONF:-/etc/adoptauy/red.conf}
+DESTINO_REMOTO=""; [[ -r "$CONF" ]] && source "$CONF"
+FECHA="$(date +%F_%H%M)"
+DEST="$BASE/diario/$FECHA"
+XT=(--acls --xattrs --xattrs-include='*' --numeric-owner)
+log() { echo "$(date -Is) $*" >>"$LOG"; }
+trap 'log "ERROR en el respaldo $FECHA (línea $LINENO)"' ERR
+
+mkdir -p "$DEST"
+log "inicio del respaldo $FECHA"
+
+# 1. Base de datos: volcado consistente sin bloquear tablas InnoDB
+if [[ "${SIN_BD:-0}" != 1 ]]; then
+  (cd "$APP" && docker compose exec -T db sh -c \
+    'exec mysqldump --single-transaction --routines --triggers --events -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"') \
+    | gzip > "$DEST/bd.sql.gz"
+fi
+
+# 2. Archivos subidos: fotos, documentación de refugios y evidencia de seguimiento
+tar "${XT[@]}" -cpzf "$DEST/storage.tar.gz" -C "$APP/src/laravel" storage/app
+
+# 3. Configuración del servidor y secretos (lo que no está en GitHub)
+CONFIG=(etc/ssh/sshd_config.d etc/sudoers.d/adoptauy etc/adoptauy etc/hosts.allow etc/hosts.deny
+        etc/ufw etc/security/pwquality.conf.d etc/profile.d/adoptauy-umask.sh etc/logrotate.d/adoptauy
+        etc/systemd/system/adoptauy-respaldo.service etc/systemd/system/adoptauy-respaldo.timer
+        "${APP#/}/.env" "${APP#/}/docker/nginx/certs")
+EXISTEN=(); for f in "${CONFIG[@]}"; do [[ -e "/$f" ]] && EXISTEN+=("$f"); done
+tar "${XT[@]}" -cpzf "$DEST/config.tar.gz" -C / "${EXISTEN[@]}"
+
+# 4. ACL y atributos, en texto para reaplicar (setfacl --restore y chattr)
+getfacl -R -p /srv/adoptauy /var/log/adoptauy > "$DEST/acl.txt" 2>/dev/null || true
+lsattr -d /etc/ssh/sshd_config.d/10-adoptauy.conf /etc/sudoers.d/adoptauy /etc/adoptauy/red.conf \
+       /etc/hosts.allow /etc/hosts.deny "$APP/.env" /usr/local/sbin/adoptauy-* /var/log/adoptauy/*.log \
+       > "$DEST/atributos.txt" 2>/dev/null || true
+
+# 5. Espejo de los archivos subidos en el segundo disco, con ACL y xattr (-A -X)
+rsync -aAXH --delete "$APP/src/laravel/storage/app/" "$BASE/espejo/storage-app/"
+
+# 6. Sumas de verificación para comprobar la integridad antes de restaurar
+(cd "$DEST" && sha256sum -- * > SHA256SUMS)
+
+# 7. Retención: 7 diarios; el del domingo se conserva 4 semanas
+if [[ "$(date +%u)" == 7 ]]; then cp -al "$DEST" "$BASE/semanal/$FECHA"; fi
+find "$BASE/diario"  -mindepth 1 -maxdepth 1 -type d -mtime +7  -exec rm -rf {} +
+find "$BASE/semanal" -mindepth 1 -maxdepth 1 -type d -mtime +28 -exec rm -rf {} +
+
+# 8. Copia externa (3-2-1): las copias son archivos .tar.gz, así que no hace falta
+#    que el destino soporte ACL; viajan dentro del archivo
+if [[ -n "${DESTINO_REMOTO:-}" ]]; then
+  rsync -a --delete -e "ssh -i /root/.ssh/adoptauy_respaldo -o BatchMode=yes" \
+        "$BASE/diario" "$BASE/semanal" "$DESTINO_REMOTO/"
+  log "copia externa enviada a $DESTINO_REMOTO"
+fi
+
+log "respaldo $FECHA terminado ($(du -sh "$DEST" | cut -f1))"
+echo "Respaldo OK: $DEST"
