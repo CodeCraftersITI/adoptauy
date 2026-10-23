@@ -7,7 +7,7 @@
         <a class="btn btn-oscuro" href="/admin">Panel de administración</a>
     @else
         <a class="btn btn-suave" href="/cuenta">Mi cuenta</a>
-        <a class="btn btn-primario" href="#">Publicar</a>   {{-- RF:0017, RF:0046: próximo paso --}}
+        <a class="btn btn-primario" href="/publicar/adopcion">Publicar</a>
     @endif
 
     {{-- Cerrar sesión va por POST, con @csrf, igual que cualquier formulario que cambia algo --}}

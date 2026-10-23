@@ -171,6 +171,76 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .pestana:hover { color: var(--rosa-texto); background: #F2C3D5; }
 .pestana-activa, .pestana-activa:hover { background: var(--bordo); color: var(--blanco); }
 
+/* ---------- Tarjetas de mascotas (inicio) ---------- */
+.grilla-tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+}
+.grilla-tarjetas > .vacio { grid-column: 1 / -1; }
+.mascota { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.mascota-foto {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 20px;
+    background: var(--rosa-claro);
+}
+.mascota-datos { padding: 0 8px 8px; display: flex; flex-direction: column; gap: 4px; }
+.mascota-titulo { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.mascota-titulo strong { font-size: 19px; }
+.mascota-edad { font-size: 14px; font-weight: 700; color: var(--rosa); white-space: nowrap; }
+
+.perdida {
+    background: #4D2A3C;
+    border-radius: 20px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #E8C4D3;
+}
+.perdida-fecha { font-size: 13px; font-weight: 700; color: var(--rosa-pastel); }
+.perdida-nombre { font-size: 20px; color: var(--blanco); }
+.perdida-contacto { font-weight: 700; color: var(--blanco); margin-top: 4px; }
+
+/* ---------- Mi cuenta ---------- */
+.miniatura { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; display: block; }
+.estado {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--rosa-pastel);
+    color: var(--rosa-texto);
+}
+
+/* ---------- Sobre nosotros ---------- */
+.etiqueta {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rosa);
+}
+.portada-texto { margin: 0; font-size: 18px; max-width: 760px; }
+.integrante { padding: 20px; display: flex; gap: 14px; align-items: center; }
+.integrante-iniciales {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    border-radius: 50%;
+    background: var(--rosa-pastel);
+    color: var(--rosa);
+    font-weight: 800;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.nav-acciones-fila { display: flex; flex-wrap: wrap; gap: 10px; }
+
 /* ---------- Tablas del panel ---------- */
 .tabla-caja { overflow-x: auto; }
 .tabla { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 720px; }

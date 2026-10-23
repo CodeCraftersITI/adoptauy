@@ -3,6 +3,8 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\InicioController;
+use App\Http\Controllers\NosotrosController;
+use App\Http\Controllers\PublicacionController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\RegistroRefugioController;
 use App\Http\Controllers\SesionController;
@@ -12,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 
 // Página de inicio (RF:0040, RF:0048)
 Route::get('/', [InicioController::class, 'index']);
+
+// Sobre nosotros
+Route::get('/nosotros', [NosotrosController::class, 'index']);
 
 // Registro de Particular (RF:0039)
 Route::get('/registro', [RegistroController::class, 'create']);
@@ -32,6 +37,12 @@ Route::post('/salir', [SesionController::class, 'destroy']);
 Route::middleware('rol:Particular,Refugio')->group(function ()
 {
     Route::get('/cuenta', [CuentaController::class, 'index']);
+
+    // Publicar mascota en adopción (RF:0017, RF:0024) y perdida (RF:0046)
+    Route::get('/publicar/adopcion', [PublicacionController::class, 'crearAdopcion']);
+    Route::post('/publicar/adopcion', [PublicacionController::class, 'guardarAdopcion']);
+    Route::get('/publicar/perdida', [PublicacionController::class, 'crearPerdida']);
+    Route::post('/publicar/perdida', [PublicacionController::class, 'guardarPerdida']);
 });
 
 // Administrador
