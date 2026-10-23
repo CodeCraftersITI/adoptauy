@@ -1,0 +1,11 @@
+# /etc/systemd/system/adoptauy-respaldo.timer · todos los días a las 02:00
+[Unit]
+Description=Respaldo diario de AdoptaUY a las 02:00
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+Unit=adoptauy-respaldo.service
+
+[Install]
+WantedBy=timers.target

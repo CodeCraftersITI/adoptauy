@@ -55,6 +55,10 @@ return [
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            // Hora de Uruguay (UTC-3, sin horario de verano) para que las fechas que pone
+            // MySQL (CURRENT_TIMESTAMP) coincidan con las de Laravel aunque el servidor de
+            // la base esté en UTC, como en GitHub Actions
+            'timezone' => env('DB_TIMEZONE', '-03:00'),
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
