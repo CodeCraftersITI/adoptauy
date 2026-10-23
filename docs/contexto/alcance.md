@@ -1,6 +1,6 @@
 # Alcance, hitos y decisiones
 
-> Extraído del Documento integrador 2.0 de AdoptaUY (rev. 14/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
+> Extraído del Documento integrador 2.1 de AdoptaUY (rev. 18/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
 
 ## 1. Resumen ejecutivo
 AdoptaUY es una aplicación web adaptable (responsive) que centraliza y facilita el proceso de adopción responsable de perros y gatos en Montevideo, integrando a particulares, refugios y adoptantes en una misma plataforma. El proyecto surge para dar respuesta a la fragmentación actual del proceso de adopción, que se desarrolla de forma dispersa entre redes sociales, carteles físicos y comunicación boca a boca.
@@ -14,7 +14,7 @@ Desarrollar una aplicación web adaptable que centralice y facilite el proceso d
 
 ### 4.2. Objetivos específicos
 
-- Centralizar la oferta de adopción: permitir la publicación de animales en adopción con un formulario de 10 campos obligatorios (especie, raza, sexo, edad estimada, tamaño, estado de salud, temperamento, esterilización, entre 1 y 6 fotografías y ubicación aproximada), con un tiempo de carga estimado inferior a 3 minutos, y su consulta pública con filtros por fecha, edad, especie, raza y sexo.
+- Centralizar la oferta de adopción: permitir la publicación de animales en adopción con un formulario de 9 campos obligatorios (especie, raza, sexo, edad estimada, tamaño, estado de salud, esterilización, entre 1 y 6 fotografías y ubicación aproximada), con un tiempo de carga estimado inferior a 3 minutos, y su consulta pública con filtros por fecha, edad, especie, raza y sexo.
 
 - Registrar y ubicar refugios: habilitar la solicitud de registro de refugios con validación documental por parte del Administrador en un plazo máximo de 5 días hábiles, y mostrar los refugios validados en un mapa de Montevideo.
 
@@ -33,7 +33,7 @@ El sistema AdoptaUY comprende el diseño, desarrollo, pruebas y despliegue de un
 
 - Usuarios y acceso: registro de usuarios de tipo Particular, con confirmación de la dirección de correo, e inicio de sesión para usuarios registrados. Los refugios envían una solicitud de registro con certificado de personería jurídica u organización sin fines de lucro, comprobante de domicilio y datos de contacto verificables; el Administrador la valida o la rechaza y, si corresponde, da de alta al usuario Refugio.
 
-- Publicaciones: los usuarios registrados pueden crear publicaciones de dos tipos. Las de mascotas en adopción, a cargo de particulares y refugios, incluyen especie, raza o condición de mestizo, sexo, edad estimada, tamaño, estado de salud, temperamento, esterilización y entre 1 y 6 fotografías, y manejan los estados En adopción, Adoptado y Archivado. Las de mascotas perdidas, a cargo del particular o del refugio que perdió la mascota, manejan los estados Perdida, Encontrada y Archivada, y tienen una vigencia de 30 días, renovable por el publicante por períodos de 30 días; vencido el plazo sin renovación, la publicación se archiva. Ambos tipos son de consulta pública, y las mascotas en adopción pueden filtrarse por fecha, edad, especie, raza y sexo.
+- Publicaciones: los usuarios registrados pueden crear publicaciones de dos tipos. Las de mascotas en adopción, a cargo de particulares y refugios, incluyen especie, raza o condición de mestizo, sexo, edad estimada, tamaño, estado de salud, esterilización y entre 1 y 6 fotografías, y manejan los estados En adopción, Adoptado y Archivado. Las de mascotas perdidas, a cargo del particular o del refugio que perdió la mascota, manejan los estados Perdida, Encontrada y Archivada, y tienen una vigencia de 30 días, renovable por el publicante por períodos de 30 días; vencido el plazo sin renovación, la publicación se archiva. Ambos tipos son de consulta pública, y las mascotas en adopción pueden filtrarse por fecha, edad, especie, raza y sexo.
 
 - Adopción y seguimiento: un usuario registrado puede solicitar la adopción de una mascota publicada. El publicante recibe la lista de solicitantes con sus datos de contacto y cada solicitud maneja los estados Pendiente, Adoptada y Rechazada. Cuando la adopción se concreta, el publicante selecciona al adoptante y marca la publicación como Adoptado; las solicitudes restantes pasan a Rechazada. La adopción es definitiva: la publicación no vuelve al estado En adopción. A los 15 días de la adopción, el sistema solicita al adoptante una fotografía que evidencie el estado del animal, que es revisada por el publicante. Si pasados 7 días no la envió, su cuenta queda restringida: no puede solicitar adopciones ni crear publicaciones hasta enviarla.
 
@@ -97,7 +97,56 @@ Las horas de equipo resultan de 4 integrantes con 2 horas por día hábil y 5 ho
 Al 06/10/2026, inicio del Sprint 4, no hay funciones implementadas.
 Las pruebas de seguridad no se concentran al final: desde el Sprint 4 cada función se entrega con su prueba de acceso por rol y de validación de archivos, y en los Sprints 5 y 6 se suman las pruebas de errores de servicios externos y de restauración de respaldos.
 
-## Decisiones (D1 a D77)
+### Backlog priorizado
+El backlog se ordena por valor, riesgo y dependencia. Los grupos 1 a 4 corresponden al Hito 2; el esfuerzo de cada grupo figura en la estimación.
+
+| Prioridad | Grupo de requisitos | Valor | Depende de | Sprint |
+|---|---|---|---|---|
+| 1 | Registro de usuarios e inicio de sesión | Habilita todo lo demás | — | 4 |
+| 2 | Página de inicio y listado público | Puerta de entrada al producto | — | 4 |
+| 3 | Publicación de mascotas en adopción | Núcleo del producto | Prioridad 1 | 4 |
+| 4 | Publicación de mascotas perdidas | Segundo tipo de publicación | Prioridad 1 | 4 |
+| 5 | Solicitud, validación y alta de refugios; confirmación de correo | Habilita al actor Refugio | Prioridad 1 y servicio de correo | 5 |
+| 6 | Solicitud de adopción y lista de solicitantes | Núcleo del producto | Prioridad 3 | 5 |
+| 7 | Concreción de la adopción y seguimiento | Diferencial del producto | Prioridad 6 y tareas programadas | 5 |
+| 8 | Reportes y moderación | Seguridad de la comunidad | Prioridades 1 y 3 | 6 |
+| 9 | Mapa de refugios y cuentas bancarias | Apoyo a refugios | Prioridad 5 y servicio de mapas | 6 |
+| 10 | Administración de usuarios, refugios y publicaciones | Operación | Prioridades 1 a 5 | 6 |
+
+### Estimación de esfuerzo
+Estimación en horas de equipo, a revisar al cierre de cada sprint.
+
+| Sprint | Trabajo | Horas estimadas | Capacidad |
+|---|---|---|---|
+| 4 | Entorno base (repositorio, Docker, base de datos y migraciones) | 30 |  |
+| 4 | Registro e inicio de sesión | 20 |  |
+| 4 | Página de inicio y listado público | 24 |  |
+| 4 | Publicación de mascotas en adopción | 36 |  |
+| 4 | Publicación de mascotas perdidas | 24 |  |
+| 4 | Documento integrador 2.0 | 10 |  |
+| 4 | Total Sprint 4 | 144 | 192 |
+| 5 | Refugios y confirmación de correo | 32 |  |
+| 5 | Solicitudes de adopción | 28 |  |
+| 5 | Concreción de la adopción y seguimiento | 36 |  |
+| 5 | Pruebas de acceso por rol y de validación de archivos | 16 |  |
+| 5 | Total Sprint 5 | 112 | 160 |
+| 6 | Reportes y moderación | 32 |  |
+| 6 | Mapa, perfil público y cuentas bancarias | 24 |  |
+| 6 | Administración de usuarios, refugios y publicaciones | 36 |  |
+| 6 | Integración, pruebas de carga, respaldos y documentación final | 40 |  |
+| 6 | Total Sprint 6 | 132 | 160 |
+
+La estimación suma 388 horas frente a 512 de capacidad. El margen es de 48 horas en el Sprint 4, 48 en el Sprint 5 y 28 en el Sprint 6.
+
+### Planificado frente a logrado
+
+| Sprint | Planificado | Logrado | Desvío, causa y ajuste |
+|---|---|---|---|
+| Sprints 1 y 2 | Plan consolidado y primeros avances | Documento integrador 1.0 entregado el 18/09/2026 | Tras la entrega se redujo el alcance y la devolución del 29/09/2026 pidió correcciones; ajuste: reformulación en los Sprints 3 y 4 |
+| Sprint 3 | Módulo de mascotas perdidas, según el cronograma del Hito 1 | Decisiones de reducción de alcance y lectura de la devolución; sin funciones implementadas | El sprint se dedicó a redefinir el alcance; ajuste: todo el incremento del Hito 2 pasa al Sprint 4 |
+| Sprint 4 | Documento 2.0 y primer incremento funcional | En curso; al 06/10/2026 no hay funciones implementadas | Se evalúa en el Hito 2 |
+
+## Decisiones de alcance aplicadas
 
 | ID | Decisión |
 |---|---|
@@ -183,6 +232,19 @@ Decisiones del 06/10/2026 que precisan o reemplazan a las anteriores:
 | D75 | Postfix corre como contenedor del docker-compose para que el despliegue sea reproducible (RNF:0012); en desarrollo, Mailpit captura los correos. | D54 |
 | D76 | Respaldo diario con cron del servidor a las 02:00 (mysqldump y copia de storage/), con retención de 7 días. | — |
 | D77 | La VM del servidor local usa NAT de VirtualBox con reenvío de puertos: 2222→22, 8080→80, 8443→443 y 8025→8025. | — |
+| D78 | Flujo de trabajo en GitHub: la rama main está protegida; cada tarea tiene su rama (por ejemplo, feature/RF0039-registro-particular) y se integra por pull request con la aprobación de otro integrante y la integración continua en verde (CONTRIBUTING.md). | — |
+| D79 | La CI se ingresa solo con números, sin puntos ni guion. | D64 |
+| D80 | Largos de los campos: nombre y apellido de 2 a 50 caracteres; raza de 2 a 50; ubicación aproximada y zona del extravío de 3 a 100; correo hasta 255; contraseña de 8 a 72 (72 es lo máximo que toma bcrypt). | D64 (solo el mínimo de 8) |
+| D81 | El teléfono se ingresa solo con números: 8 dígitos (fijo) o 9 (celular). | — |
+| D82 | La edad estimada no tiene máximo. | — |
+| D83 | Puertos: en las PC de desarrollo el sitio usa 8080 y 8443. En el servidor final (VM), Nginx usa 80 y 443 y VirtualBox usa adaptador puente; se accede con https://<IP de la VM> o un nombre local. Plan B: NAT de VirtualBox 80→80 y 443→443. | D77 |
+| D84 | Valores del modelo: Estado_Esterilizacion es Esterilizado o No esterilizado; Tipo_Cuenta es texto libre; Estado_Reporte es Pendiente, Desestimado o Confirmado; Medida es Aviso, Suspensión o Baja lógica; Email_Verificado guarda la fecha de confirmación. | — |
+| D85 | Los reportes que el Administrador desestimó no cuentan para los umbrales automáticos. | D42 (la precisa) |
+| D86 | El contacto de una mascota perdida es un teléfono de 8 o 9 dígitos. | D33 (la precisa) |
+| D87 | Se elimina Temperamento de la publicación de mascotas en adopción. | — |
+| D88 | Red: pfSense es el único gateway y rutea entre VLAN; los switches trabajan en capa 2; la VLAN nativa es la 999, sin uso; el gateway de la VLAN 99 es 10.10.99.254; SRV-ZABBIX pertenece a la VLAN 99. | D22 (ubicación de SRV-ZABBIX) |
+| D89 | SSH por usuario: Camilo a SRV-BD y SRV-BD-MIRROR; Iñaki a SRV-WEB; Rodrigo a SRV-WEB, SRV-DNS, SRV-MAIL, SRV-ZABBIX y los switches; Leandro a SRV-ZABBIX. | — |
+| D90 | VPN de acceso remoto con OpenVPN en pfSense para que el equipo trabaje desde su casa: certificado más usuario y contraseña, red del túnel 10.10.50.0/24; cada integrante llega solo a su PC por escritorio remoto y a sus servidores por SSH. | «VPN Gateway» como equipo aparte |
 
 ## Aspectos a completar
 
@@ -190,7 +252,7 @@ Decisiones del 06/10/2026 que precisan o reemplazan a las anteriores:
 |---|---|
 | Proveedor externo del relay SMTP (por ejemplo, Gmail u otro) | 12.1, 17.4 |
 | Correspondencia entre los servidores de la sección 16 y los contenedores del servidor local | 17.3 |
-| DER, diagrama de red y prototipos actualizados al alcance vigente | 14, 15, 16 |
+| DER y prototipos actualizados al alcance vigente | 14, 15 |
 | Matriz de trazabilidad | 19.6 |
 | Copia de la encuesta sin la columna de correos | 19.7 |
 | Fechas del relevamiento: las actas 003 y 004 lo ubican en agosto y las respuestas son de septiembre | 13.0, control documental |

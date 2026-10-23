@@ -34,11 +34,12 @@ Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige
 ## Contexto detallado (leer cuando la tarea lo toque)
 
 - `docs/contexto/requisitos.md`: actores, RF:0001 a RF:0063 (57 vigentes, 6 dados de baja) y RNF:0001 a RNF:0014, con criterios de aceptación.
-- `docs/contexto/modelo-datos.md`: cambios del DER, restricciones RNE01 a RNE24 y pasaje a tablas (15.2.1).
+- `docs/contexto/modelo-datos.md`: cambios del DER, restricciones RNE01 a RNE25 y pasaje a tablas (15.2.1).
+- `docs/base-de-datos/adoptauy.sql`: tablas en MySQL según el DER (supertipo Publicacion_Animal con los subtipos Publicacion_Adopcion y Publicacion_Perdida). Solo CREATE TABLE con claves, NOT NULL, UNIQUE, DEFAULT y ENUM; las RNE las valida Laravel y los triggers quedan para el Hito 3.
 - `docs/contexto/diseno-ui.md`: pantallas por actor y sistema de diseño.
 - `docs/contexto/plan-pruebas.md`: estrategia, herramientas y casos CP-01 a CP-46.
 - `docs/contexto/infraestructura.md`: stack, red, servidores, servicios y entorno local.
-- `docs/contexto/alcance.md`: objetivos, alcance, hitos, decisiones D1 a D77 y temas pendientes.
+- `docs/contexto/alcance.md`: objetivos, alcance, hitos, decisiones D1 a D90 y temas pendientes.
 - `docs/diagramas/`: diagrama de implementación.
 
 Las reglas de negocio (estados, plazos y umbrales) se cargan siempre:

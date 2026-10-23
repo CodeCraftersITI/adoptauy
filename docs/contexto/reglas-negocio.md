@@ -1,12 +1,12 @@
 # Reglas de negocio por módulo
 
-> Extraído del Documento integrador 2.0 de AdoptaUY (rev. 14/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
+> Extraído del Documento integrador 2.1 de AdoptaUY (rev. 18/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
 
 ### 13.2. Módulos
 
 #### 13.2.1. Usuarios y acceso
 
-- El Usuario Invitado se registra como Particular con cédula de identidad, nombre, apellido, teléfono, correo y contraseña. La cédula debe tener 7 u 8 dígitos con dígito verificador válido y no puede repetirse entre cuentas; la contraseña tiene al menos 8 caracteres. El sistema envía un correo para confirmar la dirección.
+- El Usuario Invitado se registra como Particular con cédula de identidad, nombre, apellido, teléfono, correo y contraseña. La cédula se ingresa solo con números, sin puntos ni guion, tiene 7 u 8 dígitos con dígito verificador válido y no puede repetirse entre cuentas. El nombre y el apellido tienen entre 2 y 50 caracteres; el teléfono, 8 dígitos (fijo) o 9 (celular), solo números; el correo, hasta 255 caracteres, y la contraseña, entre 8 y 72. El sistema envía un correo para confirmar la dirección.
 
 - El aspirante a Refugio envía una solicitud de registro con certificado de personería jurídica u organización sin fines de lucro, comprobante de domicilio del predio y datos de contacto verificables.
 
@@ -27,7 +27,7 @@ Estados del refugio y transiciones válidas:
 #### 13.2.2. Publicaciones
 Mascotas en adopción (particulares y refugios):
 
-- Campos obligatorios: especie, raza (o "mestizo"), sexo, edad estimada, tamaño, estado de salud, temperamento, estado de esterilización, ubicación aproximada y entre 1 y 6 fotografías en formato JPG, PNG o WEBP, de hasta 8 MB cada una. No se exige certificado veterinario.
+- Campos obligatorios: especie, raza (o "mestizo"), sexo, edad estimada, tamaño, estado de salud, estado de esterilización, ubicación aproximada y entre 1 y 6 fotografías en formato JPG, PNG o WEBP, de hasta 8 MB cada una. No se exige certificado veterinario.
 
 - Se publican de forma automática y quedan sujetas al sistema de reportes.
 
@@ -43,7 +43,7 @@ Mascotas perdidas (particulares y refugios):
 
 - Campos: nombre de la mascota, especie, raza, sexo, características, fecha del extravío, zona del extravío, contacto del publicante y entre 1 y 3 fotografías, con el mismo formato y tamaño máximo que las de adopción.
 
-- El contacto que el publicante carga es público, porque la publicación la ve cualquier visitante.
+- El contacto es un número de teléfono de 8 o 9 dígitos y es público, porque la publicación la ve cualquier visitante.
 
 - Vigencia de 30 días desde la creación o la última renovación.
 
@@ -103,7 +103,7 @@ Seguimiento posterior a la adopción:
 | Particular | 10 reportes | Cuenta inhabilitada | Puede restituirla si desestima los reportes |
 | Refugio | 3 reportes | Estado Suspendido | Levanta la suspensión o da de baja al refugio |
 
-En todos los casos solo cuentan los reportes de usuarios distintos. El refugio se suspende con menos reportes que un particular (3 frente a 5) porque difunde datos bancarios para donaciones. Se mantiene de D27 la inhabilitación automática del particular a los 10 reportes (D42).
+En todos los casos solo cuentan los reportes de usuarios distintos, y no cuentan los que el Administrador desestimó. El refugio se suspende con menos reportes que un particular (3 frente a 5) porque difunde datos bancarios para donaciones. Se mantiene de D27 la inhabilitación automática del particular a los 10 reportes (D42).
 La revisión de una publicación se modela como una marca de moderación (Visible, En revisión, Suspendida) independiente de su estado, para conservar los tres estados definidos en 13.2.2.
 Motivos de reporte:
 
