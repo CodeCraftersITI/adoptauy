@@ -1,0 +1,49 @@
+@startchen mer-usuarios
+' MER de AdoptaUY, módulo Usuarios y refugios (con atributos)
+skinparam defaultFontName DejaVu Sans
+skinparam backgroundColor white
+left to right direction
+entity USUARIO {
+  ID_Usuario <<key>>
+  Email
+  Contraseña
+  Tipo_Usuario
+  Estado_Usuario
+  Fecha_Alta
+  Email_Verificado
+}
+entity PARTICULAR {
+  CI
+  Nombre
+  Apellido
+  Telefono
+}
+entity ADMINISTRADOR {
+}
+entity REFUGIO {
+  Nombre_Refugio
+  Certificado_Personeria
+  Comprobante_Domicilio
+  Ubicacion
+  Latitud
+  Longitud
+  Estado_Validacion
+  Motivo_Rechazo
+  Fecha_Solicitud
+  Fecha_Resolucion
+  URL_Foto
+  Dato_Contacto <<multi>>
+}
+entity CUENTA_BANCARIA <<weak>> {
+  ID_Cuenta_Banco <<key>>
+  Banco
+  Tipo_Cuenta
+  Numero_Cuenta
+  Titular
+}
+USUARIO =>= d { PARTICULAR, REFUGIO, ADMINISTRADOR }
+relationship POSEE <<identifying>> {
+}
+POSEE -1- REFUGIO
+POSEE =N= CUENTA_BANCARIA
+@endchen

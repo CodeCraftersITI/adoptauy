@@ -1,0 +1,29 @@
+@startchen mer-reportes
+' MER de AdoptaUY, módulo Reportes y moderación (con atributos)
+skinparam defaultFontName DejaVu Sans
+skinparam backgroundColor white
+left to right direction
+entity USUARIO {
+}
+entity PUBLICACION_ANIMAL {
+}
+entity REPORTE {
+  ID_Reporte <<key>>
+  Motivo
+  Fecha_Reporte
+  Estado_Reporte
+  Medida
+}
+relationship REALIZA {
+}
+REALIZA -1- USUARIO
+REALIZA =N= REPORTE
+relationship REPORTA_USUARIO {
+}
+REPORTA_USUARIO -1- USUARIO
+REPORTA_USUARIO -N- REPORTE
+relationship REPORTA_PUBLICACION {
+}
+REPORTA_PUBLICACION -1- PUBLICACION_ANIMAL
+REPORTA_PUBLICACION -N- REPORTE
+@endchen

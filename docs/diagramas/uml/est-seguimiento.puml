@@ -1,0 +1,16 @@
+@startuml est-seguimiento
+!include _estilo.iuml
+title Estados del seguimiento posterior a la adopción
+[*] --> Pendiente : adopción concretada\naviso = día 15, límite = día 22
+Pendiente --> Enviada : adoptante envía la foto (RF:0056)
+Pendiente --> Pendiente : día 22 sin foto:\ncuenta restringida (RF:0058)
+Enviada --> Aprobada : publicante la aprueba (RF:0057)
+Enviada --> Rechazada : publicante la rechaza (RF:0057)
+Rechazada --> Enviada : adoptante envía otra\n(si es después del día 22, cuenta restringida hasta el envío)
+Aprobada --> [*]
+note right of Enviada
+  Si el publicante no la revisa,
+  se considera presentada
+  desde su envío.
+end note
+@enduml

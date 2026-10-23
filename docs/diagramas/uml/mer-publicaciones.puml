@@ -1,0 +1,47 @@
+@startchen mer-publicaciones
+' MER de AdoptaUY, módulo Publicaciones (con atributos)
+skinparam defaultFontName DejaVu Sans
+skinparam backgroundColor white
+left to right direction
+entity USUARIO {
+}
+entity PUBLICACION_ANIMAL {
+  ID_Publicacion <<key>>
+  Tipo_Publicacion
+  Especie
+  Raza
+  Sexo
+  Descripcion
+  Estado_Moderacion
+  Fecha_Creacion
+}
+entity PUBLICACION_ADOPCION {
+  Edad_Meses
+  Tamaño
+  Estado_Salud
+  Estado_Esterilizacion
+  Ubicacion_Aproximada
+  Estado_Adopcion
+}
+entity PUBLICACION_PERDIDA {
+  Nombre_Mascota
+  Fecha_Extravio
+  Zona_Extravio
+  Contacto
+  Fecha_Vencimiento
+  Estado_Perdida
+}
+entity FOTO_ANIMAL <<weak>> {
+  ID_Foto <<key>>
+  URL_Foto
+}
+PUBLICACION_ANIMAL =>= d { PUBLICACION_ADOPCION, PUBLICACION_PERDIDA }
+relationship PUBLICA {
+}
+PUBLICA -1- USUARIO
+PUBLICA =N= PUBLICACION_ANIMAL
+relationship TIENE <<identifying>> {
+}
+TIENE -1- PUBLICACION_ANIMAL
+TIENE =N= FOTO_ANIMAL
+@endchen

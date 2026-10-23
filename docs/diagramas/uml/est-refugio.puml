@@ -1,0 +1,15 @@
+@startuml est-refugio
+!include _estilo.iuml
+title Estados del refugio
+state "Pendiente de validación" as Pend
+state "Dado de baja" as Baja
+[*] --> Pend : envía la solicitud (RF:0034)
+Pend --> Validado : Administrador valida (RF:0005)\ncrea usuario y envía correo de alta
+Pend --> Rechazado : Administrador rechaza\ncon motivo (RF:0044)
+Validado --> Suspendido : Administrador, o sistema\ncon 3 reportes (RF:0061)
+Suspendido --> Validado : Administrador levanta la suspensión
+Validado --> Baja : Administrador (RF:0006)
+Suspendido --> Baja : Administrador confirma la baja
+Rechazado --> [*]
+Baja --> [*] : definitivo; sus publicaciones\npasan a Archivado
+@enduml
