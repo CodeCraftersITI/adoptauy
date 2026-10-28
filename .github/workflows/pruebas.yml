@@ -38,7 +38,7 @@ jobs:
         with:
           php-version: "8.4"
           extensions: pdo_mysql, mbstring, intl, zip, gd, bcmath, exif
-          coverage: none
+          coverage: pcov
       - name: Dependencias
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Preparar entorno
@@ -48,7 +48,21 @@ jobs:
       - name: Migraciones
         run: php artisan migrate --force
       - name: PHPUnit
-        run: php artisan test
+        # Reportes para el informe de pruebas: JUnit, testdox y cobertura (texto y HTML)
+        run: |
+          mkdir -p reportes
+          vendor/bin/phpunit --log-junit reportes/junit.xml --testdox-text reportes/testdox.txt \
+            --coverage-text=reportes/cobertura.txt --coverage-html reportes/cobertura-html
+      - name: Resumen de resultados
+        if: always()
+        run: python3 ../../.github/scripts/resumen_junit.py reportes/junit.xml reportes/cobertura.txt
+      - name: Guardar reportes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-phpunit
+          path: src/laravel/reportes
+          retention-days: 30
 
   base-de-datos:
     # Crea la base con docs/base-de-datos/adoptauy.sql en MySQL 8.4 y prueba
