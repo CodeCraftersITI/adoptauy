@@ -184,6 +184,18 @@ class ValoresLimiteTest extends TestCase
         $this->assertDatabaseHas('Publicacion_Adopcion', ['Edad_Meses' => 372]);
     }
 
+    public function test_rnf0010_una_edad_imposible_da_error_de_validacion_y_no_error_500()
+    {
+        // Edad_Meses es smallint sin signo (hasta 65535 meses): sin un tope técnico,
+        // 6000 años desbordaría la columna y la base devolvería un error 500
+        $sesion = $this->sesionParticular();
+
+        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['edad_anios' => 6000]))
+            ->assertStatus(302)
+            ->assertSessionHasErrors('edad_anios');
+        $this->assertDatabaseCount('Publicacion_Animal', 0);
+    }
+
     public function test_cp10_zona_rechaza_2_caracteres_y_acepta_3()
     {
         $sesion = $this->sesionParticular();

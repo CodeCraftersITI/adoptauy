@@ -40,7 +40,7 @@ class RegistroController extends Controller
             'apellido' => 'required|min:2|max:50',
             'telefono' => 'required|regex:/^[0-9]{8,9}$/',
             'email' => 'required|email|max:255|unique:Usuario,Email',
-            'password' => 'required|min:8',
+            'password' => 'required|min:8|max:72',
         ], [
             'ci.required' => 'Ingresá tu cédula.',
             'ci.unique' => 'Ya existe una cuenta con esa cédula.',
@@ -58,6 +58,7 @@ class RegistroController extends Controller
             'email.unique' => 'Ya existe una cuenta con ese correo electrónico.',
             'password.required' => 'Ingresá una contraseña.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña puede tener hasta 72 caracteres.',
         ]);
 
         // El Usuario y su fila de Particular se guardan juntos: si falla uno,

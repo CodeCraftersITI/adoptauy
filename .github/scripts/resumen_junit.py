@@ -49,7 +49,8 @@ def main():
     if cobertura and os.path.exists(cobertura):
         with open(cobertura, encoding='utf-8', errors='replace') as f:
             limpio = re.sub(r'\x1b\[[0-9;]*m', '', f.read())
-        lineas_cobertura = [l.strip() for l in limpio.splitlines() if re.match(r'\s*(Classes|Methods|Lines):', l)]
+        # Solo el bloque «Summary» (las tres primeras líneas); el detalle por clase va en el HTML
+        lineas_cobertura = [l.strip() for l in limpio.splitlines() if re.match(r'\s*(Classes|Methods|Lines):', l)][:3]
 
     resumen = [
         '## Resultados de PHPUnit',

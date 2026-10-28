@@ -21,6 +21,7 @@ class PublicacionController extends Controller
         'especie.required' => 'Elegí la especie.',
         'especie.in' => 'La especie tiene que ser Perro o Gato.',
         'raza.required' => 'Ingresá la raza (o "mestizo").',
+        'raza.min' => 'La raza debe tener al menos 2 caracteres.',
         'raza.max' => 'La raza puede tener hasta 50 caracteres.',
         'sexo.required' => 'Elegí el sexo.',
         'sexo.in' => 'El sexo tiene que ser Macho o Hembra.',
@@ -46,21 +47,23 @@ class PublicacionController extends Controller
         // Campos obligatorios de 13.2.2 y entre 1 y 6 fotos de hasta 8 MB (RNE01)
         $request->validate([
             'especie' => 'required|in:Perro,Gato',
-            'raza' => 'required|max:50',
+            'raza' => 'required|min:2|max:50',
             'sexo' => 'required|in:Macho,Hembra',
-            'edad_anios' => 'required|integer|min:0|max:30',
+            // RNE12: la edad no tiene máximo de negocio; 5460 años es el tope técnico de Edad_Meses
+            // (smallint sin signo), para que un valor absurdo dé un error de validación y no un error 500 (RNF:0010)
+            'edad_anios' => 'required|integer|min:0|max:5460',
             'edad_meses' => 'required|integer|min:0|max:11',
             'tamanio' => 'required|in:Pequeño,Mediano,Grande',
             'salud' => 'required|max:255',
             'esterilizacion' => 'required|in:Esterilizado,No esterilizado',
-            'ubicacion' => 'required|max:100',
+            'ubicacion' => 'required|min:3|max:100',
             'fotos' => 'required|array|min:1|max:6',
             'fotos.*' => 'file|mimes:jpg,jpeg,png,webp|max:8192',
         ], self::MENSAJES + [
             'edad_anios.required' => 'Ingresá los años (0 si tiene menos de un año).',
             'edad_anios.integer' => 'Los años tienen que ser un número.',
             'edad_anios.min' => 'Los años no pueden ser negativos.',
-            'edad_anios.max' => 'Revisá los años: el máximo es 30.',
+            'edad_anios.max' => 'Revisá los años.',
             'edad_meses.required' => 'Ingresá los meses (0 a 11).',
             'edad_meses.integer' => 'Los meses tienen que ser un número.',
             'edad_meses.min' => 'Los meses van de 0 a 11.',
@@ -72,6 +75,7 @@ class PublicacionController extends Controller
             'esterilizacion.required' => 'Indicá si está esterilizado.',
             'esterilizacion.in' => 'Elegí Esterilizado o No esterilizado.',
             'ubicacion.required' => 'Ingresá la ubicación aproximada.',
+            'ubicacion.min' => 'La ubicación debe tener al menos 3 caracteres.',
             'ubicacion.max' => 'La ubicación puede tener hasta 100 caracteres.',
         ]);
 
@@ -106,16 +110,19 @@ class PublicacionController extends Controller
     // POST /publicar/perdida
     public function guardarPerdida(Request $request)
     {
+        // El contacto es un teléfono (RNE12): se guarda solo con números, como en el registro
+        $request->merge(['contacto' => str_replace(' ', '', $request->input('contacto') ?? '')]);
+
         // Campos de 13.2.2 para mascotas perdidas y entre 1 y 3 fotos (RNE01)
         $request->validate([
             'nombre_mascota' => 'required|max:50',
             'especie' => 'required|in:Perro,Gato',
-            'raza' => 'required|max:50',
+            'raza' => 'required|min:2|max:50',
             'sexo' => 'required|in:Macho,Hembra',
             'caracteristicas' => 'required|max:1000',
             'fecha_extravio' => 'required|date|before_or_equal:today',
-            'zona' => 'required|max:100',
-            'contacto' => 'required|max:100',
+            'zona' => 'required|min:3|max:100',
+            'contacto' => 'required|regex:/^[0-9]{8,9}$/',
             'fotos' => 'required|array|min:1|max:3',
             'fotos.*' => 'file|mimes:jpg,jpeg,png,webp|max:8192',
         ], self::MENSAJES + [
@@ -127,9 +134,10 @@ class PublicacionController extends Controller
             'fecha_extravio.date' => 'La fecha no es válida.',
             'fecha_extravio.before_or_equal' => 'La fecha del extravío no puede ser futura.',
             'zona.required' => 'Ingresá la zona donde se perdió.',
+            'zona.min' => 'La zona debe tener al menos 3 caracteres.',
             'zona.max' => 'La zona puede tener hasta 100 caracteres.',
-            'contacto.required' => 'Ingresá un teléfono o correo de contacto.',
-            'contacto.max' => 'El contacto puede tener hasta 100 caracteres.',
+            'contacto.required' => 'Ingresá un teléfono de contacto.',
+            'contacto.regex' => 'El teléfono debe tener 8 o 9 números.',
         ]);
 
         DB::transaction(function () use ($request)

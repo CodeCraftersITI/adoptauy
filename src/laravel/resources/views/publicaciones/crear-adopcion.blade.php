@@ -29,7 +29,7 @@
         {{-- La edad es estimada: se cargan años y meses y se guarda en meses --}}
         <label class="campo">
             Edad: años
-            <input class="entrada" type="number" name="edad_anios" min="0" max="30" value="{{ old('edad_anios', 0) }}" required>
+            <input class="entrada" type="number" name="edad_anios" min="0" value="{{ old('edad_anios', 0) }}" required>
             @error('edad_anios') <span class="campo-error">{{ $message }}</span> @enderror
         </label>
 
