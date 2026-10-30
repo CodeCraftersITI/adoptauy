@@ -31,9 +31,13 @@ x-php: &php
     DB_DATABASE: ${DB_DATABASE:-adoptauy}
     DB_USERNAME: ${DB_USERNAME:-adoptauy}
     DB_PASSWORD: ${DB_PASSWORD:-adoptauy_dev}
-    MAIL_MAILER: smtp
+    MAIL_MAILER: smtp               # desarrollo: Mailpit; producción: el SMTP del proveedor externo
     MAIL_HOST: ${MAIL_HOST:-mailpit}
     MAIL_PORT: ${MAIL_PORT:-1025}
+    MAIL_SCHEME: ${MAIL_SCHEME:-smtp}
+    MAIL_USERNAME: ${MAIL_USERNAME:-}
+    MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-responder@adoptauy.local}
     APP_URL: ${APP_URL:-https://localhost:8443}
   depends_on:
     db:
@@ -108,17 +112,6 @@ services:
     working_dir: /var/www/laravel
     volumes:
       - ./src:/var/www
-    networks: [backend]
-
-  mail:                             # producción: Postfix relay al SMTP externo (D54, D75)
-    image: boky/postfix             # fijar la versión exacta al desplegar
-    profiles: ["produccion"]
-    restart: unless-stopped
-    environment:
-      RELAYHOST: "[${SMTP_RELAY_HOST:-smtp.ejemplo.com}]:587"
-      RELAYHOST_USERNAME: ${SMTP_RELAY_USER:-}
-      RELAYHOST_PASSWORD: ${SMTP_RELAY_PASSWORD:-}
-      ALLOWED_SENDER_DOMAINS: ${MAIL_SENDER_DOMAIN:-adoptauy.local}
     networks: [backend]
 
 volumes:
