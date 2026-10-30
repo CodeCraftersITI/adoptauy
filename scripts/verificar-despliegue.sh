@@ -3,7 +3,8 @@
 #  AdoptaUY · scripts/verificar-despliegue.sh
 #  Prueba de integración del despliegue: comprueba que la aplicación, la base de
 #  datos y los servicios del servidor funcionan juntos (Nginx, PHP-FPM, MySQL,
-#  cola, planificador y correo). No modifica nada.
+#  cola, planificador y correo: Mailpit en desarrollo, SMTP externo en
+#  producción). No modifica nada.
 #
 #  Uso, desde la carpeta del repositorio, en la VM o en una PC de desarrollo:
 #     bash scripts/verificar-despliegue.sh                 # verificación rápida
@@ -38,9 +39,15 @@ corriendo=$(docker compose ps --status running --services 2>/dev/null)
 for s in app web db queue scheduler; do
   if grep -qx "$s" <<<"$corriendo"; then bien "$s en ejecución"; else falla "$s no está en ejecución"; fi
 done
-if grep -qx mail <<<"$corriendo"; then bien "mail (Postfix, producción) en ejecución"
-elif grep -qx mailpit <<<"$corriendo"; then bien "mailpit (desarrollo) en ejecución"
-else falla "No hay servicio de correo (mail o mailpit)"; fi
+# Correo: en desarrollo lo captura Mailpit; en producción Laravel envía directo al SMTP externo
+mail_host=$(docker compose exec -T app printenv MAIL_HOST 2>/dev/null | tr -d '\r')
+mail_port=$(docker compose exec -T app printenv MAIL_PORT 2>/dev/null | tr -d '\r')
+if [[ "${mail_host:-mailpit}" == mailpit ]]; then
+  grep -qx mailpit <<<"$corriendo" && bien "mailpit (desarrollo) en ejecución" || falla "MAIL_HOST es mailpit pero mailpit no está en ejecución"
+else
+  comprobar "La aplicación llega al SMTP externo ($mail_host:$mail_port)" \
+    docker compose exec -T app php -r "exit(@fsockopen('$mail_host', (int) '$mail_port', \$e, \$m, 5) ? 0 : 1);"
+fi
 estado_db=$(docker compose ps db --format '{{.Health}}' 2>/dev/null)
 [[ "$estado_db" == healthy ]] && bien "MySQL responde a su prueba de salud" || falla "MySQL no está healthy (estado: ${estado_db:-desconocido})"
 

@@ -77,11 +77,10 @@ flowchart LR
     A -- "TCP :3306" --> D[("db<br/>MySQL 8.4")]
     Q["queue<br/>colas de Laravel"] --> D
     S["scheduler<br/>tareas diarias 03:00"] --> D
-    Q -- "SMTP" --> M["mail<br/>Postfix relay"]
-    M -- "SMTP :587" --> EXT[("Proveedor SMTP")]
+    Q -- "SMTP :587 (STARTTLS)" --> EXT[("Proveedor SMTP externo")]
 ```
 
-Todos los servicios corren en contenedores Docker sobre una VM con **Ubuntu Server 24.04 LTS** (VirtualBox), alojada en un servidor local del equipo. En desarrollo, **Mailpit** captura los correos en lugar de Postfix. El diagrama de implementación completo está en [`docs/diagramas/`](docs/diagramas/AdoptaUY-Diagrama-de-implementacion.png).
+Todos los servicios corren en contenedores Docker sobre una VM con **Ubuntu Server 24.04 LTS** (VirtualBox), alojada en un servidor local del equipo. Los correos los envía Laravel directo al SMTP de un proveedor externo; en desarrollo, **Mailpit** los captura y no salen a Internet. El diagrama de implementación completo está en [`docs/diagramas/`](docs/diagramas/AdoptaUY-Diagrama-de-implementacion.png).
 
 | Capa | Tecnología |
 |---|---|
@@ -89,8 +88,8 @@ Todos los servicios corren en contenedores Docker sobre una VM con **Ubuntu Serv
 | Frontend | Blade · HTML5 · CSS3 · Leaflet |
 | Base de datos | MySQL 8.4 (utf8mb4) |
 | Servidor web | Nginx 1.27 con HTTPS |
-| Infraestructura | Docker Compose · Ubuntu Server 24.04 · VirtualBox |
-| Correo | Mailpit (desarrollo) · Postfix relay (producción) |
+| Infraestructura | Docker Compose · Ubuntu Server 24.04 LTS · VirtualBox |
+| Correo | Mailpit (desarrollo) · proveedor SMTP externo (producción) |
 | Pruebas | PHPUnit · Laravel Dusk · GitHub Actions |
 
 ## Puesta en marcha
