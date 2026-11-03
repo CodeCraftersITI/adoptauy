@@ -16,7 +16,7 @@ Cambios respecto del diagrama del Hito 1:
 | Persona | Pasa a llamarse Particular. | D23 |
 | Administrador | Se agrega como tercer subtipo de Usuario. | RNE11 lo mencionaba sin existir |
 | Refugio | Se agregan Certificado_Personeria, Latitud, Longitud, Motivo_Rechazo, Fecha_Solicitud y Fecha_Resolucion. | D1, D12, RNE05, RNE06 |
-| Publicacion_Animal | Se elimina Es_Cachorro y Edad pasa a Edad_Meses. Pasa a ser supertipo, con especialización disjunta y total según Tipo_Publicacion (Adopción o Perdida): guarda los datos comunes y agrega Fecha_Creacion y Estado_Moderacion (Visible, En revisión, Suspendida). Subtipo Publicacion_Adopcion: Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada y Estado_Adopcion. Subtipo Publicacion_Perdida: Nombre_Mascota, Fecha_Extravio, Zona_Extravio, Contacto, Fecha_Vencimiento y Estado_Perdida. | D3, D5, D16, RNE14, RNE25 |
+| Publicacion_Animal | Se elimina Es_Cachorro y Edad pasa a Edad_Meses. Pasa a ser supertipo, con especialización disjunta y total según Tipo_Publicacion (Adopción o Perdida): guarda los datos comunes y agrega Fecha_Creacion y Estado_Moderacion (Visible, En revisión, Suspendida). Subtipo Publicacion_Adopcion: Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada y Estado_Adopcion. Subtipo Publicacion_Perdida: Tipo_Aviso, Nombre_Mascota, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento y Estado_Perdida; guarda las mascotas perdidas y las encontradas, que se distinguen por Tipo_Aviso (Perdida o Encontrada). | D3, D5, D16, RNE14, RNE25, RNE26 |
 | Metodos_Pago | Pasa a llamarse Cuenta_Bancaria. | D4 |
 | Necesidad_Refugio | Se elimina, con la relación "tiene". | D17 |
 | Solicitud_Adopcion | Entidad nueva, entre Particular (solicitante) y Publicacion_Adopcion. | D6, D14 |
@@ -30,7 +30,7 @@ Las restricciones dadas de baja conservan su código; las nuevas continúan desd
 | Código | Restricción | Estado |
 |---|---|---|
 | RNE01 | Toda publicación de mascota en adopción debe tener entre 1 y 6 fotos asociadas. Una de mascota perdida, entre 1 y 3. Cada fotografía es JPG, PNG o WEBP y pesa hasta 8 MB. | Modificada (D66) |
-| RNE02 | El estado de una publicación solo puede cambiar según las transiciones de 13.2.2. Estado_Adopcion de Publicacion_Adopcion toma los valores En adopción, Adoptado y Archivado; Estado_Perdida de Publicacion_Perdida toma Perdida, Encontrada y Archivada. | Modificada (D10, D16, D26) |
+| RNE02 | El estado de una publicación solo puede cambiar según las transiciones de 13.2.2. Estado_Adopcion de Publicacion_Adopcion toma los valores En adopción, Adoptado y Archivado; Estado_Perdida de Publicacion_Perdida toma Vigente, Resuelta y Archivada, para las perdidas y las encontradas. | Modificada (D10, D16, D26, mascotas encontradas) |
 | RNE03 | Solo el publicador dueño de la publicación o el Administrador pueden modificar o dar de baja esa publicación. | Vigente |
 | RNE04 | Un Refugio solo puede publicar animales o dar de alta cuentas bancarias si su Estado_Validacion = "Validado". | Modificada (D17) |
 | RNE05 | Si Estado_Validacion = "Rechazado", el campo Motivo_Rechazo es obligatorio; en cualquier otro estado debe ser nulo. | Vigente |
@@ -44,7 +44,7 @@ Las restricciones dadas de baja conservan su código; las nuevas continúan desd
 | RNE13 | Las contraseñas se almacenan como hash, nunca en texto plano (RNF:0007). | Modificada |
 | RNE14 | Fecha_Creacion de una publicación no puede ser anterior a la Fecha_Alta del usuario que la crea, ni posterior a la fecha actual. | Vigente |
 | RNE15 | Una publicación con 3 reportes de usuarios distintos pasa a Estado_Moderacion = En revisión. Un Particular con 5 reportes, o con 3 publicaciones suspendidas, pasa a Estado_Usuario = En revisión; con 10 reportes pasa a Inhabilitado. Solo cuentan reportes de usuarios distintos que el Administrador no desestimó. Un Refugio con 3 reportes pasa a Estado_Validacion = Suspendido. | Modificada (D31) |
-| RNE16 | Una publicación de tipo Perdida puede crearla un Particular o un Refugio validado. | Nueva (D11, D49) |
+| RNE16 | Una publicación de tipo Perdida, sea una mascota perdida o una encontrada, puede crearla un Particular o un Refugio validado. | Nueva (D11, D49) |
 | RNE17 | Fecha_Vencimiento de Publicacion_Perdida es la fecha de creación o de la última renovación más 30 días. | Nueva (D16) |
 | RNE18 | Una solicitud solo puede crearla un Particular sobre una Publicacion_Adopcion en estado En adopción, y el solicitante no puede ser su publicador. | Nueva (D14) |
 | RNE19 | Una publicación en estado Adoptado tiene exactamente una solicitud Adoptada; al aceptarla, las demás solicitudes Pendientes pasan a Rechazada. | Nueva (D25) |
@@ -54,6 +54,7 @@ Las restricciones dadas de baja conservan su código; las nuevas continúan desd
 | RNE23 | La CI de un Particular es única, se guarda solo con números y tiene 7 u 8 dígitos con dígito verificador válido. | Nueva (D64, D65) |
 | RNE24 | Estado_Validacion de un Refugio toma los valores Pendiente de validación, Validado, Rechazado, Suspendido y Dado de baja. Un refugio Dado de baja no puede iniciar sesión y todas sus publicaciones quedan en Archivado. | Nueva (D69) |
 | RNE25 | Cada fila de Publicacion_Animal tiene exactamente una fila asociada, en Publicacion_Adopcion o en Publicacion_Perdida, según su Tipo_Publicacion. | Nueva |
+| RNE26 | Tipo_Aviso de Publicacion_Perdida toma Perdida o Encontrada. Nombre_Mascota es obligatorio cuando Tipo_Aviso es Perdida y opcional cuando es Encontrada. Fecha_Suceso y Zona_Suceso son las del extravío en una perdida y las del hallazgo en una encontrada. | Nueva (mascotas encontradas) |
 
 ### 15.2. Modelo lógico
 
@@ -76,7 +77,7 @@ La clave primaria de cada tabla figura primero, en negrita.
 
 - Publicacion_Adopcion(ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada, Estado_Adopcion) FK: ID_Publicacion (Publicacion_Animal). Estado_Esterilizacion: Esterilizado o No esterilizado. Estado_Adopcion: En adopción, Adoptado o Archivado
 
-- Publicacion_Perdida(ID_Publicacion, Nombre_Mascota, Fecha_Extravio, Zona_Extravio, Contacto, Fecha_Vencimiento, Estado_Perdida) FK: ID_Publicacion (Publicacion_Animal). Contacto es un teléfono de 8 o 9 dígitos. Estado_Perdida: Perdida, Encontrada o Archivada
+- Publicacion_Perdida(ID_Publicacion, Tipo_Aviso, Nombre_Mascota, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento, Estado_Perdida) FK: ID_Publicacion (Publicacion_Animal). Tipo_Aviso: Perdida o Encontrada (RNE26). Nombre_Mascota admite nulo solo si Tipo_Aviso es Encontrada. Contacto es un teléfono de 8 o 9 dígitos. Estado_Perdida: Vigente, Resuelta o Archivada
 
 - Foto_Animal(ID_Publicacion, ID_Foto, URL_Foto) FK: ID_Publicacion (Publicacion_Animal). Entidad débil: ID_Foto se numera dentro de cada publicación
 

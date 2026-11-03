@@ -54,8 +54,11 @@ error "Foto repetida" "INSERT INTO Foto_Animal VALUES (1,1,'fotos/1-1b.jpg')"
 
 # Publicación perdida
 sql "INSERT INTO Publicacion_Animal (ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo, Descripcion) VALUES (1,'Perdida','Gato','Siamés','Hembra','Collar rojo')" >/dev/null
-sql "INSERT INTO Publicacion_Perdida (ID_Publicacion, Nombre_Mascota, Fecha_Extravio, Zona_Extravio, Contacto, Fecha_Vencimiento) VALUES (2,'Mishi',CURDATE(),'Pocitos','099123456',CURDATE()+INTERVAL 30 DAY)" >/dev/null
-chk "Estado_Perdida por defecto" "Perdida" "SELECT Estado_Perdida FROM Publicacion_Perdida WHERE ID_Publicacion=2"
+sql "INSERT INTO Publicacion_Perdida (ID_Publicacion, Nombre_Mascota, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento) VALUES (2,'Mishi',CURDATE(),'Pocitos','099123456',CURDATE()+INTERVAL 30 DAY)" >/dev/null
+chk "Estado_Perdida por defecto" "Vigente" "SELECT Estado_Perdida FROM Publicacion_Perdida WHERE ID_Publicacion=2"
+chk "Tipo_Aviso por defecto" "Perdida" "SELECT Tipo_Aviso FROM Publicacion_Perdida WHERE ID_Publicacion=2"
+error "Tipo_Aviso fuera de la lista" "UPDATE Publicacion_Perdida SET Tipo_Aviso='Robada' WHERE ID_Publicacion=2"
+error "Estado viejo «Encontrada» ya no existe" "UPDATE Publicacion_Perdida SET Estado_Perdida='Encontrada' WHERE ID_Publicacion=2"
 
 # Solicitud, adopción y seguimiento
 error "Solicitud sobre una publicación perdida" "INSERT INTO Solicitud_Adopcion (ID_Publicacion, ID_Usuario) VALUES (2,1)"
@@ -83,7 +86,8 @@ done
 chk "8 usuarios (1 admin, 4 particulares, 3 refugios)" "1 4 3" "SELECT CONCAT_WS(' ',SUM(Tipo_Usuario='Administrador'),SUM(Tipo_Usuario='Particular'),SUM(Tipo_Usuario='Refugio')) FROM Usuario"
 chk "refugios en 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Validacion) FROM Refugio"
 chk "adopción en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Adopcion) FROM Publicacion_Adopcion"
-chk "perdidas en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Perdida) FROM Publicacion_Perdida"
+chk "perdidas en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Perdida) FROM Publicacion_Perdida WHERE Tipo_Aviso='Perdida'"
+chk "una mascota encontrada sin nombre" 1 "SELECT COUNT(*) FROM Publicacion_Perdida WHERE Tipo_Aviso='Encontrada' AND Nombre_Mascota IS NULL"
 chk "solicitudes en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Solicitud) FROM Solicitud_Adopcion"
 chk "reportes en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Reporte) FROM Reporte"
 chk "cada publicación tiene un solo subtipo" 0 "SELECT COUNT(*) FROM Publicacion_Animal p LEFT JOIN Publicacion_Adopcion a USING(ID_Publicacion) LEFT JOIN Publicacion_Perdida d USING(ID_Publicacion) WHERE (a.ID_Publicacion IS NULL) = (d.ID_Publicacion IS NULL)"

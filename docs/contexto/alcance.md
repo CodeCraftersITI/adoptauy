@@ -245,6 +245,8 @@ Decisiones del 06/10/2026 que precisan o reemplazan a las anteriores:
 | D88 | Red: pfSense es el único gateway y rutea entre VLAN; los switches trabajan en capa 2; la VLAN nativa es la 999, sin uso; el gateway de la VLAN 99 es 10.10.99.254; SRV-ZABBIX pertenece a la VLAN 99. | D22 (ubicación de SRV-ZABBIX) |
 | D89 | SSH por usuario: Camilo a SRV-BD y SRV-BD-MIRROR; Iñaki a SRV-WEB; Rodrigo a SRV-WEB, SRV-DNS, SRV-MAIL, SRV-ZABBIX y los switches; Leandro a SRV-ZABBIX. | — |
 | D90 | VPN de acceso remoto con OpenVPN en pfSense para que el equipo trabaje desde su casa: certificado más usuario y contraseña, red del túnel 10.10.50.0/24; cada integrante llega solo a su PC por escritorio remoto y a sus servidores por SSH. | «VPN Gateway» como equipo aparte |
+| D91 | Mascotas encontradas (pedido del docente de Programación): un tipo de aviso nuevo, con apartado propio, para quien encuentra una mascota ajena. Se guarda en Publicacion_Perdida con el atributo Tipo_Aviso (Perdida o Encontrada) y no en una tabla nueva. Tiene las mismas reglas que una perdida (1 a 3 fotos, contacto público, 30 días renovables, la publican Particular y Refugio), salvo el nombre, que es opcional. Fecha_Extravio y Zona_Extravio pasan a Fecha_Suceso y Zona_Suceso. RF:0064 y RF:0065, RNE26. | — |
+| D92 | Los estados de la mascota perdida pasan de Perdida, Encontrada y Archivada a Vigente, Resuelta y Archivada, iguales para perdidas y encontradas, para no confundir el estado «Encontrada» con el tipo nuevo. | D16, D26 (nombres de los estados) |
 
 ## Aspectos a completar
 

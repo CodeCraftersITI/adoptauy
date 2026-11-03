@@ -73,7 +73,8 @@ INSERT INTO Publicacion_Animal (ID_Publicacion, ID_Usuario, Tipo_Publicacion, Es
   (6, 6, 'Perdida',  'Gato',  'Mestizo',          'Hembra', 'Manchas negras en el lomo.',            'Visible',     '2026-09-10 08:00:00'),
   (7, 4, 'Perdida',  'Perro', 'Mestizo',          'Hembra', 'Pelo largo color canela.',              'Visible',     CURRENT_DATE - INTERVAL 40 DAY),
   (8, 5, 'Adopción', 'Perro', 'Ovejero alemán',   'Macho',  'Se entrega con costo.',                 'En revisión', '2026-10-05 12:00:00'),
-  (9, 2, 'Adopción', 'Perro', 'Mestizo',          'Hembra', 'Tranquila, ideal para apartamento.',    'Visible',     '2026-08-28 10:00:00');
+  (9, 2, 'Adopción', 'Perro', 'Mestizo',          'Hembra', 'Tranquila, ideal para apartamento.',    'Visible',     '2026-08-28 10:00:00'),
+  (10, 3, 'Perdida', 'Perro', 'Mestizo',          'Macho',  'Encontrado sin chapita, collar verde.', 'Visible',     CURRENT_DATE - INTERVAL 2 DAY);
 
 -- Edad_Meses < 12 = cachorro (filtro de edad, RF:0021)
 INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada, Estado_Adopcion) VALUES
@@ -85,10 +86,12 @@ INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Sa
   (9, 30, 'Mediano', 'Sana, vacunada',               'Esterilizado',    'Buceo',        'Adoptado');
 
 -- Vigencia de 30 días desde la creación o la última renovación (RNE17)
-INSERT INTO Publicacion_Perdida (ID_Publicacion, Nombre_Mascota, Fecha_Extravio, Zona_Extravio, Contacto, Fecha_Vencimiento, Estado_Perdida) VALUES
-  (5, 'Toby',  CURRENT_DATE - INTERVAL 6 DAY,  'Parque Rodó',  '099000002', CURRENT_DATE + INTERVAL 25 DAY, 'Perdida'),
-  (6, 'Luna',  '2026-09-08',                   'Prado',        '099000010', '2026-10-10',                    'Encontrada'),
-  (7, 'Canela', CURRENT_DATE - INTERVAL 41 DAY, 'La Blanqueada', '099000003', CURRENT_DATE - INTERVAL 10 DAY, 'Archivada');
+-- Tipo_Aviso: Perdida (el dueño la busca) o Encontrada (alguien encontró una ajena; el nombre es opcional)
+INSERT INTO Publicacion_Perdida (ID_Publicacion, Tipo_Aviso, Nombre_Mascota, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento, Estado_Perdida) VALUES
+  (5,  'Perdida',    'Toby',   CURRENT_DATE - INTERVAL 6 DAY,  'Parque Rodó',   '099000002', CURRENT_DATE + INTERVAL 25 DAY, 'Vigente'),
+  (6,  'Perdida',    'Luna',   '2026-09-08',                   'Prado',         '099000010', '2026-10-10',                    'Resuelta'),
+  (7,  'Perdida',    'Canela', CURRENT_DATE - INTERVAL 41 DAY, 'La Blanqueada', '099000003', CURRENT_DATE - INTERVAL 10 DAY, 'Archivada'),
+  (10, 'Encontrada', NULL,     CURRENT_DATE - INTERVAL 2 DAY,  'Reducto',       '29012345',  CURRENT_DATE + INTERVAL 28 DAY, 'Vigente');
 
 -- Entre 1 y 6 fotos en adopción y entre 1 y 3 en perdidas (RNE01)
 INSERT INTO Foto_Animal (ID_Publicacion, ID_Foto, URL_Foto) VALUES
@@ -100,7 +103,8 @@ INSERT INTO Foto_Animal (ID_Publicacion, ID_Foto, URL_Foto) VALUES
   (6, 1, 'publicaciones/6/1.jpg'),
   (7, 1, 'publicaciones/7/1.jpg'),
   (8, 1, 'publicaciones/8/1.jpg'),
-  (9, 1, 'publicaciones/9/1.jpg');
+  (9, 1, 'publicaciones/9/1.jpg'),
+  (10, 1, 'publicaciones/10/1.jpg');
 
 -- -----------------------------------------------------------------------------
 -- Solicitudes, adopciones y seguimiento

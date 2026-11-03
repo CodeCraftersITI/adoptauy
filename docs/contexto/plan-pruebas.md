@@ -225,7 +225,7 @@ Riesgos de pruebas
 | Datos personales en las pruebas | Solo datos ficticios generados por factories |
 
 ## 8. Matriz de trazabilidad
-Los 57 RF vigentes y los 14 RNF quedan cubiertos por 46 casos de prueba: 11 del Hito 2 (CP-01 a CP-11), 25 funcionales de los Sprints 5 y 6 (CP-12 a CP-36) y 10 no funcionales (CP-37 a CP-46).
+Los 59 RF vigentes y los 14 RNF quedan cubiertos por 48 casos de prueba: 11 del Hito 2 (CP-01 a CP-11), 25 funcionales de los Sprints 5 y 6 (CP-12 a CP-36), 10 no funcionales (CP-37 a CP-46) y 2 de mascotas encontradas (CP-47 y CP-48).
 
 | Requisito | Actor | Descripción breve | Hito | Casos |
 |---|---|---|---|---|
@@ -234,9 +234,11 @@ Los 57 RF vigentes y los 14 RNF quedan cubiertos por 46 casos de prueba: 11 del 
 | RF:0022 | Todos | Inicio de sesión | 2 | CP-04 |
 | RF:0023 | Todos | Cierre de sesión | 2 | CP-05 |
 | RF:0017, RF:0024 | Particular, Refugio | Alta de publicación en adopción | 2 | CP-06, CP-07, CP-11 |
-| RF:0040 | Invitado | Listado público En adopción y Perdida | 2 | CP-08 |
+| RF:0040 | Invitado | Listado público En adopción, perdidas y encontradas | 2 y 3 | CP-08, CP-48 |
 | RF:0048 | Todos | Consulta de mascotas perdidas | 2 | CP-08 |
 | RF:0046 | Particular, Refugio | Alta de mascota perdida | 2 | CP-09, CP-10, CP-11 |
+| RF:0064 | Particular, Refugio | Alta de mascota encontrada | 3 | CP-47 |
+| RF:0065 | Todos | Consulta de mascotas encontradas | 3 | CP-48 |
 | RF:0021, RF:0028, RF:0041 | Todos | Consulta con filtros y cachorros | 3 | CP-12 |
 | RF:0018, RF:0019, RF:0025, RF:0026, RF:0045 | Publicante, Administrador | Baja, modificación y estados de la publicación | 3 | CP-13, CP-15 |
 | RF:0020, RF:0027 | Particular, Refugio | Listado de publicaciones propias | 3 | CP-13 |
@@ -290,8 +292,8 @@ Los casos del Hito 2 se detallan con pasos, datos y resultado esperado; los dem�
 | CP-05 | RF:0023 | Cierre de sesión | Usuario con sesión iniciada | Cerrar sesión y usar el botón Atrás del navegador | Vuelve al inicio; las páginas privadas piden iniciar sesión | Caso de uso | Funcional | Media |
 | CP-06 | RF:0017, RF:0024 | Alta de publicación en adopción válida | Particular con sesión iniciada | Perro, mestizo, macho, 8 meses, mediano, sano, esterilizado, Pocitos y 3 fotos JPG | La publicación queda En adopción y aparece en el listado público | Partición de equivalencia | Funcional | Alta |
 | CP-07 | RF:0017 (H-04) | Límites de fotos y campos obligatorios | Particular con sesión iniciada | Enviar con 0, 1, 6 y 7 fotos; enviar sin especie; enviar un archivo .exe renombrado a .jpg; enviar una foto de 9 MB | Se aceptan 1 y 6 fotos; los demás envíos se rechazan con un mensaje y no se crea la publicación | Valores límite | Integración | Alta |
-| CP-08 | RF:0040, RF:0048 | Página de inicio con el listado público | Publicaciones en todos los estados: En adopción, Adoptado, Archivado, Perdida, Encontrada y Archivada | Abrir la página de inicio sin sesión | Solo se listan las En adopción y, por separado, las Perdida | Transición de estados | Funcional | Alta |
-| CP-09 | RF:0046 | Alta de mascota perdida válida | Particular con sesión iniciada | Nombre Luna, gata, siamesa, hembra, collar rojo, perdida el 10/10/2026 en Malvín, contacto 098 765 432 y 2 fotos | Queda en estado Perdida, con vencimiento a 30 días, y es visible sin sesión | Partición de equivalencia | Funcional | Alta |
+| CP-08 | RF:0040, RF:0048 | Página de inicio con el listado público | Publicaciones en todos los estados: En adopción, Adoptado, Archivado, y perdidas Vigente, Resuelta y Archivada | Abrir la página de inicio sin sesión | Solo se listan las En adopción y, por separado, las perdidas Vigente | Transición de estados | Funcional | Alta |
+| CP-09 | RF:0046 | Alta de mascota perdida válida | Particular con sesión iniciada | Nombre Luna, gata, siamesa, hembra, collar rojo, perdida el 10/10/2026 en Malvín, contacto 098 765 432 y 2 fotos | Queda con tipo Perdida, en estado Vigente, con vencimiento a 30 días, y es visible sin sesión | Partición de equivalencia | Funcional | Alta |
 | CP-10 | RF:0046 | Límites de mascota perdida | Particular con sesión iniciada | Enviar con 0, 1, 3 y 4 fotos; enviar sin zona; enviar con fecha de extravío futura | Se aceptan 1 y 3 fotos; los demás envíos se rechazan con un mensaje | Valores límite | Integración | Alta |
 | CP-11 | RF:0017, RF:0046, transversal | Acceso para publicar | Sin sesión | Abrir los formularios de publicación y enviar un POST directo a ambas rutas | Redirige al inicio de sesión; no se crea ninguna publicación | Tabla de decisión | Integración | Alta |
 
@@ -301,7 +303,7 @@ Los casos del Hito 2 se detallan con pasos, datos y resultado esperado; los dem�
 |---|---|---|---|---|---|
 | CP-12 | RF:0021, RF:0028, RF:0041 (H-01) | Filtros combinados y cachorros | Especie, raza, sexo y fecha se combinan; con el filtro de cachorros aparece el animal de 11 meses y no el de 12 | Partición y valores límite | Media |
 | CP-13 | RF:0018 a RF:0020, RF:0025 a RF:0027, RF:0045 | Estados de la publicación en adopción | Se admiten En adopción → Archivado → En adopción y En adopción → Adoptado; se rechazan Adoptado → cualquier estado; el listado propio muestra cada estado | Transición de estados | Alta |
-| CP-14 | RF:0047 (H-08) | Vencimiento y renovación de mascota perdida | Pasa a Archivada el día 30 y no el 29; al renovarse vuelve a Perdida con 30 días más; Encontrada y Archivada salen de la consulta pública | Valores límite y fecha simulada | Alta |
+| CP-14 | RF:0047 (H-08) | Vencimiento y renovación de mascota perdida o encontrada | Pasa a Archivada el día 30 y no el 29; al renovarse vuelve a Vigente con 30 días más; Resuelta y Archivada salen de la consulta pública | Valores límite y fecha simulada | Alta |
 | CP-15 | RF:0019, RF:0026 | Modificar una publicación ajena | Un PUT con el identificador de una publicación de otro usuario devuelve HTTP 403 y no cambia nada | Seguridad | Alta |
 | CP-16 | RF:0016, RF:0029 | Modificación del perfil propio | Se guardan los campos editables; la cédula y el correo no se pueden cambiar aunque se envíen en la petición | Partición | Media |
 | CP-17 | RF:0034, RF:0063 | Solicitud de registro de refugio | Queda Pendiente de validación, aparece en el panel del Administrador y llega un único correo de recepción | Caso de uso | Alta |
@@ -324,6 +326,8 @@ Los casos del Hito 2 se detallan con pasos, datos y resultado esperado; los dem�
 | CP-34 | RF:0010, RF:0013, RF:0014 | Gestión de particulares | La baja lógica conserva el registro y sus publicaciones en la base e impide iniciar sesión | Caso de uso | Alta |
 | CP-35 | RF:0063 | Un correo por evento | Cada uno de los 5 eventos de la tabla 13.2.6 genera exactamente un correo al destinatario indicado | Partición | Alta |
 | CP-36 | Transversal | Control de acceso por rol | Particular contra rutas de Refugio y Administrador, Refugio contra rutas de Administrador e Invitado contra rutas privadas: siempre HTTP 403 o redirección al inicio de sesión | Tabla de decisión | Alta |
+| CP-47 | RF:0064, RNE26 | Alta de mascota encontrada | Sin nombre queda con tipo Encontrada, Vigente y vencimiento a 30 días, visible sin sesión con «Sin nombre»; el nombre es opcional en la encontrada y obligatorio en la perdida; se aceptan 1 y 3 fotos y se rechazan 0 y 4, la fecha de hallazgo futura, la zona de 2 caracteres y un contacto que no es teléfono; el Invitado va a iniciar sesión y el Administrador recibe HTTP 403 | Partición y valores límite | Alta |
+| CP-48 | RF:0065, RF:0040 | Apartado de mascotas encontradas | La encontrada Vigente aparece en «Mascotas encontradas» y no en «Mascotas perdidas»; no aparecen las Resuelta, las vencidas ni las En revisión | Transición de estados | Alta |
 
 ### 9.3 Casos no funcionales
 

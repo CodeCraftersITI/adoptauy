@@ -1,6 +1,6 @@
 # Base de datos de AdoptaUY (script SQL)
 
-Tablas en MySQL según el DER y el diccionario de datos. `Publicacion_Animal` guarda los datos comunes de toda publicación y tiene dos subtipos: `Publicacion_Adopcion` y `Publicacion_Perdida`.
+Tablas en MySQL según el DER y el diccionario de datos. `Publicacion_Animal` guarda los datos comunes de toda publicación y tiene dos subtipos: `Publicacion_Adopcion` y `Publicacion_Perdida`. Esta última guarda las mascotas perdidas y las encontradas, que se distinguen por `Tipo_Aviso`.
 
 | Archivo | Qué es |
 |---|---|
@@ -52,8 +52,8 @@ MYSQL_PWD=root_dev MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot" PUERTO=3307 bash do
 ## Valores y largos que toma del documento integrador
 
 - Sin `Temperamento`.
-- `Nombre` y `Apellido`: hasta 50 caracteres. `CI`: 7 u 8 dígitos. `Telefono` y `Contacto` (mascota perdida): 8 o 9 dígitos.
-- `Raza`: hasta 50 caracteres. `Ubicacion_Aproximada` y `Zona_Extravio`: hasta 100.
+- `Nombre` y `Apellido`: hasta 50 caracteres. `CI`: 7 u 8 dígitos. `Telefono` y `Contacto` (mascota perdida o encontrada): 8 o 9 dígitos.
+- `Raza`: hasta 50 caracteres. `Ubicacion_Aproximada` y `Zona_Suceso`: hasta 100.
 - `Email_Verificado` guarda la fecha de confirmación; `NULL` significa sin confirmar.
 - `Estado_Validacion`: Pendiente de validación, Validado, Rechazado, Suspendido o Dado de baja.
 - `Tipo_Cuenta`: texto libre.
