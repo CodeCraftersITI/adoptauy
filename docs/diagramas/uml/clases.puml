@@ -81,14 +81,15 @@ class PublicacionAdopcion {
   + reactivar() : void
 }
 class PublicacionPerdida {
-  - nombreMascota : String
-  - fechaExtravio : Date
-  - zonaExtravio : String
+  - tipoAviso : TipoAviso
+  - nombreMascota : String [0..1]
+  - fechaSuceso : Date
+  - zonaSuceso : String
   - contacto : String
   - fechaVencimiento : Date
   - estado : EstadoPerdida
   + renovar() : void  <<vence a los 30 días>>
-  + marcarEncontrada() : void
+  + marcarResuelta() : void
   + estaVencida() : bool
 }
 class FotoAnimal {
@@ -182,9 +183,13 @@ package "Enumeraciones" {
     Adoptado
     Archivado
   }
-  enum EstadoPerdida {
+  enum TipoAviso {
     Perdida
     Encontrada
+  }
+  enum EstadoPerdida {
+    Vigente
+    Resuelta
     Archivada
   }
   enum EstadoSolicitud {
@@ -209,9 +214,17 @@ package "Enumeraciones" {
     Baja lógica
   }
 }
+note right of PublicacionPerdida
+  Guarda las mascotas perdidas y las
+  encontradas (RF:0046, RF:0064).
+  nombreMascota es obligatorio solo
+  si tipoAviso = Perdida (RNE26).
+  fechaSuceso y zonaSuceso: del extravío
+  o del hallazgo, según tipoAviso.
+end note
 note bottom of FotoAnimal
   Adopción: 1 a 6 fotografías.
-  Perdida: 1 a 3 fotografías.
+  Perdida o encontrada: 1 a 3 fotografías.
   JPG, PNG o WEBP, hasta 8 MB.
 end note
 note bottom of Reporte
