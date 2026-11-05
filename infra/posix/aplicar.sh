@@ -8,9 +8,16 @@
 #  Uso (como root, desde el repositorio):
 #     sudo bash infra/posix/aplicar.sh                      # instala en /srv/adoptauy/app
 #     sudo bash infra/posix/aplicar.sh --desde ~/adoptauy   # mueve un clon existente
+#     sudo bash infra/posix/aplicar.sh --ssh-con-contrasena # etapa de transición
 #
 #  Antes: completar infra/posix/red.conf y dejar las claves públicas en
 #  infra/posix/claves/<usuario>.pub (camilo, leandro, inaki, rodrigo).
+#
+#  Etapa de transición (--ssh-con-contrasena, o aplicar-transicion.sh): aplica
+#  todo igual, pero SSH acepta contraseña además de clave, no filtra por la IP
+#  de cada PC y deja entrar también a admin. Solo hace falta RED_ADMIN en
+#  red.conf. Cuando todos entren con su clave, se ejecuta sin la opción y quedan
+#  las reglas definitivas (solo clave pública, cada usuario desde su PC).
 # =============================================================================
 set -euo pipefail
 umask 0022
@@ -21,17 +28,26 @@ av()   { printf '\033[1;33m    ! %s\033[0m\n' "$*"; }
 err()  { printf '\033[1;31m    ✘ %s\033[0m\n' "$*" >&2; exit 1; }
 
 [[ $EUID -eq 0 ]] || err "Ejecutalo como root: sudo bash $0"
-ORIGEN=""; [[ "${1:-}" == "--desde" ]] && ORIGEN="${2:?Falta la ruta del clon actual}"
+ORIGEN=""; TRANSICION=""
+while (($#)); do
+  case "$1" in
+    --desde) ORIGEN="${2:?Falta la ruta del clon actual}"; shift 2 ;;
+    --ssh-con-contrasena) TRANSICION=1; shift ;;
+    *) err "Opción desconocida: $1" ;;
+  esac
+done
 
 # --- Datos de red ------------------------------------------------------------
 CONF="${RED_CONF:-$DIR/red.conf}"
 # shellcheck source=red.conf
 source "$CONF"
-grep -Eq '^[A-Z_]+="__COMPLETAR__"' "$CONF" && err "Completá $CONF con la red real antes de aplicar."
 ip_ok()   { [[ "$1" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; }
 cidr_ok() { [[ "$1" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}/([0-9]|[12][0-9]|3[0-2])$ ]]; }
-cidr_ok "$RED_ADMIN" || err "RED_ADMIN no es una red CIDR válida: $RED_ADMIN"
-for v in IP_CAMILO IP_LEANDRO IP_INAKI IP_RODRIGO; do ip_ok "${!v}" || err "$v no es una IP válida"; done
+cidr_ok "$RED_ADMIN" || err "RED_ADMIN no es una red CIDR válida: $RED_ADMIN (completala en $CONF)"
+if [[ -z "$TRANSICION" ]]; then
+  grep -Eq '^[A-Z_]+="__COMPLETAR__"' "$CONF" && err "Completá $CONF con la red real antes de aplicar (o usá --ssh-con-contrasena)."
+  for v in IP_CAMILO IP_LEANDRO IP_INAKI IP_RODRIGO; do ip_ok "${!v}" || err "$v no es una IP válida"; done
+fi
 
 BASE=/srv/adoptauy
 APP=$BASE/app
@@ -93,6 +109,8 @@ for linea in "${INTEGRANTES[@]}"; do
   if [[ -f "$DIR/claves/$u.pub" ]]; then
     install -d -m 0700 -o "$u" -g "$u" "/home/$u/.ssh"
     install -m 0600 -o "$u" -g "$u" "$DIR/claves/$u.pub" "/home/$u/.ssh/authorized_keys"
+  elif [[ -n "$TRANSICION" ]]; then
+    av "Sin clave pública para $u: por ahora entra con contraseña"
   else
     av "Sin clave pública para $u (infra/posix/claves/$u.pub): no va a poder entrar por SSH"
   fi
@@ -207,9 +225,15 @@ ok "ACL en $LOGS y $STORAGE/logs"
 paso "5/8 Hosts permitidos (SSH y TCP Wrappers)"
 # =============================================================================
 chattr -i /etc/ssh/sshd_config.d/10-adoptauy.conf 2>/dev/null || true
-sed -e "s|{{RED_ADMIN}}|$RED_ADMIN|g" -e "s|{{IP_CAMILO}}|$IP_CAMILO|g" -e "s|{{IP_LEANDRO}}|$IP_LEANDRO|g" \
-    -e "s|{{IP_INAKI}}|$IP_INAKI|g" -e "s|{{IP_RODRIGO}}|$IP_RODRIGO|g" \
-    "$DIR/sshd-adoptauy.conf" > /etc/ssh/sshd_config.d/10-adoptauy.conf
+if [[ -n "$TRANSICION" ]]; then
+  # Etapa de transición: contraseña o clave, sin filtro por IP de cada PC y con admin (grupo sudo)
+  # para no quedar afuera. Se sigue limitando a la red de administración
+  sed -e "s|{{RED_ADMIN}}|$RED_ADMIN|g" "$DIR/sshd-adoptauy-transicion.conf" > /etc/ssh/sshd_config.d/10-adoptauy.conf
+else
+  sed -e "s|{{RED_ADMIN}}|$RED_ADMIN|g" -e "s|{{IP_CAMILO}}|$IP_CAMILO|g" -e "s|{{IP_LEANDRO}}|$IP_LEANDRO|g" \
+      -e "s|{{IP_INAKI}}|$IP_INAKI|g" -e "s|{{IP_RODRIGO}}|$IP_RODRIGO|g" \
+      "$DIR/sshd-adoptauy.conf" > /etc/ssh/sshd_config.d/10-adoptauy.conf
+fi
 chmod 0644 /etc/ssh/sshd_config.d/10-adoptauy.conf
 sshd -t || err "sshd_config inválido: no se reinicia SSH"
 # Segunda capa: sshd de Ubuntu 24.04 (OpenSSH 9.6) todavía usa libwrap
@@ -217,7 +241,11 @@ chattr -i /etc/hosts.allow /etc/hosts.deny 2>/dev/null || true
 printf '# AdoptaUY: SSH solo desde la red de administración\nsshd: %s\n' "$RED_ADMIN" > /etc/hosts.allow
 printf '# AdoptaUY: todo lo no permitido en hosts.allow se rechaza\nsshd: ALL\n' > /etc/hosts.deny
 systemctl restart ssh 2>/dev/null || av "No se pudo reiniciar ssh (¿sin systemd?)"
-ok "sshd: AllowGroups, AllowUsers por IP y Match Address; TCP Wrappers como segunda capa"
+if [[ -n "$TRANSICION" ]]; then
+  ok "sshd en transición: contraseña o clave, grupos codecrafters y sudo, solo desde $RED_ADMIN"
+else
+  ok "sshd: AllowGroups, AllowUsers por IP y Match Address; TCP Wrappers como segunda capa"
+fi
 
 # =============================================================================
 paso "6/8 Firewall (ufw)"
@@ -272,5 +300,11 @@ fi
 if ((${#NUEVAS[@]})); then
   printf '\n\033[1mContraseñas temporales (se cambian en el primer ingreso; entregarlas en persona):\033[0m\n'
   printf '  %s\n' "${NUEVAS[@]}"
+fi
+if [[ -n "$TRANSICION" ]]; then
+  printf '\n\033[1;33mSSH en transición: se entra con contraseña. Cuando cada uno pruebe su clave\n'
+  printf '(ssh -i ~/.ssh/<usuario> <usuario>@<IP>), completar las IP en red.conf y ejecutar:\n'
+  printf '  sudo bash %s/aplicar.sh\n' "$DIR"
+  printf 'verificar.sh va a marcar como falla «PasswordAuthentication no» hasta ese momento.\033[0m\n'
 fi
 echo; echo "Verificar con: sudo bash $DIR/verificar.sh"
