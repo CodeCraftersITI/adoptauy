@@ -11,6 +11,9 @@
 --  (guardada como hash bcrypt, RNF:0007).
 --
 --  Uso, después de adoptauy.sql:  mysql -u root -p adoptauy < datos-prueba.sql
+--
+--  @clave guarda el hash bcrypt de prueba y se asigna antes del primer INSERT,
+--  para que el script corra solo, desde una base recién creada.
 -- =============================================================================
 
 SET NAMES utf8mb4;
@@ -64,17 +67,17 @@ INSERT INTO Cuenta_Bancaria (ID_Usuario, ID_Cuenta_Banco, Banco, Tipo_Cuenta, Nu
 -- -----------------------------------------------------------------------------
 -- Publicaciones: supertipo + subtipo
 -- -----------------------------------------------------------------------------
-INSERT INTO Publicacion_Animal (ID_Publicacion, ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo, Descripcion, Estado_Moderacion, Fecha_Creacion) VALUES
-  (1, 2, 'Adopción', 'Perro', 'Mestizo',          'Macho',  'Juguetón y sociable con otros perros.', 'Visible',     '2026-09-20 10:00:00'),
-  (2, 6, 'Adopción', 'Perro', 'Labrador',         'Hembra', 'Rescatada en agosto.',                  'Visible',     '2026-08-20 09:00:00'),
-  (3, 6, 'Adopción', 'Gato',  'Mestizo',          'Macho',  NULL,                                    'Visible',     '2026-08-25 09:00:00'),
-  (4, 2, 'Adopción', 'Gato',  'Siamés',           'Hembra', 'Cachorra, convive con niños.',          'Visible',     '2026-10-01 18:00:00'),
-  (5, 3, 'Perdida',  'Perro', 'Beagle',           'Macho',  'Collar rojo con chapita.',              'Visible',     CURRENT_DATE - INTERVAL 5 DAY),
-  (6, 6, 'Perdida',  'Gato',  'Mestizo',          'Hembra', 'Manchas negras en el lomo.',            'Visible',     '2026-09-10 08:00:00'),
-  (7, 4, 'Perdida',  'Perro', 'Mestizo',          'Hembra', 'Pelo largo color canela.',              'Visible',     CURRENT_DATE - INTERVAL 40 DAY),
-  (8, 5, 'Adopción', 'Perro', 'Ovejero alemán',   'Macho',  'Se entrega con costo.',                 'En revisión', '2026-10-05 12:00:00'),
-  (9, 2, 'Adopción', 'Perro', 'Mestizo',          'Hembra', 'Tranquila, ideal para apartamento.',    'Visible',     '2026-08-28 10:00:00'),
-  (10, 3, 'Perdida', 'Perro', 'Mestizo',          'Macho',  'Encontrado sin chapita, collar verde.', 'Visible',     CURRENT_DATE - INTERVAL 2 DAY);
+INSERT INTO Publicacion_Animal (ID_Publicacion, ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo, Estado_Moderacion, Fecha_Creacion) VALUES
+  (1, 2, 'Adopción', 'Perro', 'Mestizo',          'Macho',  'Visible',     '2026-09-20 10:00:00'),
+  (2, 6, 'Adopción', 'Perro', 'Labrador',         'Hembra', 'Visible',     '2026-08-20 09:00:00'),
+  (3, 6, 'Adopción', 'Gato',  'Mestizo',          'Macho',  'Visible',     '2026-08-25 09:00:00'),
+  (4, 2, 'Adopción', 'Gato',  'Siamés',           'Hembra', 'Visible',     '2026-10-01 18:00:00'),
+  (5, 3, 'Perdida',  'Perro', 'Beagle',           'Macho',  'Visible',     CURRENT_DATE - INTERVAL 5 DAY),
+  (6, 6, 'Perdida',  'Gato',  'Mestizo',          'Hembra', 'Visible',     '2026-09-10 08:00:00'),
+  (7, 4, 'Perdida',  'Perro', 'Mestizo',          'Hembra', 'Visible',     CURRENT_DATE - INTERVAL 40 DAY),
+  (8, 5, 'Adopción', 'Perro', 'Ovejero alemán',   'Macho',  'En revisión', '2026-10-05 12:00:00'),
+  (9, 2, 'Adopción', 'Perro', 'Mestizo',          'Hembra', 'Visible',     '2026-08-28 10:00:00'),
+  (10, 3, 'Perdida', 'Perro', 'Mestizo',          'Macho',  'Visible',     CURRENT_DATE - INTERVAL 2 DAY);
 
 -- Edad_Meses < 12 = cachorro (filtro de edad, RF:0021)
 INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada, Estado_Adopcion) VALUES
@@ -87,24 +90,24 @@ INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Sa
 
 -- Vigencia de 30 días desde la creación o la última renovación (RNE17)
 -- Tipo_Aviso: Perdida (el dueño la busca) o Encontrada (alguien encontró una ajena; el nombre es opcional)
-INSERT INTO Publicacion_Perdida (ID_Publicacion, Tipo_Aviso, Nombre_Mascota, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento, Estado_Perdida) VALUES
-  (5,  'Perdida',    'Toby',   CURRENT_DATE - INTERVAL 6 DAY,  'Parque Rodó',   '099000002', CURRENT_DATE + INTERVAL 25 DAY, 'Vigente'),
-  (6,  'Perdida',    'Luna',   '2026-09-08',                   'Prado',         '099000010', '2026-10-10',                    'Resuelta'),
-  (7,  'Perdida',    'Canela', CURRENT_DATE - INTERVAL 41 DAY, 'La Blanqueada', '099000003', CURRENT_DATE - INTERVAL 10 DAY, 'Archivada'),
-  (10, 'Encontrada', NULL,     CURRENT_DATE - INTERVAL 2 DAY,  'Reducto',       '29012345',  CURRENT_DATE + INTERVAL 28 DAY, 'Vigente');
+INSERT INTO Publicacion_Perdida (ID_Publicacion, Tipo_Aviso, Nombre_Mascota, Caracteristicas, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento, Estado_Perdida) VALUES
+  (5,  'Perdida',    'Toby',   'Collar rojo con chapita.', CURRENT_DATE - INTERVAL 6 DAY,  'Parque Rodó',   '099000002', CURRENT_DATE + INTERVAL 25 DAY, 'Vigente'),
+  (6,  'Perdida',    'Luna',   'Manchas negras en el lomo.', '2026-09-08',                   'Prado',         '099000010', '2026-10-10',                    'Resuelta'),
+  (7,  'Perdida',    'Canela', 'Pelo largo color canela.', CURRENT_DATE - INTERVAL 41 DAY, 'La Blanqueada', '099000003', CURRENT_DATE - INTERVAL 10 DAY, 'Archivada'),
+  (10, 'Encontrada', NULL,     'Encontrado sin chapita, collar verde.', CURRENT_DATE - INTERVAL 2 DAY,  'Reducto',       '29012345',  CURRENT_DATE + INTERVAL 28 DAY, 'Vigente');
 
--- Entre 1 y 6 fotos en adopción y entre 1 y 3 en perdidas (RNE01)
-INSERT INTO Foto_Animal (ID_Publicacion, ID_Foto, URL_Foto) VALUES
-  (1, 1, 'publicaciones/1/1.jpg'), (1, 2, 'publicaciones/1/2.jpg'), (1, 3, 'publicaciones/1/3.webp'),
-  (2, 1, 'publicaciones/2/1.jpg'),
-  (3, 1, 'publicaciones/3/1.png'),
-  (4, 1, 'publicaciones/4/1.jpg'), (4, 2, 'publicaciones/4/2.jpg'),
-  (5, 1, 'publicaciones/5/1.jpg'), (5, 2, 'publicaciones/5/2.jpg'),
-  (6, 1, 'publicaciones/6/1.jpg'),
-  (7, 1, 'publicaciones/7/1.jpg'),
-  (8, 1, 'publicaciones/8/1.jpg'),
-  (9, 1, 'publicaciones/9/1.jpg'),
-  (10, 1, 'publicaciones/10/1.jpg');
+-- Entre 1 y 6 fotos en adopción y entre 1 y 3 en perdidas o encontradas (RNE01); ID_Foto es autonumérico
+INSERT INTO Foto_Animal (ID_Publicacion, URL_Foto) VALUES
+  (1, 'publicaciones/1/1.jpg'), (1, 'publicaciones/1/2.jpg'), (1, 'publicaciones/1/3.webp'),
+  (2, 'publicaciones/2/1.jpg'),
+  (3, 'publicaciones/3/1.png'),
+  (4, 'publicaciones/4/1.jpg'), (4, 'publicaciones/4/2.jpg'),
+  (5, 'publicaciones/5/1.jpg'), (5, 'publicaciones/5/2.jpg'),
+  (6, 'publicaciones/6/1.jpg'),
+  (7, 'publicaciones/7/1.jpg'),
+  (8, 'publicaciones/8/1.jpg'),
+  (9, 'publicaciones/9/1.jpg'),
+  (10, 'publicaciones/10/1.jpg');
 
 -- -----------------------------------------------------------------------------
 -- Solicitudes, adopciones y seguimiento
