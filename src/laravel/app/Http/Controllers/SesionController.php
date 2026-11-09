@@ -39,7 +39,9 @@ class SesionController extends Controller
             'password.required' => 'Ingresá tu contraseña.',
         ]);
 
-        // Buscamos al usuario por su correo (where + first, como en el teórico)
+        // Buscamos al usuario por su correo (where + first, como en el teórico).
+        // Una cuenta creada con Google no tiene contraseña (NULL) y Hash::check() da false:
+        // entra solo con Google hasta que defina una (D94, RF:0067).
         $usuario = Usuario::where('Email', strtolower($request->input('email')))->first();
 
         if (!$usuario || !Hash::check($request->input('password'), $usuario->Contraseña))
@@ -54,23 +56,8 @@ class SesionController extends Controller
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }
 
-        // Nuevo identificador de sesión para evitar la fijación de sesión (session fixation)
-        $request->session()->regenerate();
-
-        // Guardamos en la sesión quién es y su rol; el middleware VerificarRol lee 'tipo'
-        session([
-            'id_usuario' => $usuario->ID_Usuario,
-            'tipo' => $usuario->Tipo_Usuario,
-            'nombre' => $usuario->nombreVisible(),
-        ]);
-
-        // Cada rol va a su panel
-        if ($usuario->Tipo_Usuario == 'Administrador')
-        {
-            return redirect('/admin');
-        }
-
-        return redirect('/cuenta');
+        // Abre la sesión y lo manda a su panel (método del Controller base)
+        return $this->iniciarSesion($request, $usuario);
     }
 
     // POST /salir: cierra la sesión

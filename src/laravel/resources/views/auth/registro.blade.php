@@ -53,6 +53,9 @@
         <button type="submit" class="btn btn-primario ocupa-todo">Crear cuenta</button>
     </form>
 
+    {{-- Registro con Google: después pide solo la CI y el teléfono (RF:0066) --}}
+    @include('partials.boton-google')
+
     <p class="texto-centro">¿Ya tenés cuenta? <a href="/ingresar">Ingresar</a></p>
 </div>
 @endsection

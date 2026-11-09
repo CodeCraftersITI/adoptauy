@@ -37,17 +37,21 @@ USE adoptauy;
 CREATE TABLE Usuario (
   ID_Usuario        INT UNSIGNED NOT NULL AUTO_INCREMENT,
   Email             VARCHAR(255) NOT NULL,
-  Contraseña        VARCHAR(255) NOT NULL,              -- hash bcrypt (RNE13)
+  Contraseña        VARCHAR(255) NULL,                  -- hash bcrypt (RNE13); NULL solo si tiene Google_ID (RNE27)
   Tipo_Usuario      ENUM('Particular','Refugio','Administrador') NOT NULL,
   Estado_Usuario    ENUM('Activo','En revisión','Suspendido','Inhabilitado','Baja')
                     NOT NULL DEFAULT 'Activo',
   Fecha_Alta        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   Email_Verificado  DATETIME NULL,                      -- fecha de confirmación del correo; NULL = sin confirmar (RF:0043)
+  Google_ID         VARCHAR(255) NULL,                  -- el «sub» que envía Google (RF:0066, RNE27)
   PRIMARY KEY (ID_Usuario),
   UNIQUE KEY uq_usuario_email (Email),
   UNIQUE KEY uq_usuario_id_tipo (ID_Usuario, Tipo_Usuario),   -- lo referencian los subtipos (RNE10)
-  CONSTRAINT ck_usuario_email CHECK (Email LIKE '_%@_%._%'),
-  CONSTRAINT ck_usuario_hash  CHECK (`Contraseña` LIKE '$2_$%' AND CHAR_LENGTH(`Contraseña`) = 60)
+  UNIQUE KEY uq_usuario_google (Google_ID),
+  CONSTRAINT ck_usuario_email  CHECK (Email LIKE '_%@_%._%'),
+  CONSTRAINT ck_usuario_hash   CHECK (`Contraseña` IS NULL OR (`Contraseña` LIKE '$2_$%' AND CHAR_LENGTH(`Contraseña`) = 60)),
+  CONSTRAINT ck_usuario_acceso CHECK (`Contraseña` IS NOT NULL OR Google_ID IS NOT NULL),   -- RNE27
+  CONSTRAINT ck_usuario_google CHECK (Google_ID IS NULL OR Tipo_Usuario = 'Particular')     -- RNE27
 ) ENGINE=InnoDB;
 
 CREATE TABLE Particular (

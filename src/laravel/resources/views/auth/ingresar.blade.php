@@ -25,6 +25,9 @@
         <button type="submit" class="btn btn-primario">Ingresar</button>
     </form>
 
+    {{-- Solo el Particular puede ingresar con Google (RF:0066, D93) --}}
+    @include('partials.boton-google')
+
     <p class="texto-centro">¿No tenés cuenta? <a href="/registro">Crear cuenta</a></p>
 </div>
 @endsection

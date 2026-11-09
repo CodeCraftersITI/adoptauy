@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    // Continuar con Google (RF:0066, D93). Los valores van solo en el .env, nunca en el
+    // repositorio (RNF:0007). La URI tiene que ser idéntica a la cargada en Google Cloud.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];
