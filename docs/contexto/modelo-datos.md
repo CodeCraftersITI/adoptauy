@@ -40,7 +40,7 @@ Las restricciones dadas de baja conservan su código; las nuevas continúan desd
 | RNE09 | Dada de baja. Motivo: la plataforma no procesa donaciones ni cobra comisión. | Dada de baja (D4) |
 | RNE10 | Un mismo ID_Usuario no puede existir simultáneamente en más de una de las tablas Particular, Refugio y Administrador. | Modificada |
 | RNE11 | Todo ID_Usuario dado de alta en Usuario debe tener una fila correspondiente en Particular, Refugio o Administrador. | Vigente |
-| RNE12 | Edad_Meses no puede ser negativa. Tamaño toma un valor de una lista cerrada (Pequeño, Mediano, Grande). Numero_Cuenta se almacena como texto. Edad_Meses no tiene máximo. Largos: Nombre y Apellido de 2 a 50 caracteres, Raza de 2 a 50, Ubicacion_Aproximada y Zona_Extravio de 3 a 100 y Email hasta 255. Telefono y Contacto tienen 8 o 9 dígitos. | Modificada |
+| RNE12 | Edad_Meses no puede ser negativa. Tamaño toma un valor de una lista cerrada (Pequeño, Mediano, Grande). Numero_Cuenta se almacena como texto. Edad_Meses no tiene máximo. Largos: Nombre y Apellido de 2 a 50 caracteres, Raza de 2 a 50, Ubicacion_Aproximada y Zona_Suceso de 3 a 100 y Email hasta 255. Telefono y Contacto tienen 8 o 9 dígitos. | Modificada |
 | RNE13 | Las contraseñas se almacenan como hash, nunca en texto plano (RNF:0007). | Modificada |
 | RNE14 | Fecha_Creacion de una publicación no puede ser anterior a la Fecha_Alta del usuario que la crea, ni posterior a la fecha actual. | Vigente |
 | RNE15 | Una publicación con 3 reportes de usuarios distintos pasa a Estado_Moderacion = En revisión. Un Particular con 5 reportes, o con 3 publicaciones suspendidas, pasa a Estado_Usuario = En revisión; con 10 reportes pasa a Inhabilitado. Solo cuentan reportes de usuarios distintos que el Administrador no desestimó. Un Refugio con 3 reportes pasa a Estado_Validacion = Suspendido. | Modificada (D31) |
@@ -61,25 +61,25 @@ Las restricciones dadas de baja conservan su código; las nuevas continúan desd
 #### 15.2.1. Pasaje a tablas
 La clave primaria de cada tabla figura primero, en negrita.
 
-- Usuario(ID_Usuario, Email, Contraseña, Tipo_Usuario, Estado_Usuario, Fecha_Alta, Email_Verificado). Email_Verificado guarda la fecha de confirmación del correo; vacío significa sin confirmar
+- Usuario(ID_Usuario, Email, Contraseña, Tipo_Usuario, Estado_Usuario, Fecha_Alta, Email_Verificado). Email es único. (ID_Usuario, Tipo_Usuario) es único y lo referencian los subtipos, para que cada usuario esté solo en la tabla de su tipo (RNE10). Email_Verificado guarda la fecha de confirmación del correo; vacío significa sin confirmar
 
-- Particular(ID_Usuario, CI, Nombre, Apellido, Telefono) FK: ID_Usuario (Usuario). CI es clave candidata, con índice único (RNE23)
+- Particular(ID_Usuario, Tipo_Usuario, CI, Nombre, Apellido, Telefono) FK: (ID_Usuario, Tipo_Usuario) (Usuario). Tipo_Usuario vale siempre Particular. CI es clave candidata, con índice único (RNE23)
 
-- Administrador(ID_Usuario) FK: ID_Usuario (Usuario)
+- Administrador(ID_Usuario, Tipo_Usuario) FK: (ID_Usuario, Tipo_Usuario) (Usuario). Tipo_Usuario vale siempre Administrador
 
-- Refugio(ID_Usuario, Nombre_Refugio, Certificado_Personeria, Comprobante_Domicilio, Ubicacion, Latitud, Longitud, Estado_Validacion, Motivo_Rechazo, Fecha_Solicitud, Fecha_Resolucion, URL_Foto) FK: ID_Usuario (Usuario). Estado_Validacion: Pendiente de validación, Validado, Rechazado, Suspendido o Dado de baja (RNE24)
+- Refugio(ID_Usuario, Tipo_Usuario, Nombre_Refugio, Certificado_Personeria, Comprobante_Domicilio, Ubicacion, Latitud, Longitud, Estado_Validacion, Motivo_Rechazo, Fecha_Solicitud, Fecha_Resolucion, URL_Foto) FK: (ID_Usuario, Tipo_Usuario) (Usuario). Tipo_Usuario vale siempre Refugio. Estado_Validacion: Pendiente de validación, Validado, Rechazado, Suspendido o Dado de baja (RNE24)
 
-- Refugio_Datos_Contacto(ID_Usuario, Dato_Contacto) FK: ID_Usuario (Refugio)
+- Refugio_Datos_Contacto(ID_Usuario, Dato_Contacto) FK: ID_Usuario (Refugio). Atributo multivaluado de Refugio
 
 - Cuenta_Bancaria(ID_Usuario, ID_Cuenta_Banco, Banco, Tipo_Cuenta, Numero_Cuenta, Titular) FK: ID_Usuario (Refugio). Tipo_Cuenta es texto libre
 
-- Publicacion_Animal(ID_Publicacion, ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo, Descripcion, Estado_Moderacion, Fecha_Creacion) FK: ID_Usuario (Usuario). Supertipo con los datos comunes a toda publicación. Tipo_Publicacion: Adopción o Perdida, e indica en qué subtipo está el resto de los datos (RNE25). Estado_Moderacion: Visible, En revisión o Suspendida
+- Publicacion_Animal(ID_Publicacion, ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo, Estado_Moderacion, Fecha_Creacion) FK: ID_Usuario (Usuario). Supertipo con los datos comunes a toda publicación. Tipo_Publicacion: Adopción o Perdida, e indica en qué subtipo está el resto de los datos (RNE25). (ID_Publicacion, Tipo_Publicacion) es único y lo referencian los subtipos. Estado_Moderacion: Visible, En revisión o Suspendida
 
-- Publicacion_Adopcion(ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada, Estado_Adopcion) FK: ID_Publicacion (Publicacion_Animal). Estado_Esterilizacion: Esterilizado o No esterilizado. Estado_Adopcion: En adopción, Adoptado o Archivado
+- Publicacion_Adopcion(ID_Publicacion, Tipo_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada, Estado_Adopcion) FK: (ID_Publicacion, Tipo_Publicacion) (Publicacion_Animal). Tipo_Publicacion vale siempre Adopción. Estado_Esterilizacion: Esterilizado o No esterilizado. Estado_Adopcion: En adopción, Adoptado o Archivado
 
-- Publicacion_Perdida(ID_Publicacion, Tipo_Aviso, Nombre_Mascota, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento, Estado_Perdida) FK: ID_Publicacion (Publicacion_Animal). Tipo_Aviso: Perdida o Encontrada (RNE26). Nombre_Mascota admite nulo solo si Tipo_Aviso es Encontrada. Contacto es un teléfono de 8 o 9 dígitos. Estado_Perdida: Vigente, Resuelta o Archivada
+- Publicacion_Perdida(ID_Publicacion, Tipo_Publicacion, Tipo_Aviso, Nombre_Mascota, Caracteristicas, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento, Estado_Perdida) FK: (ID_Publicacion, Tipo_Publicacion) (Publicacion_Animal). Tipo_Publicacion vale siempre Perdida. Tipo_Aviso: Perdida o Encontrada (RNE26). Nombre_Mascota admite nulo solo si Tipo_Aviso es Encontrada. Contacto es un teléfono de 8 o 9 dígitos. Estado_Perdida: Vigente, Resuelta o Archivada
 
-- Foto_Animal(ID_Publicacion, ID_Foto, URL_Foto) FK: ID_Publicacion (Publicacion_Animal). Entidad débil: ID_Foto se numera dentro de cada publicación
+- Foto_Animal(ID_Foto, ID_Publicacion, URL_Foto) FK: ID_Publicacion (Publicacion_Animal). ID_Foto es autonumérico. Cada publicación tiene de 1 a 6 fotos si es de adopción y de 1 a 3 si es de una mascota perdida o encontrada (RNE01)
 
 - Solicitud_Adopcion(ID_Solicitud, ID_Publicacion, ID_Usuario, Fecha_Solicitud, Estado_Solicitud) FK: ID_Publicacion (Publicacion_Adopcion), ID_Usuario (Particular)
 
