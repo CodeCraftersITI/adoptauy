@@ -25,16 +25,23 @@ chk "dos subtipos de publicación" 2 "SELECT COUNT(*) FROM information_schema.ta
 chk "sin Temperamento" 0 "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='adoptauy' AND column_name LIKE 'Temperamento%'"
 chk "sin triggers" 0 "SELECT COUNT(*) FROM information_schema.triggers WHERE trigger_schema='adoptauy'"
 chk "sin procedimientos ni funciones" 0 "SELECT COUNT(*) FROM information_schema.routines WHERE routine_schema='adoptauy'"
+chk "sin Descripcion en Publicacion_Animal" 0 "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='adoptauy' AND table_name='Publicacion_Animal' AND column_name='Descripcion'"
+chk "collation utf8mb4_unicode_ci" utf8mb4_unicode_ci "SELECT default_collation_name FROM information_schema.schemata WHERE schema_name='adoptauy'"
+
+# Hash bcrypt de prueba (60 caracteres), el mismo de datos-prueba.sql
+HASH="'\$2y\$12\$xe.onSn5JZgonGlDAIIAbuGMqPYK9lFGgNxVA/5VKQWfx6BBa4T5u'"
 
 # Datos ficticios
-sql "INSERT INTO Usuario (Email, Contraseña, Tipo_Usuario) VALUES ('ana@ejemplo.test','hash','Particular'),('refugio@ejemplo.test','hash','Refugio')" >/dev/null
+sql "INSERT INTO Usuario (Email, Contraseña, Tipo_Usuario) VALUES ('ana@ejemplo.test',$HASH,'Particular'),('refugio@ejemplo.test',$HASH,'Refugio')" >/dev/null
 chk "Estado_Usuario por defecto" "Activo" "SELECT Estado_Usuario FROM Usuario WHERE Email='ana@ejemplo.test'"
 chk "Email_Verificado vacío al registrarse" "NULL" "SELECT IFNULL(Email_Verificado,'NULL') FROM Usuario WHERE Email='ana@ejemplo.test'"
-error "Email repetido" "INSERT INTO Usuario (Email, Contraseña, Tipo_Usuario) VALUES ('ana@ejemplo.test','hash','Particular')"
+error "Email repetido" "INSERT INTO Usuario (Email, Contraseña, Tipo_Usuario) VALUES ('ana@ejemplo.test',$HASH,'Particular')"
+error "Contraseña sin hash bcrypt (RNE13)" "INSERT INTO Usuario (Email, Contraseña, Tipo_Usuario) VALUES ('otro@ejemplo.test','Prueba2026!','Particular')"
 
-sql "INSERT INTO Particular VALUES (1,'12345672','Ana','Pérez','099123456')" >/dev/null
-error "CI repetida" "INSERT INTO Particular VALUES (2,'12345672','Otro','Nombre','099000000')"
-error "Particular sin Usuario" "INSERT INTO Particular VALUES (99,'11111111','X','Y','099000000')"
+sql "INSERT INTO Particular (ID_Usuario, CI, Nombre, Apellido, Telefono) VALUES (1,'12345672','Ana','Pérez','099123456')" >/dev/null
+error "CI repetida" "INSERT INTO Particular (ID_Usuario, CI, Nombre, Apellido, Telefono) VALUES (2,'12345672','Otro','Nombre','099000000')"
+error "Un Refugio no puede estar en Particular (RNE10)" "INSERT INTO Particular (ID_Usuario, CI, Nombre, Apellido, Telefono) VALUES (2,'23456783','Otro','Nombre','099000000')"
+error "Particular sin Usuario" "INSERT INTO Particular (ID_Usuario, CI, Nombre, Apellido, Telefono) VALUES (99,'11111111','Xx','Yy','099000000')"
 
 sql "INSERT INTO Refugio (ID_Usuario, Nombre_Refugio, Certificado_Personeria, Comprobante_Domicilio, Ubicacion) VALUES (2,'Refugio de prueba','cert.pdf','dom.pdf','Montevideo')" >/dev/null
 chk "Estado_Validacion por defecto" "Pendiente de validación" "SELECT Estado_Validacion FROM Refugio WHERE ID_Usuario=2"
@@ -49,13 +56,20 @@ chk "Estado_Moderacion por defecto" "Visible" "SELECT Estado_Moderacion FROM Pub
 error "Subtipo sin supertipo" "INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada) VALUES (50,8,'Mediano','Sano','Esterilizado','Cordón')"
 error "Tamaño fuera de la lista" "UPDATE Publicacion_Adopcion SET Tamaño='Gigante' WHERE ID_Publicacion=1"
 error "Edad negativa" "UPDATE Publicacion_Adopcion SET Edad_Meses=-1 WHERE ID_Publicacion=1"
-sql "INSERT INTO Foto_Animal VALUES (1,1,'fotos/1-1.jpg')" >/dev/null
-error "Foto repetida" "INSERT INTO Foto_Animal VALUES (1,1,'fotos/1-1b.jpg')"
+sql "INSERT INTO Foto_Animal (ID_Publicacion, URL_Foto) VALUES (1,'fotos/1-1.jpg')" >/dev/null
+error "Foto de una publicación que no existe" "INSERT INTO Foto_Animal (ID_Publicacion, URL_Foto) VALUES (99,'fotos/x.jpg')"
 
 # Publicación perdida
-sql "INSERT INTO Publicacion_Animal (ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo, Descripcion) VALUES (1,'Perdida','Gato','Siamés','Hembra','Collar rojo')" >/dev/null
-sql "INSERT INTO Publicacion_Perdida (ID_Publicacion, Nombre_Mascota, Fecha_Extravio, Zona_Extravio, Contacto, Fecha_Vencimiento) VALUES (2,'Mishi',CURDATE(),'Pocitos','099123456',CURDATE()+INTERVAL 30 DAY)" >/dev/null
-chk "Estado_Perdida por defecto" "Perdida" "SELECT Estado_Perdida FROM Publicacion_Perdida WHERE ID_Publicacion=2"
+sql "INSERT INTO Publicacion_Animal (ID_Usuario, Tipo_Publicacion, Especie, Raza, Sexo) VALUES (1,'Perdida','Gato','Siamés','Hembra')" >/dev/null
+sql "INSERT INTO Publicacion_Perdida (ID_Publicacion, Nombre_Mascota, Caracteristicas, Fecha_Suceso, Zona_Suceso, Contacto, Fecha_Vencimiento) VALUES (2,'Mishi','Collar rojo',CURDATE(),'Pocitos','099123456',CURDATE()+INTERVAL 30 DAY)" >/dev/null
+chk "Estado_Perdida por defecto" "Vigente" "SELECT Estado_Perdida FROM Publicacion_Perdida WHERE ID_Publicacion=2"
+chk "Tipo_Aviso por defecto" "Perdida" "SELECT Tipo_Aviso FROM Publicacion_Perdida WHERE ID_Publicacion=2"
+error "Tipo_Aviso fuera de la lista" "UPDATE Publicacion_Perdida SET Tipo_Aviso='Robada' WHERE ID_Publicacion=2"
+error "Estado viejo «Encontrada» ya no existe" "UPDATE Publicacion_Perdida SET Estado_Perdida='Encontrada' WHERE ID_Publicacion=2"
+error "Perdida sin nombre (RNE26)" "UPDATE Publicacion_Perdida SET Nombre_Mascota=NULL WHERE ID_Publicacion=2"
+sql "UPDATE Publicacion_Perdida SET Tipo_Aviso='Encontrada', Nombre_Mascota=NULL WHERE ID_Publicacion=2" >/dev/null
+chk "Encontrada sin nombre (RNE26)" "Encontrada" "SELECT Tipo_Aviso FROM Publicacion_Perdida WHERE ID_Publicacion=2 AND Nombre_Mascota IS NULL"
+error "La publicación perdida no puede estar también en adopción (RNE25)" "INSERT INTO Publicacion_Adopcion (ID_Publicacion, Edad_Meses, Tamaño, Estado_Salud, Estado_Esterilizacion, Ubicacion_Aproximada) VALUES (2,8,'Mediano','Sano','Esterilizado','Cordón')"
 
 # Solicitud, adopción y seguimiento
 error "Solicitud sobre una publicación perdida" "INSERT INTO Solicitud_Adopcion (ID_Publicacion, ID_Usuario) VALUES (2,1)"
@@ -83,7 +97,8 @@ done
 chk "8 usuarios (1 admin, 4 particulares, 3 refugios)" "1 4 3" "SELECT CONCAT_WS(' ',SUM(Tipo_Usuario='Administrador'),SUM(Tipo_Usuario='Particular'),SUM(Tipo_Usuario='Refugio')) FROM Usuario"
 chk "refugios en 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Validacion) FROM Refugio"
 chk "adopción en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Adopcion) FROM Publicacion_Adopcion"
-chk "perdidas en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Perdida) FROM Publicacion_Perdida"
+chk "perdidas en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Perdida) FROM Publicacion_Perdida WHERE Tipo_Aviso='Perdida'"
+chk "una mascota encontrada sin nombre" 1 "SELECT COUNT(*) FROM Publicacion_Perdida WHERE Tipo_Aviso='Encontrada' AND Nombre_Mascota IS NULL"
 chk "solicitudes en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Solicitud) FROM Solicitud_Adopcion"
 chk "reportes en sus 3 estados" 3 "SELECT COUNT(DISTINCT Estado_Reporte) FROM Reporte"
 chk "cada publicación tiene un solo subtipo" 0 "SELECT COUNT(*) FROM Publicacion_Animal p LEFT JOIN Publicacion_Adopcion a USING(ID_Publicacion) LEFT JOIN Publicacion_Perdida d USING(ID_Publicacion) WHERE (a.ID_Publicacion IS NULL) = (d.ID_Publicacion IS NULL)"

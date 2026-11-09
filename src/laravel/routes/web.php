@@ -38,11 +38,13 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
 {
     Route::get('/cuenta', [CuentaController::class, 'index']);
 
-    // Publicar mascota en adopción (RF:0017, RF:0024) y perdida (RF:0046)
+    // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) y encontrada (RF:0064)
     Route::get('/publicar/adopcion', [PublicacionController::class, 'crearAdopcion']);
     Route::post('/publicar/adopcion', [PublicacionController::class, 'guardarAdopcion']);
     Route::get('/publicar/perdida', [PublicacionController::class, 'crearPerdida']);
     Route::post('/publicar/perdida', [PublicacionController::class, 'guardarPerdida']);
+    Route::get('/publicar/encontrada', [PublicacionController::class, 'crearEncontrada']);
+    Route::post('/publicar/encontrada', [PublicacionController::class, 'guardarEncontrada']);
 });
 
 // Administrador

@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Página de inicio pública (RF:0040, RF:0048). Caso CP-08.
+ * Página de inicio pública (RF:0040, RF:0048, RF:0065). Casos CP-08 y CP-48.
  */
 class InicioTest extends TestCase
 {
@@ -49,7 +49,7 @@ class InicioTest extends TestCase
     }
 
     // Crea una publicación con su foto directamente en la base, en el estado pedido
-    private function crearPublicacion($tipo, $estado, $texto, $moderacion = 'Visible', $vencimiento = null)
+    private function crearPublicacion($tipo, $estado, $texto, $moderacion = 'Visible', $vencimiento = null, $aviso = 'Perdida')
     {
         $publicacion = new PublicacionAnimal(['Especie' => 'Perro', 'Raza' => 'mestizo', 'Sexo' => 'Macho']);
         $publicacion->ID_Usuario = Particular::factory()->create()->ID_Usuario;
@@ -74,10 +74,11 @@ class InicioTest extends TestCase
         {
             $perdida = new PublicacionPerdida([
                 'ID_Publicacion' => $publicacion->ID_Publicacion,
+                'Tipo_Aviso' => $aviso,
                 'Nombre_Mascota' => $texto,
                 'Caracteristicas' => 'Collar azul',
-                'Fecha_Extravio' => now()->subDays(40)->toDateString(),
-                'Zona_Extravio' => 'Centro',
+                'Fecha_Suceso' => now()->subDays(40)->toDateString(),
+                'Zona_Suceso' => 'Centro',
                 'Contacto' => '099 000 000',
             ]);
             $perdida->Estado_Perdida = $estado;
@@ -88,13 +89,13 @@ class InicioTest extends TestCase
         FotoAnimal::create(['ID_Publicacion' => $publicacion->ID_Publicacion, 'URL_Foto' => 'fotos-animales/prueba.jpg']);
     }
 
-    public function test_cp08_solo_se_listan_las_en_adopcion_y_las_perdida()
+    public function test_cp08_solo_se_listan_las_en_adopcion_y_las_perdidas_vigentes()
     {
         $this->crearPublicacion('Adopción', 'En adopción', 'BarrioEnAdopcion');
         $this->crearPublicacion('Adopción', 'Adoptado', 'BarrioAdoptado');
         $this->crearPublicacion('Adopción', 'Archivado', 'BarrioArchivado');
-        $this->crearPublicacion('Perdida', 'Perdida', 'NombrePerdida');
-        $this->crearPublicacion('Perdida', 'Encontrada', 'NombreEncontrada');
+        $this->crearPublicacion('Perdida', 'Vigente', 'NombrePerdida');
+        $this->crearPublicacion('Perdida', 'Resuelta', 'NombreResuelta');
         $this->crearPublicacion('Perdida', 'Archivada', 'NombreArchivada');
 
         $this->get('/')
@@ -102,14 +103,31 @@ class InicioTest extends TestCase
             ->assertDontSee('BarrioAdoptado')
             ->assertDontSee('BarrioArchivado')
             ->assertSee('NombrePerdida')
-            ->assertDontSee('NombreEncontrada')
+            ->assertDontSee('NombreResuelta')
             ->assertDontSee('NombreArchivada');
+    }
+
+    public function test_cp48_las_encontradas_vigentes_se_listan_en_su_propio_apartado()
+    {
+        $this->crearPublicacion('Perdida', 'Vigente', 'NombrePerdida');
+        $this->crearPublicacion('Perdida', 'Vigente', 'NombreEncontrada', 'Visible', null, 'Encontrada');
+        $this->crearPublicacion('Perdida', 'Resuelta', 'NombreEncontradaResuelta', 'Visible', null, 'Encontrada');
+        $this->crearPublicacion('Perdida', 'Vigente', 'NombreEncontradaVencida', 'Visible', now()->subDay()->toDateString(), 'Encontrada');
+        $this->crearPublicacion('Perdida', 'Vigente', 'NombreEncontradaEnRevision', 'En revisión', null, 'Encontrada');
+
+        $respuesta = $this->get('/')->assertOk();
+
+        // Cada una aparece en su sección: las perdidas antes del título «Mascotas encontradas», las encontradas después
+        $respuesta->assertSeeInOrder(['Mascotas perdidas', 'NombrePerdida', 'Mascotas encontradas', 'NombreEncontrada']);
+        $respuesta->assertDontSee('NombreEncontradaResuelta')
+            ->assertDontSee('NombreEncontradaVencida')
+            ->assertDontSee('NombreEncontradaEnRevision');
     }
 
     public function test_no_se_listan_las_ocultas_por_moderacion_ni_las_perdidas_vencidas()
     {
         $this->crearPublicacion('Adopción', 'En adopción', 'BarrioEnRevision', 'En revisión');
-        $this->crearPublicacion('Perdida', 'Perdida', 'NombreVencida', 'Visible', now()->subDay()->toDateString());
+        $this->crearPublicacion('Perdida', 'Vigente', 'NombreVencida', 'Visible', now()->subDay()->toDateString());
 
         $this->get('/')
             ->assertDontSee('BarrioEnRevision')

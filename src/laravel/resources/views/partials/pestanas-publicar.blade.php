@@ -2,4 +2,5 @@
 <nav class="pestanas" aria-label="Tipo de publicación">
     <a class="pestana {{ request()->is('publicar/adopcion') ? 'pestana-activa' : '' }}" href="/publicar/adopcion">En adopción</a>
     <a class="pestana {{ request()->is('publicar/perdida') ? 'pestana-activa' : '' }}" href="/publicar/perdida">Mascota perdida</a>
+    <a class="pestana {{ request()->is('publicar/encontrada') ? 'pestana-activa' : '' }}" href="/publicar/encontrada">Mascota encontrada</a>
 </nav>

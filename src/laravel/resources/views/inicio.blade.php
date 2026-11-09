@@ -81,7 +81,7 @@
         </ol>
     </section>
 
-    {{-- RF:0048: mascotas en estado Perdida y vigentes ($perdidas llega desde InicioController) --}}
+    {{-- RF:0048: mascotas perdidas vigentes ($perdidas llega desde InicioController) --}}
     <section class="seccion bloque-oscuro" id="perdidas">
         <div class="seccion-cabecera">
             <h2 class="seccion-titulo">Mascotas perdidas</h2>
@@ -92,7 +92,7 @@
             @forelse ($perdidas as $perdida)
                 <article class="perdida">
                     <img class="mascota-foto" src="{{ $perdida->publicacion->primeraFoto() }}" alt="Foto de {{ $perdida->Nombre_Mascota }}">
-                    <span class="perdida-fecha">Perdido el {{ date('d/m/Y', strtotime($perdida->Fecha_Extravio)) }} · {{ $perdida->Zona_Extravio }}</span>
+                    <span class="perdida-fecha">Perdido el {{ date('d/m/Y', strtotime($perdida->Fecha_Suceso)) }} · {{ $perdida->Zona_Suceso }}</span>
                     <strong class="perdida-nombre">{{ $perdida->Nombre_Mascota }}</strong>
                     <span>{{ $perdida->publicacion->Especie }} · {{ $perdida->publicacion->Raza }} · {{ $perdida->publicacion->Sexo }}</span>
                     <span>{{ $perdida->Caracteristicas }}</span>
@@ -101,6 +101,30 @@
                 </article>
             @empty
                 <div class="vacio">Todavía no hay mascotas perdidas publicadas.</div>
+            @endforelse
+        </div>
+    </section>
+
+    {{-- RF:0065: mascotas encontradas vigentes, aparte de las perdidas ($encontradas llega desde InicioController) --}}
+    <section class="seccion" id="encontradas">
+        <div class="seccion-cabecera">
+            <h2 class="seccion-titulo">Mascotas encontradas</h2>
+            <a class="btn btn-suave" href="/publicar/encontrada">Publicar encontrada</a>
+        </div>
+
+        <div class="grilla-tarjetas">
+            @forelse ($encontradas as $encontrada)
+                <article class="perdida">
+                    <img class="mascota-foto" src="{{ $encontrada->publicacion->primeraFoto() }}" alt="Foto de la mascota encontrada">
+                    <span class="perdida-fecha">Encontrado el {{ date('d/m/Y', strtotime($encontrada->Fecha_Suceso)) }} · {{ $encontrada->Zona_Suceso }}</span>
+                    <strong class="perdida-nombre">{{ $encontrada->nombreVisible() }}</strong>
+                    <span>{{ $encontrada->publicacion->Especie }} · {{ $encontrada->publicacion->Raza }} · {{ $encontrada->publicacion->Sexo }}</span>
+                    <span>{{ $encontrada->Caracteristicas }}</span>
+                    {{-- Contacto público: quien la encontró lo cargó para que la familia se comunique (13.2.2) --}}
+                    <span class="perdida-contacto">Contacto: {{ $encontrada->contactoFormateado() }}</span>
+                </article>
+            @empty
+                <div class="vacio">Todavía no hay mascotas encontradas publicadas.</div>
             @endforelse
         </div>
     </section>

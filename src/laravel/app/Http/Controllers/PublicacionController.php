@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Alta de publicaciones: mascota en adopción (RF:0017, RF:0024) y mascota perdida (RF:0046).
+ * Alta de publicaciones: mascota en adopción (RF:0017, RF:0024), mascota perdida (RF:0046)
+ * y mascota encontrada (RF:0064).
  * Las rutas están protegidas con rol:Particular,Refugio: solo publican los usuarios con
  * sesión iniciada, y un refugio solo puede iniciar sesión si está Validado (RNE04, RNE16).
  */
@@ -99,7 +100,8 @@ class PublicacionController extends Controller
         return redirect('/cuenta')->with('exito', 'Tu publicación ya está en adopción y la puede ver cualquier visitante.');
     }
 
-    // ---------- Mascota perdida ----------
+    // ---------- Mascota perdida y mascota encontrada ----------
+    // Comparten tabla y datos (Publicacion_Perdida, RNE26); Tipo_Aviso dice cuál es cada una.
 
     // GET /publicar/perdida
     public function crearPerdida()
@@ -107,20 +109,49 @@ class PublicacionController extends Controller
         return view('publicaciones.crear-perdida');
     }
 
-    // POST /publicar/perdida
+    // POST /publicar/perdida (RF:0046)
     public function guardarPerdida(Request $request)
     {
+        $this->guardarAviso($request, PublicacionPerdida::PERDIDA);
+
+        return redirect('/cuenta')->with('exito', 'Publicaste a ' . $request->input('nombre_mascota')
+            . '. La publicación vence en 30 días y la podés renovar.');
+    }
+
+    // GET /publicar/encontrada
+    public function crearEncontrada()
+    {
+        return view('publicaciones.crear-encontrada');
+    }
+
+    // POST /publicar/encontrada (RF:0064)
+    public function guardarEncontrada(Request $request)
+    {
+        $this->guardarAviso($request, PublicacionPerdida::ENCONTRADA);
+
+        return redirect('/cuenta')->with('exito', 'Publicaste la mascota que encontraste. '
+            . 'La publicación vence en 30 días y la podés renovar.');
+    }
+
+    // Valida y guarda una mascota perdida o encontrada. Cambian el nombre (obligatorio solo en
+    // la perdida), el campo de la fecha y los textos de los mensajes; el resto es igual (13.2.2).
+    private function guardarAviso(Request $request, $tipo)
+    {
+        $encontrada = $tipo == PublicacionPerdida::ENCONTRADA;
+        $campoFecha = $encontrada ? 'fecha_hallazgo' : 'fecha_extravio';
+        $suceso = $encontrada ? 'del hallazgo' : 'del extravío';
+
         // El contacto es un teléfono (RNE12): se guarda solo con números, como en el registro
         $request->merge(['contacto' => str_replace(' ', '', $request->input('contacto') ?? '')]);
 
-        // Campos de 13.2.2 para mascotas perdidas y entre 1 y 3 fotos (RNE01)
+        // Campos de 13.2.2 y entre 1 y 3 fotos (RNE01)
         $request->validate([
-            'nombre_mascota' => 'required|max:50',
+            'nombre_mascota' => ($encontrada ? 'nullable' : 'required') . '|max:50',
             'especie' => 'required|in:Perro,Gato',
             'raza' => 'required|min:2|max:50',
             'sexo' => 'required|in:Macho,Hembra',
             'caracteristicas' => 'required|max:1000',
-            'fecha_extravio' => 'required|date|before_or_equal:today',
+            $campoFecha => 'required|date|before_or_equal:today',
             'zona' => 'required|min:3|max:100',
             'contacto' => 'required|regex:/^[0-9]{8,9}$/',
             'fotos' => 'required|array|min:1|max:3',
@@ -130,37 +161,35 @@ class PublicacionController extends Controller
             'nombre_mascota.max' => 'El nombre puede tener hasta 50 caracteres.',
             'caracteristicas.required' => 'Contá cómo es (color, collar, señas particulares).',
             'caracteristicas.max' => 'Las características pueden tener hasta 1000 caracteres.',
-            'fecha_extravio.required' => 'Ingresá la fecha en que se perdió.',
-            'fecha_extravio.date' => 'La fecha no es válida.',
-            'fecha_extravio.before_or_equal' => 'La fecha del extravío no puede ser futura.',
-            'zona.required' => 'Ingresá la zona donde se perdió.',
+            $campoFecha . '.required' => $encontrada ? 'Ingresá la fecha en que la encontraste.' : 'Ingresá la fecha en que se perdió.',
+            $campoFecha . '.date' => 'La fecha no es válida.',
+            $campoFecha . '.before_or_equal' => 'La fecha ' . $suceso . ' no puede ser futura.',
+            'zona.required' => $encontrada ? 'Ingresá la zona donde la encontraste.' : 'Ingresá la zona donde se perdió.',
             'zona.min' => 'La zona debe tener al menos 3 caracteres.',
             'zona.max' => 'La zona puede tener hasta 100 caracteres.',
             'contacto.required' => 'Ingresá un teléfono de contacto.',
             'contacto.regex' => 'El teléfono debe tener 8 o 9 números.',
         ]);
 
-        DB::transaction(function () use ($request)
+        DB::transaction(function () use ($request, $tipo, $campoFecha)
         {
             $publicacion = $this->crearPublicacion($request, 'Perdida');
 
             // Estado_Perdida y Fecha_Vencimiento no están en $fillable: se asignan a mano
-            $perdida = new PublicacionPerdida([
+            $aviso = new PublicacionPerdida([
                 'ID_Publicacion' => $publicacion->ID_Publicacion,
-                'Nombre_Mascota' => $request->input('nombre_mascota'),
+                'Tipo_Aviso' => $tipo,
+                'Nombre_Mascota' => $request->input('nombre_mascota') ?: null,
                 'Caracteristicas' => $request->input('caracteristicas'),
-                'Fecha_Extravio' => $request->input('fecha_extravio'),
-                'Zona_Extravio' => $request->input('zona'),
+                'Fecha_Suceso' => $request->input($campoFecha),
+                'Zona_Suceso' => $request->input('zona'),
                 'Contacto' => $request->input('contacto'),
             ]);
-            $perdida->Fecha_Vencimiento = now()->addDays(30)->toDateString();   // RNE17
-            $perdida->save();
+            $aviso->Fecha_Vencimiento = now()->addDays(30)->toDateString();   // RNE17
+            $aviso->save();
 
             $this->guardarFotos($request, $publicacion);
         });
-
-        return redirect('/cuenta')->with('exito', 'Publicaste a ' . $request->input('nombre_mascota')
-            . '. La publicación vence en 30 días y la podés renovar.');
     }
 
     // ---------- Pasos comunes a los dos tipos ----------
