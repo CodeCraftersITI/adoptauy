@@ -31,13 +31,13 @@
                     <tr>
                         <td><img class="miniatura" src="{{ $publicacion->primeraFoto() }}" alt=""></td>
                         <td>
-                            {{-- Las perdidas tienen nombre; las de adopción se muestran por raza --}}
+                            {{-- Las perdidas y encontradas se muestran por nombre; las de adopción, por raza --}}
                             @if ($publicacion->Tipo_Publicacion == 'Perdida')
-                                <strong>{{ $publicacion->perdida->Nombre_Mascota }}</strong><br>
+                                <strong>{{ $publicacion->perdida->nombreVisible() }}</strong><br>
                             @endif
                             {{ $publicacion->Especie }} · {{ $publicacion->Raza }} · {{ $publicacion->Sexo }}
                         </td>
-                        <td>{{ $publicacion->Tipo_Publicacion }}</td>
+                        <td>{{ $publicacion->tipoVisible() }}</td>
                         <td>
                             <span class="estado">{{ $publicacion->estado() }}</span>
                             @if ($publicacion->Tipo_Publicacion == 'Perdida')

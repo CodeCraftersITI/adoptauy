@@ -14,6 +14,7 @@ use Tests\TestCase;
 
 /**
  * Alta de publicaciones (RF:0017, RF:0024, RF:0046). Casos CP-06, CP-07, CP-09, CP-10 y CP-11.
+ * Las mascotas encontradas (RF:0064) se prueban en MascotaEncontradaTest.
  * Storage::fake('public') evita guardar fotos de verdad.
  */
 class PublicacionTest extends TestCase
@@ -151,14 +152,15 @@ class PublicacionTest extends TestCase
 
     // ---------- Perdida ----------
 
-    public function test_cp09_alta_valida_queda_perdida_con_vencimiento_a_30_dias_y_es_publica()
+    public function test_cp09_alta_valida_queda_vigente_con_vencimiento_a_30_dias_y_es_publica()
     {
         $this->withSession($this->sesionParticular())
             ->post('/publicar/perdida', $this->datosPerdida())
             ->assertRedirect('/cuenta');
 
         $perdida = PublicacionPerdida::first();
-        $this->assertEquals('Perdida', $perdida->Estado_Perdida);
+        $this->assertEquals('Perdida', $perdida->Tipo_Aviso);
+        $this->assertEquals('Vigente', $perdida->Estado_Perdida);
         $this->assertEquals(now()->addDays(30)->toDateString(), $perdida->Fecha_Vencimiento);
         $this->assertCount(2, $perdida->publicacion->fotos);
 
@@ -196,6 +198,7 @@ class PublicacionTest extends TestCase
     {
         $this->get('/publicar/adopcion')->assertRedirect('/ingresar');
         $this->get('/publicar/perdida')->assertRedirect('/ingresar');
+        $this->get('/publicar/encontrada')->assertRedirect('/ingresar');
         $this->post('/publicar/adopcion', $this->datosAdopcion())->assertRedirect('/ingresar');
         $this->post('/publicar/perdida', $this->datosPerdida())->assertRedirect('/ingresar');
 

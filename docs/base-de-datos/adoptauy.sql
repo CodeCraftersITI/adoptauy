@@ -123,15 +123,17 @@ CREATE TABLE Publicacion_Adopcion (
   CONSTRAINT fk_adopcion_publicacion FOREIGN KEY (ID_Publicacion) REFERENCES Publicacion_Animal (ID_Publicacion)
 ) ENGINE=InnoDB;
 
--- Subtipo: mascota perdida
+-- Subtipo: mascota perdida o encontrada. Comparten los datos y Tipo_Aviso las distingue:
+-- Perdida = quien publica perdió su mascota; Encontrada = encontró una ajena (RF:0064)
 CREATE TABLE Publicacion_Perdida (
   ID_Publicacion     INT UNSIGNED NOT NULL,
-  Nombre_Mascota     VARCHAR(60)  NOT NULL,
-  Fecha_Extravio     DATE         NOT NULL,
-  Zona_Extravio      VARCHAR(100) NOT NULL,
+  Tipo_Aviso         ENUM('Perdida','Encontrada') NOT NULL DEFAULT 'Perdida',
+  Nombre_Mascota     VARCHAR(60)  NULL,                 -- obligatorio en las perdidas, opcional en las encontradas (RNE26)
+  Fecha_Suceso       DATE         NOT NULL,             -- del extravío o del hallazgo, según Tipo_Aviso
+  Zona_Suceso        VARCHAR(100) NOT NULL,             -- del extravío o del hallazgo, según Tipo_Aviso
   Contacto           VARCHAR(9)   NOT NULL,             -- teléfono de 8 o 9 dígitos; es público
   Fecha_Vencimiento  DATE         NOT NULL,             -- creación o última renovación + 30 días (RNE17)
-  Estado_Perdida     ENUM('Perdida','Encontrada','Archivada') NOT NULL DEFAULT 'Perdida',
+  Estado_Perdida     ENUM('Vigente','Resuelta','Archivada') NOT NULL DEFAULT 'Vigente',  -- Resuelta = la mascota volvió con su dueño
   PRIMARY KEY (ID_Publicacion),
   CONSTRAINT fk_perdida_publicacion FOREIGN KEY (ID_Publicacion) REFERENCES Publicacion_Animal (ID_Publicacion)
 ) ENGINE=InnoDB;

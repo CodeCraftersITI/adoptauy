@@ -39,23 +39,27 @@ Mascotas en adopción (particulares y refugios):
 | En adopción | Archivado | Publicante o Administrador | Retiro de la publicación |
 | Archivado | En adopción | Publicante | Reactivación |
 
-Mascotas perdidas (particulares y refugios):
+Mascotas perdidas y mascotas encontradas (particulares y refugios):
 
-- Campos: nombre de la mascota, especie, raza, sexo, características, fecha del extravío, zona del extravío, contacto del publicante y entre 1 y 3 fotografías, con el mismo formato y tamaño máximo que las de adopción.
+- Son dos tipos de aviso con apartados separados en el sitio. Una mascota **perdida** la publica su dueño para que lo ayuden a encontrarla; una mascota **encontrada** la publica quien halló un animal ajeno, para que su familia lo encuentre. Comparten los datos y se guardan en la misma tabla (Publicacion_Perdida), distinguidas por Tipo_Aviso (Perdida o Encontrada).
+
+- Campos: nombre de la mascota (obligatorio en una perdida, opcional en una encontrada), especie, raza, sexo, características, fecha y zona del suceso (del extravío o del hallazgo), contacto del publicante y entre 1 y 3 fotografías, con el mismo formato y tamaño máximo que las de adopción.
 
 - El contacto es un número de teléfono de 8 o 9 dígitos y es público, porque la publicación la ve cualquier visitante.
 
-- Vigencia de 30 días desde la creación o la última renovación.
+- Vigencia de 30 días desde la creación o la última renovación, igual para los dos tipos.
 
-- Consulta pública, sin necesidad de registro.
+- Consulta pública, sin necesidad de registro, en dos listados: mascotas perdidas y mascotas encontradas.
 
 | Desde | Hacia | Quién | Condición |
 |---|---|---|---|
-| Perdida | Encontrada | Publicante | La mascota apareció |
-| Perdida | Archivada | Sistema | Pasaron 30 días sin renovación |
-| Perdida | Archivada | Publicante o Administrador | Retiro de la publicación |
-| Archivada | Perdida | Publicante | Renueva: vence 30 días después de la renovación |
-| Perdida | Perdida | Publicante | Renueva antes del vencimiento: vence 30 días después de la renovación |
+| Vigente | Resuelta | Publicante | La mascota volvió con su dueño |
+| Vigente | Archivada | Sistema | Pasaron 30 días sin renovación |
+| Vigente | Archivada | Publicante o Administrador | Retiro de la publicación |
+| Archivada | Vigente | Publicante | Renueva: vence 30 días después de la renovación |
+| Vigente | Vigente | Publicante | Renueva antes del vencimiento: vence 30 días después de la renovación |
+
+Los estados son los mismos para los dos tipos. Se llaman Vigente, Resuelta y Archivada (antes Perdida, Encontrada y Archivada) para no confundir el estado «Encontrada» con el tipo de aviso nuevo.
 
 #### 13.2.3. Adopción y seguimiento
 
