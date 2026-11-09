@@ -24,9 +24,10 @@ entity PUBLICACION_ADOPCION {
   Estado_Adopcion
 }
 entity PUBLICACION_PERDIDA {
+  Tipo_Aviso
   Nombre_Mascota
-  Fecha_Extravio
-  Zona_Extravio
+  Fecha_Suceso
+  Zona_Suceso
   Contacto
   Fecha_Vencimiento
   Estado_Perdida
