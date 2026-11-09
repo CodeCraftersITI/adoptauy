@@ -225,7 +225,7 @@ Riesgos de pruebas
 | Datos personales en las pruebas | Solo datos ficticios generados por factories |
 
 ## 8. Matriz de trazabilidad
-Los 59 RF vigentes y los 14 RNF quedan cubiertos por 48 casos de prueba: 11 del Hito 2 (CP-01 a CP-11), 25 funcionales de los Sprints 5 y 6 (CP-12 a CP-36), 10 no funcionales (CP-37 a CP-46) y 2 de mascotas encontradas (CP-47 y CP-48).
+Los 61 RF vigentes y los 14 RNF quedan cubiertos por 50 casos de prueba: 11 del Hito 2 (CP-01 a CP-11), 25 funcionales de los Sprints 5 y 6 (CP-12 a CP-36), 10 no funcionales (CP-37 a CP-46), 2 de mascotas encontradas (CP-47 y CP-48) y 2 de Continuar con Google (CP-49 y CP-50).
 
 | Requisito | Actor | Descripción breve | Hito | Casos |
 |---|---|---|---|---|
@@ -239,6 +239,8 @@ Los 59 RF vigentes y los 14 RNF quedan cubiertos por 48 casos de prueba: 11 del 
 | RF:0046 | Particular, Refugio | Alta de mascota perdida | 2 | CP-09, CP-10, CP-11 |
 | RF:0064 | Particular, Refugio | Alta de mascota encontrada | 3 | CP-47 |
 | RF:0065 | Todos | Consulta de mascotas encontradas | 3 | CP-48 |
+| RF:0066 | Invitado, Particular | Continuar con Google | 3 | CP-49 |
+| RF:0067 | Particular | Definir o cambiar la contraseña | 3 | CP-50 |
 | RF:0021, RF:0028, RF:0041 | Todos | Consulta con filtros y cachorros | 3 | CP-12 |
 | RF:0018, RF:0019, RF:0025, RF:0026, RF:0045 | Publicante, Administrador | Baja, modificación y estados de la publicación | 3 | CP-13, CP-15 |
 | RF:0020, RF:0027 | Particular, Refugio | Listado de publicaciones propias | 3 | CP-13 |
@@ -328,6 +330,8 @@ Los casos del Hito 2 se detallan con pasos, datos y resultado esperado; los dem�
 | CP-36 | Transversal | Control de acceso por rol | Particular contra rutas de Refugio y Administrador, Refugio contra rutas de Administrador e Invitado contra rutas privadas: siempre HTTP 403 o redirección al inicio de sesión | Tabla de decisión | Alta |
 | CP-47 | RF:0064, RNE26 | Alta de mascota encontrada | Sin nombre queda con tipo Encontrada, Vigente y vencimiento a 30 días, visible sin sesión con «Sin nombre»; el nombre es opcional en la encontrada y obligatorio en la perdida; se aceptan 1 y 3 fotos y se rechazan 0 y 4, la fecha de hallazgo futura, la zona de 2 caracteres y un contacto que no es teléfono; el Invitado va a iniciar sesión y el Administrador recibe HTTP 403 | Partición y valores límite | Alta |
 | CP-48 | RF:0065, RF:0040 | Apartado de mascotas encontradas | La encontrada Vigente aparece en «Mascotas encontradas» y no en «Mascotas perdidas»; no aparecen las Resuelta, las vencidas ni las En revisión | Transición de estados | Alta |
+| CP-49 | RF:0066, RNE27 | Continuar con Google | Con Google simulado (sin llamar a Google): un Google_ID nuevo pide CI y teléfono y crea el Particular sin contraseña y con Email_Verificado; el correo de un Particular activo vincula la cuenta y guarda Google_ID; el correo de un Refugio o del Administrador, o una cuenta inhabilitada o dada de baja, muestra el mensaje genérico; una CI inválida o repetida no crea la cuenta; cancelar en Google o un state inválido no crea ni modifica nada; una cuenta de Google sin correo verificado se rechaza | Tabla de decisión | Alta |
+| CP-50 | RF:0067, RNF:0007 | Definir o cambiar la contraseña | Sin contraseña se define sin pedir la actual; con contraseña se exige la actual y una actual incorrecta se rechaza; se aceptan 8 y 72 caracteres y se rechazan 7 y 73; queda un hash bcrypt y desde entonces se puede ingresar con correo y contraseña | Valores límite | Alta |
 
 ### 9.3 Casos no funcionales
 

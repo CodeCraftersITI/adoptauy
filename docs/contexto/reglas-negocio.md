@@ -1,6 +1,7 @@
 # Reglas de negocio por módulo
 
 > Extraído del Documento integrador 2.1 de AdoptaUY (rev. 18/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
+> Incluye los cambios de la V3 del integrador: mascotas encontradas y Continuar con Google (D93, D94).
 
 ### 13.2. Módulos
 
@@ -8,11 +9,17 @@
 
 - El Usuario Invitado se registra como Particular con cédula de identidad, nombre, apellido, teléfono, correo y contraseña. La cédula se ingresa solo con números, sin puntos ni guion, tiene 7 u 8 dígitos con dígito verificador válido y no puede repetirse entre cuentas. El nombre y el apellido tienen entre 2 y 50 caracteres; el teléfono, 8 dígitos (fijo) o 9 (celular), solo números; el correo, hasta 255 caracteres, y la contraseña, entre 8 y 72. El sistema envía un correo para confirmar la dirección.
 
+- También puede registrarse con su cuenta de Google (RF:0066): Google aporta el correo, el nombre y el apellido, y el usuario completa la cédula y el teléfono, con las mismas validaciones. Esa cuenta se crea sin contraseña y con el correo confirmado, porque Google ya lo verificó, y no recibe el correo de confirmación. Solo se aceptan cuentas de Google con el correo verificado.
+
 - El aspirante a Refugio envía una solicitud de registro con certificado de personería jurídica u organización sin fines de lucro, comprobante de domicilio del predio y datos de contacto verificables.
 
 - El Administrador resuelve la solicitud en un plazo máximo de 5 días hábiles.
 
 - Los usuarios registrados inician sesión con correo y contraseña. Desde el Sprint 5 el ingreso exige el correo confirmado; ante un correo sin confirmar, una cuenta inhabilitada o dada de baja, o un refugio que no está Validado, el sistema muestra un mensaje genérico que no revela si el correo existe.
+
+- El Particular también puede iniciar sesión con su cuenta de Google. Si el identificador de Google o el correo es el de un Particular activo, la cuenta de Google queda vinculada a la suya. El Refugio y el Administrador ingresan solo con correo y contraseña: si el correo de Google es de un Refugio o del Administrador, se muestra el mismo mensaje genérico.
+
+- El Particular que no tiene contraseña la puede definir desde su perfil; el que la tiene la cambia ingresando la actual (RF:0067). Mientras no la defina, ingresa solo con Google.
 Estados del refugio y transiciones válidas:
 
 | Desde | Hacia | Quién | Condición |
@@ -126,8 +133,10 @@ Motivos de reporte:
 
 | Evento | Destinatario |
 |---|---|
-| Registro de un Particular | El Particular, para confirmar su dirección |
+| Registro de un Particular con el formulario | El Particular, para confirmar su dirección |
 | Solicitud de registro de un refugio recibida | El refugio solicitante |
 | Alta definitiva de un refugio | El refugio |
 | Solicitud de adopción recibida | El publicante |
 | Aviso de seguimiento del día 15 | El adoptante |
+
+El registro con Google no envía el correo de confirmación, porque Google ya verificó la dirección (RF:0066).
