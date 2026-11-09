@@ -1,15 +1,15 @@
 # Base de datos de AdoptaUY (script SQL)
 
-Tablas en MySQL según el DER y el diccionario de datos. `Publicacion_Animal` guarda los datos comunes de toda publicación y tiene dos subtipos: `Publicacion_Adopcion` y `Publicacion_Perdida`.
+Tablas en MySQL iguales a las que crean las migraciones de Laravel, según el pasaje a tablas y el diccionario de datos del integrador. `Publicacion_Animal` guarda los datos comunes de toda publicación y tiene dos subtipos: `Publicacion_Adopcion` y `Publicacion_Perdida`. Esta última guarda las mascotas perdidas y las encontradas, que se distinguen por `Tipo_Aviso`.
 
 | Archivo | Qué es |
 |---|---|
-| [`adoptauy.sql`](adoptauy.sql) | Crea la base `adoptauy` con sus 14 tablas: claves primarias y foráneas, NOT NULL, UNIQUE, DEFAULT y ENUM |
-| [`datos-prueba.sql`](datos-prueba.sql) | Datos ficticios: 8 usuarios, 3 refugios, 9 publicaciones, solicitudes, adopciones, seguimiento y reportes, con al menos un registro por estado |
+| [`adoptauy.sql`](adoptauy.sql) | Crea la base `adoptauy` con sus 14 tablas: claves primarias y foráneas, NOT NULL, UNIQUE, DEFAULT, ENUM y CHECK. Las 9 tablas que ya tienen migración quedan idénticas a Laravel; las de los Sprints 5 y 6 sirven de base para sus migraciones |
+| [`datos-prueba.sql`](datos-prueba.sql) | Datos ficticios: 8 usuarios, 3 refugios, 10 publicaciones (una encontrada sin nombre), solicitudes, adopciones, seguimiento y reportes, con al menos un registro por estado |
 | [`usuarios.sql`](usuarios.sql) | 8 usuarios de MySQL con privilegio mínimo, uno por rol de la aplicación (ver abajo) |
-| [`probar.sh`](probar.sh) | 65 pruebas: estructura, claves, valores por defecto, coherencia de los datos de prueba y cada privilegio permitido y denegado (también corren en GitHub Actions, job `base-de-datos`) |
+| [`probar.sh`](probar.sh) | 76 pruebas: estructura, claves, valores por defecto, coherencia de los datos de prueba y cada privilegio permitido y denegado (también corren en GitHub Actions, job `base-de-datos`) |
 
-Por ahora el script no tiene triggers, procedimientos, funciones ni vistas: las restricciones RNE que no resuelven las claves las valida Laravel. Esos objetos se agregan en el Hito 3.
+Por ahora el script no tiene triggers, procedimientos, funciones ni vistas. Las RNE que se resuelven dentro de una fila están como CHECK (por ejemplo, el hash de la contraseña, la CI, el motivo de rechazo o el nombre obligatorio en una mascota perdida). La especialización se garantiza con la clave foránea compuesta de cada subtipo: Particular, Refugio y Administrador repiten Tipo_Usuario, y Publicacion_Adopcion y Publicacion_Perdida repiten Tipo_Publicacion, con un CHECK que fija su valor (RNE10, RNE25). Las RNE que dependen de otras filas o de la fecha actual las valida Laravel; triggers y procedimientos se agregan en el Hito 3.
 
 ## Tablas
 
@@ -39,26 +39,31 @@ Las contraseñas de `usuarios.sql` son marcadores (`CAMBIAR_…`): se reemplazan
 
 ```bash
 # Con el entorno de Docker levantado (MySQL en 127.0.0.1:3307):
-mysql -h 127.0.0.1 -P 3307 -uroot -p < docs/base-de-datos/adoptauy.sql
-mysql -h 127.0.0.1 -P 3307 -uroot -p < docs/base-de-datos/datos-prueba.sql   # opcional: datos ficticios
-mysql -h 127.0.0.1 -P 3307 -uroot -p < docs/base-de-datos/usuarios.sql       # antes, reemplazar las contraseñas
+mysql -h 127.0.0.1 -P 3307 -uroot -p --default-character-set=utf8mb4 < docs/base-de-datos/adoptauy.sql
+mysql -h 127.0.0.1 -P 3307 -uroot -p --default-character-set=utf8mb4 < docs/base-de-datos/datos-prueba.sql   # opcional: datos ficticios
+mysql -h 127.0.0.1 -P 3307 -uroot -p --default-character-set=utf8mb4 < docs/base-de-datos/usuarios.sql       # antes, reemplazar las contraseñas
 
 # Pruebas (borran y recrean la base adoptauy: no usar contra datos reales)
 MYSQL_PWD=root_dev MYSQL="mysql -h 127.0.0.1 -P 3307 -uroot" PUERTO=3307 bash docs/base-de-datos/probar.sh
 ```
+
+> **Juego de caracteres:** usá siempre `--default-character-set=utf8mb4`. El CHECK de `Contraseña` nombra una columna con ñ, y un cliente en latin1 (el predeterminado del cliente de Ubuntu) no puede abrir la tabla `Usuario` y responde «Unknown column 'Contraseña' in check constraint». Laravel y `mysqldump` ya usan utf8mb4.
 
 > **Atención:** el script empieza con `DROP DATABASE IF EXISTS adoptauy`. En el entorno de Docker esa es la base de desarrollo de Laravel. Para probarlo sin perder datos, cambiá el nombre de la base en las primeras líneas.
 
 ## Valores y largos que toma del documento integrador
 
 - Sin `Temperamento`.
-- `Nombre` y `Apellido`: hasta 50 caracteres. `CI`: 7 u 8 dígitos. `Telefono` y `Contacto` (mascota perdida): 8 o 9 dígitos.
-- `Raza`: hasta 50 caracteres. `Ubicacion_Aproximada` y `Zona_Extravio`: hasta 100.
+- `Nombre` y `Apellido`: de 2 a 50 caracteres. `CI`: 7 u 8 dígitos. `Telefono`: 8 o 9 dígitos (CHECK). `Contacto` (mascota perdida o encontrada): VARCHAR(100), y Laravel exige 8 o 9 dígitos.
+- `Nombre_Refugio`: hasta 100 caracteres. `Dato_Contacto`: hasta 255.
+- `Publicacion_Animal` no tiene `Descripcion`: las características de una mascota perdida o encontrada están en `Publicacion_Perdida.Caracteristicas`.
+- `Foto_Animal` tiene clave propia autonumérica (`ID_Foto`) y la clave foránea a la publicación.
+- `Raza`: hasta 50 caracteres. `Ubicacion_Aproximada` y `Zona_Suceso`: hasta 100.
 - `Email_Verificado` guarda la fecha de confirmación; `NULL` significa sin confirmar.
 - `Estado_Validacion`: Pendiente de validación, Validado, Rechazado, Suspendido o Dado de baja.
 - `Tipo_Cuenta`: texto libre.
 - `Estado_Reporte`: Pendiente, Desestimado o Confirmado. `Medida`: Aviso, Suspensión o Baja lógica.
 
-Ninguna clave foránea borra en cascada: las bajas son lógicas (cambio de estado).
+Ninguna clave foránea borra en cascada: las bajas son lógicas (cambio de estado). Juego de caracteres utf8mb4 con collation utf8mb4_unicode_ci, la misma que usa Laravel.
 
 Responsable de revisión: Camilo Blanco (base de datos).

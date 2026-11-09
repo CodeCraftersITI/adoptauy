@@ -245,12 +245,19 @@ Decisiones del 06/10/2026 que precisan o reemplazan a las anteriores:
 | D88 | Red: pfSense es el único gateway y rutea entre VLAN; los switches trabajan en capa 2; la VLAN nativa es la 999, sin uso; el gateway de la VLAN 99 es 10.10.99.254; SRV-ZABBIX pertenece a la VLAN 99. | D22 (ubicación de SRV-ZABBIX) |
 | D89 | SSH por usuario: Camilo a SRV-BD y SRV-BD-MIRROR; Iñaki a SRV-WEB; Rodrigo a SRV-WEB, SRV-DNS, SRV-MAIL, SRV-ZABBIX y los switches; Leandro a SRV-ZABBIX. | — |
 | D90 | VPN de acceso remoto con OpenVPN en pfSense para que el equipo trabaje desde su casa: certificado más usuario y contraseña, red del túnel 10.10.50.0/24; cada integrante llega solo a su PC por escritorio remoto y a sus servidores por SSH. | «VPN Gateway» como equipo aparte |
+| D91 | Mascotas encontradas (pedido del docente de Programación): un tipo de aviso nuevo, con apartado propio, para quien encuentra una mascota ajena. Se guarda en Publicacion_Perdida con el atributo Tipo_Aviso (Perdida o Encontrada) y no en una tabla nueva. Tiene las mismas reglas que una perdida (1 a 3 fotos, contacto público, 30 días renovables, la publican Particular y Refugio), salvo el nombre, que es opcional. Fecha_Extravio y Zona_Extravio pasan a Fecha_Suceso y Zona_Suceso. RF:0064 y RF:0065, RNE26. | — |
+| D92 | Los estados de la mascota perdida pasan de Perdida, Encontrada y Archivada a Vigente, Resuelta y Archivada, iguales para perdidas y encontradas, para no confundir el estado «Encontrada» con el tipo nuevo. | D16, D26 (nombres de los estados) |
+| D93 | Continuar con Google (pedido del docente de Programación), solo para el Particular, con Laravel Socialite y Google OAuth 2.0. Google_ID se guarda en Usuario (único, admite vacío). Si el Google_ID o el correo coincide con un Particular activo, se vincula automáticamente; si no hay cuenta, se piden CI y teléfono y se crea el Particular sin contraseña y con el correo confirmado. El Refugio y el Administrador nunca se vinculan: reciben el mensaje genérico. URI de redirección https://localhost:8443/auth/google/callback; el client secret solo en el `.env`. RF:0066, RNE27. | D2, D67 |
+| D94 | El Particular sin contraseña la define desde «Editar perfil»; el que tiene una la cambia ingresando la actual (8 a 72 caracteres). Mientras no la defina, ingresa solo con Google. RF:0067. | RF:0016 (la contraseña sale de ese requisito) |
+| D95 | Correo: Laravel envía por SMTP directo al proveedor externo (puerto 587, STARTTLS); se quita el contenedor de Postfix y SRV-MAIL. | D54, D75 |
 
 ## Aspectos a completar
 
 | Aspecto | Sección |
 |---|---|
-| Proveedor externo del relay SMTP (por ejemplo, Gmail u otro) | 12.1, 17.4 |
+| Proveedor externo de SMTP (Gmail o Brevo) | 12.1, 17.4 |
+| Numeración de RNE: el repositorio y la V3 del integrador numeran distinto desde RNE23 (ver `modelo-datos.md`) | 16.1.2 |
+| Continuar con Google, por confirmar: (1) al vincular un Particular sin correo confirmado, ¿se da por confirmado? (2) RF:0067, ¿solo para el Particular? (3) la contraseña actual se comprueba con adoptauy_login | 13.2.1, 16.3 |
 | Correspondencia entre los servidores de la sección 16 y los contenedores del servidor local | 17.3 |
 | DER y prototipos actualizados al alcance vigente | 14, 15 |
 | Matriz de trazabilidad | 19.6 |
