@@ -37,7 +37,7 @@
 
         <label class="campo">
             Contacto (público)
-            <input class="entrada" type="text" name="contacto" value="{{ old('contacto') }}" placeholder="Teléfono o correo" required>
+            <input class="entrada" type="text" name="contacto" value="{{ old('contacto') }}" placeholder="Teléfono: 8 o 9 números" inputmode="numeric" required>
             @error('contacto') <span class="campo-error">{{ $message }}</span> @enderror
         </label>
 

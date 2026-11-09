@@ -97,7 +97,7 @@
                     <span>{{ $perdida->publicacion->Especie }} · {{ $perdida->publicacion->Raza }} · {{ $perdida->publicacion->Sexo }}</span>
                     <span>{{ $perdida->Caracteristicas }}</span>
                     {{-- El contacto es público a propósito: lo cargó el publicante para que lo encuentren (13.2.2) --}}
-                    <span class="perdida-contacto">Contacto: {{ $perdida->Contacto }}</span>
+                    <span class="perdida-contacto">Contacto: {{ $perdida->contactoFormateado() }}</span>
                 </article>
             @empty
                 <div class="vacio">Todavía no hay mascotas perdidas publicadas.</div>
