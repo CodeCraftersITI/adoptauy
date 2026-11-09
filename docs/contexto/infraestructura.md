@@ -14,7 +14,9 @@
 
 - Tareas programadas y colas: planificador y colas de Laravel, para los avisos de seguimiento, el vencimiento de publicaciones y el envío de correos.
 
-- Correo: Postfix como relay hacia un servidor SMTP externo por el puerto 587; en desarrollo, Mailpit captura los correos. Mapas: OpenStreetMap con la biblioteca Leaflet.
+- Correo: Laravel envía por SMTP directo a un proveedor externo, por el puerto 587 con STARTTLS; no hay Postfix (D95). En desarrollo, Mailpit captura los correos. Mapas: OpenStreetMap con la biblioteca Leaflet.
+
+- Autenticación con Google (RF:0066): Laravel Socialite con el proveedor de Google (OAuth 2.0). El proyecto se registra en Google Cloud, que entrega el client ID y el client secret; el client secret se guarda solo en el `.env` del servidor. Google acepta como URI de redirección solo localhost o un dominio público, no una IP ni un nombre interno: se usa `https://localhost:8443/auth/google/callback`, en desarrollo y en el servidor local, al que se entra por un túnel SSH o por el reenvío de puertos de VirtualBox (D93).
 
 ### 12.2. Herramientas de trabajo colaborativo
 
@@ -190,7 +192,7 @@ El servidor final es una máquina virtual de VirtualBox con Ubuntu Server 24.04.
 
 - Planificador y colas de Laravel: contenedor o proceso adicional para las tareas programadas (aviso de seguimiento del día 15, restricción de la cuenta al día 22, vencimiento de publicaciones de mascotas perdidas a los 30 días) y los trabajos en cola (envío de correos, procesamiento de imágenes).
 
-- Correo (SMTP): envía las notificaciones de la tabla de 13.2.6. Postfix corre como un contenedor más del docker-compose y reenvía los correos a un servidor SMTP externo por el puerto 587 con STARTTLS; el proveedor externo queda a definir. En desarrollo, Mailpit captura los correos y no salen a Internet.
+- Correo (SMTP): envía las notificaciones de la tabla de 13.2.6. Laravel los envía desde la cola directamente a un servidor SMTP externo autenticado, por el puerto 587 con STARTTLS; no hay contenedor de Postfix (D95). El proveedor (Gmail o Brevo) queda a definir y su contraseña de aplicación va solo en el `.env`. En desarrollo, Mailpit captura los correos y no salen a Internet.
 
 - Almacenamiento de archivos: volumen local para fotografías de publicaciones, evidencia de seguimiento y documentación de refugios, con posibilidad de migrar a almacenamiento tipo S3 si el proyecto escala.
 
@@ -204,8 +206,9 @@ El repositorio trae `docker-compose.yml` y `docker/` en la raíz, y Laravel en `
 |---|---|
 | Host | PC del equipo con Oracle VirtualBox; VM Ubuntu Server 24.04 LTS (2 vCPU, 4 GB, 30 GB) |
 | Red de la VM | Adaptador puente: la VM tiene su propia IP en la red y se entra con https://<IP de la VM>. Plan B: NAT de VirtualBox 80→80 y 443→443 (D83) |
-| Contenedores | web (nginx:1.27-alpine, HTTPS con certificado autofirmado), app (php:8.4-fpm + Laravel 13), queue, scheduler, db (mysql:8.4, volumen db_data), mailpit (desarrollo), mail (boky/postfix, perfil produccion) |
-| Correo | Desarrollo: Mailpit captura todo. Producción: Postfix relay al SMTP externo por el 587 (D54, D75); variables SMTP_RELAY_HOST, SMTP_RELAY_USER y SMTP_RELAY_PASSWORD |
+| Contenedores | web (nginx:1.27-alpine, HTTPS con certificado autofirmado), app (php:8.4-fpm + Laravel 13), queue, scheduler, db (mysql:8.4, volumen db_data), mailpit (desarrollo) |
+| Correo | Desarrollo: Mailpit captura todo. Producción: SMTP externo por el 587 desde Laravel (D95); variables MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD y MAIL_FROM_ADDRESS en el `.env` |
+| Google OAuth | Variables GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET y GOOGLE_REDIRECT_URI en el `.env` (nunca en el repositorio); la salida HTTPS 443 hacia Google ya está permitida (D93) |
 | HTTPS | Certificado autofirmado en docker/nginx/certs; HTTP redirige a HTTPS (D73) |
 | Tareas programadas | Contenedor scheduler; avisos y vencimientos a las 03:00, días corridos (D71) |
 | Respaldo | cron del host a las 02:00: scripts/respaldo.sh (mysqldump + src/laravel/storage/app) en respaldos/, 7 días de retención (D76) |

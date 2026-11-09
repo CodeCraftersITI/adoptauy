@@ -1,6 +1,8 @@
 # Modelo de datos
 
 > Extraído del Documento integrador 2.2 de AdoptaUY (rev. 21/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
+>
+> **Numeración de RNE:** este archivo usa la numeración del repositorio (RNE23 = CI, RNE24 = Estado_Validacion, RNE25 = especialización, RNE26 = mascotas encontradas, RNE27 = Google). La V3 del integrador numera distinto: allí RNE23 es la adopción desde una solicitud Adoptada, RNE24 la especialización, RNE25 las mascotas encontradas y RNE26 Google. En el código y los commits se usa la del repositorio hasta que el equipo unifique.
 
 ## 15. Base de datos
 El modelo entidad-relación (15.1.1) y el pasaje a tablas (15.2.1) coinciden con `docs/base-de-datos/adoptauy.sql`. Los diagramas (MER en notación de Chen) están en `docs/diagramas/uml/`.
@@ -12,7 +14,7 @@ Cambios respecto del diagrama del Hito 1:
 
 | Elemento | Cambio | Motivo |
 |---|---|---|
-| Usuario | Estado_Baja pasa a Estado_Usuario (Activo, En revisión, Suspendido, Inhabilitado, Baja). Se agregan Fecha_Alta y Email_Verificado. | D18, D19, D27, RNE14 |
+| Usuario | Estado_Baja pasa a Estado_Usuario (Activo, En revisión, Suspendido, Inhabilitado, Baja). Se agregan Fecha_Alta y Email_Verificado. Se agrega Google_ID (identificador de la cuenta de Google vinculada) y Contraseña admite vacío. | D18, D19, D27, D93, RNE14, RNE27 |
 | Persona | Pasa a llamarse Particular. | D23 |
 | Administrador | Se agrega como tercer subtipo de Usuario. | RNE11 lo mencionaba sin existir |
 | Refugio | Se agregan Certificado_Personeria, Latitud, Longitud, Motivo_Rechazo, Fecha_Solicitud y Fecha_Resolucion. | D1, D12, RNE05, RNE06 |
@@ -55,13 +57,14 @@ Las restricciones dadas de baja conservan su código; las nuevas continúan desd
 | RNE24 | Estado_Validacion de un Refugio toma los valores Pendiente de validación, Validado, Rechazado, Suspendido y Dado de baja. Un refugio Dado de baja no puede iniciar sesión y todas sus publicaciones quedan en Archivado. | Nueva (D69) |
 | RNE25 | Cada fila de Publicacion_Animal tiene exactamente una fila asociada, en Publicacion_Adopcion o en Publicacion_Perdida, según su Tipo_Publicacion. | Nueva |
 | RNE26 | Tipo_Aviso de Publicacion_Perdida toma Perdida o Encontrada. Nombre_Mascota es obligatorio cuando Tipo_Aviso es Perdida y opcional cuando es Encontrada. Fecha_Suceso y Zona_Suceso son las del extravío en una perdida y las del hallazgo en una encontrada. | Nueva (mascotas encontradas) |
+| RNE27 | Google_ID es único y solo puede tenerlo un Usuario de tipo Particular. Contraseña puede quedar vacía solo si el Usuario tiene Google_ID; cuando tiene valor, es un hash bcrypt (RNE13). | Nueva (D93; en la V3 del integrador es RNE26) |
 
 ### 15.2. Modelo lógico
 
 #### 15.2.1. Pasaje a tablas
 La clave primaria de cada tabla figura primero, en negrita.
 
-- Usuario(ID_Usuario, Email, Contraseña, Tipo_Usuario, Estado_Usuario, Fecha_Alta, Email_Verificado). Email es único. (ID_Usuario, Tipo_Usuario) es único y lo referencian los subtipos, para que cada usuario esté solo en la tabla de su tipo (RNE10). Email_Verificado guarda la fecha de confirmación del correo; vacío significa sin confirmar
+- Usuario(ID_Usuario, Email, Contraseña, Tipo_Usuario, Estado_Usuario, Fecha_Alta, Email_Verificado, Google_ID). Email es único. Google_ID es único y admite vacío; Contraseña solo puede quedar vacía si hay Google_ID (RNE27). (ID_Usuario, Tipo_Usuario) es único y lo referencian los subtipos, para que cada usuario esté solo en la tabla de su tipo (RNE10). Email_Verificado guarda la fecha de confirmación del correo; vacío significa sin confirmar
 
 - Particular(ID_Usuario, Tipo_Usuario, CI, Nombre, Apellido, Telefono) FK: (ID_Usuario, Tipo_Usuario) (Usuario). Tipo_Usuario vale siempre Particular. CI es clave candidata, con índice único (RNE23)
 
@@ -91,3 +94,33 @@ La clave primaria de cada tabla figura primero, en negrita.
 Se eliminó la tabla Necesidad_Refugio (D17).
 
 El modelo físico en MySQL, con estas restricciones, está en `docs/base-de-datos/adoptauy.sql`.
+
+### Cambio pendiente de migración: Continuar con Google (RF:0066, RF:0067, RNE27)
+
+El modelo ya está decidido (D93, D94) y los diagramas están en `docs/diagramas/AdoptaUY-Diagramas.drawio` (DER, MER, Clases, CU-1, CU-2, SEC-9 e Implementación). Falta la migración. Cuando se haga, `docs/base-de-datos/adoptauy.sql` y `usuarios.sql` se actualizan en el mismo pull request, para que sigan iguales a las migraciones. Camilo aprueba el cambio de base de datos.
+
+La migración nueva (no se edita la de 2026-10-17) tiene que dejar Usuario así:
+
+```sql
+Contraseña  VARCHAR(255) NULL,   -- antes NOT NULL
+Google_ID   VARCHAR(255) NULL,   -- después de Email_Verificado; es el «sub» que envía Google
+UNIQUE KEY uq_usuario_google (Google_ID),
+CONSTRAINT ck_usuario_hash   CHECK (`Contraseña` IS NULL OR (`Contraseña` LIKE '$2_$%' AND CHAR_LENGTH(`Contraseña`) = 60)),
+CONSTRAINT ck_usuario_acceso CHECK (`Contraseña` IS NOT NULL OR Google_ID IS NOT NULL),   -- RNE27
+CONSTRAINT ck_usuario_google CHECK (Google_ID IS NULL OR Tipo_Usuario = 'Particular')     -- RNE27
+```
+
+El CHECK `ck_usuario_hash` actual se elimina y se vuelve a crear con la condición nueva. Probado en MySQL 8.0 con los datos de `datos-prueba.sql`: corre sin errores y rechaza una cuenta sin contraseña ni Google_ID, un Google_ID repetido y un Google_ID en un Refugio.
+
+Permisos de los usuarios de la base (`usuarios.sql`):
+
+```sql
+GRANT SELECT (ID_Usuario, Email, `Contraseña`, Tipo_Usuario, Estado_Usuario,
+              Email_Verificado, Google_ID),
+      UPDATE (Google_ID, Email_Verificado)
+   ON adoptauy.Usuario TO 'adoptauy_login'@'%';
+
+GRANT SELECT (ID_Usuario, Email, Google_ID), INSERT ON adoptauy.Usuario TO 'adoptauy_publico'@'%';
+```
+
+adoptauy_particular no cambia: para RF:0067 la contraseña actual se comprueba con adoptauy_login, que ya lee el hash, y la nueva se guarda con el UPDATE (Contraseña) que adoptauy_particular ya tiene.
