@@ -1,0 +1,36 @@
+@startuml red-microsoft
+!include _estilo.iuml
+title Entorno Microsoft de CodeCrafters (dominio adoptauy.local)
+left to right direction
+skinparam nodesep 30
+skinparam ranksep 60
+
+cloud "Internet" as INET
+node "pfSense\nfirewall, gateway de cada VLAN,\nrelay DHCP, DNS Resolver, NTP,\nOpenVPN (10.10.50.0/24)" as PF
+
+package "VLAN 20 · ADMIN_MANAGEMENT · 10.10.20.0/24 · gw 10.10.20.1" as V20 {
+  node "SRV-AD · 10.10.20.10 (estática)\nWindows Server 2022 Standard\nAD DS (adoptauy.local) · DNS · DHCP\nServidor de archivos: \\\\SRV-AD\\Proyecto, Respaldos$\nTarea programada: copia externa de respaldos" as AD
+}
+
+package "VLAN 30 · USUARIOS_DEV · 10.10.30.0/24 · gw 10.10.30.1" as V30 {
+  node "PC-CAMILO\n10.10.30.11\nWindows 11 Pro" as P1
+  node "PC-LEANDRO\n10.10.30.12\nWindows 11 Pro" as P2
+  node "PC-INAKI\n10.10.30.13\nWindows 11 Pro" as P3
+  node "PC-RODRIGO\n10.10.30.14\nWindows 11 Pro" as P4
+}
+
+package "VLAN 10 · DMZ_SERVIDORES · 10.10.10.0/24" as V10 {
+  node "SRV-WEB · 10.10.10.10\nUbuntu 24.04 · AdoptaUY\nhttps://srv-web/ · respaldos" as WEB
+  node "SRV-DNS · 10.10.10.20\nBIND" as DNS
+}
+
+INET -- PF : WAN
+PF -- AD : troncal 802.1Q
+PF -- V30 : troncal 802.1Q
+PF -- V10 : troncal 802.1Q
+
+P1 ..> AD : Kerberos, LDAP, DNS,\nSMB (GPO y P:), DHCP vía relay
+AD ..> WEB : SFTP TCP 22\n(descarga diaria de respaldos)
+AD ..> DNS : reenviador condicional\n(zona pública de AdoptaUY)
+P3 ..> WEB : HTTPS 443\n(acceso por nombre, certificado de confianza vía GPO)
+@enduml

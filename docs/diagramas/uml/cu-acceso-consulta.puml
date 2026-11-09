@@ -1,0 +1,37 @@
+@startuml cu-acceso-consulta
+!include _estilo.iuml
+left to right direction
+title Casos de uso: acceso y consulta pública
+actor "Visitante" as V
+actor "Usuario Invitado\n(o aspirante a Refugio)" as I
+actor "Usuario registrado" as R
+actor "Sistema de correo" as M <<sistema>>
+I -up-|> V
+R -up-|> V
+rectangle AdoptaUY {
+  usecase "Registrarse como Particular\nRF:0039" as UC39
+  usecase "Confirmar correo\nRF:0043" as UC43
+  usecase "Solicitar registro de refugio\nRF:0034" as UC34
+  usecase "Iniciar sesión\nRF:0022" as UC22
+  usecase "Cerrar sesión\nRF:0023" as UC23
+  usecase "Listar mascotas en adopción\nRF:0040" as UC40
+  usecase "Filtrar por fecha, edad,\nespecie, raza y sexo\nRF:0041" as UC41
+  usecase "Listar mascotas perdidas\nRF:0048" as UC48
+  usecase "Consultar refugios\nRF:0042" as UC42
+  usecase "Ver mapa de refugios\nRF:0038" as UC38
+  usecase "Ver perfil público\ndel refugio\nRF:0062" as UC62
+}
+I --> UC39
+I --> UC34
+R --> UC22
+R --> UC23
+V --> UC40
+V --> UC48
+V --> UC42
+V --> UC38
+V --> UC62
+UC39 ..> UC43 : <<include>>
+UC41 .up.> UC40 : <<extend>>
+UC43 --> M
+UC34 --> M
+@enduml

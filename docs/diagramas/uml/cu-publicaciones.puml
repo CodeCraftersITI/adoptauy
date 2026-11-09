@@ -1,0 +1,50 @@
+@startuml cu-publicaciones
+!include _estilo.iuml
+left to right direction
+title Casos de uso: publicaciones y perfil
+actor "Publicante" as P
+actor "Particular" as PA
+actor "Refugio" as RE
+actor "Planificador\n(tareas programadas)" as S <<sistema>>
+PA -up-|> P
+RE -up-|> P
+rectangle AdoptaUY {
+  package "Publicaciones" {
+    usecase "Publicar mascota en adopción\nRF:0017, RF:0024" as UC17
+    usecase "Publicar mascota perdida\nRF:0046" as UC46
+    usecase "Adjuntar fotografías\n(1 a 6 / 1 a 3)" as UCF
+    usecase "Modificar publicación propia\nRF:0019, RF:0026" as UC19
+    usecase "Archivar publicación propia\nRF:0018, RF:0025" as UC18
+    usecase "Cambiar estado de\npublicación en adopción\nRF:0045" as UC45
+    usecase "Renovar mascota perdida\nRF:0047" as UC47
+    usecase "Archivar perdidas vencidas\n(30 días) RF:0047" as UC47S
+    usecase "Listar publicaciones propias\nRF:0020, RF:0027" as UC20
+    usecase "Consultar publicaciones\ncon filtros\nRF:0021, RF:0028" as UC21
+    usecase "Reportar publicación,\nparticular o refugio\nRF:0059" as UC59
+  }
+  package "Perfil" {
+    usecase "Modificar datos de Particular\nRF:0016" as UC16
+    usecase "Modificar perfil de Refugio\nRF:0029" as UC29
+    usecase "Alta de cuenta bancaria\nRF:0035" as UC35
+    usecase "Baja de cuenta bancaria\nRF:0036" as UC36
+    usecase "Listar cuentas bancarias\nRF:0037" as UC37
+  }
+}
+P --> UC17
+P --> UC46
+P --> UC19
+P --> UC18
+P --> UC45
+P --> UC47
+P --> UC20
+P --> UC21
+P --> UC59
+UC17 ..> UCF : <<include>>
+UC46 ..> UCF : <<include>>
+PA --> UC16
+RE --> UC29
+RE --> UC35
+RE --> UC36
+RE --> UC37
+S --> UC47S
+@enduml

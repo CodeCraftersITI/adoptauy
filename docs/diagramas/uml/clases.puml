@@ -1,0 +1,221 @@
+@startuml clases
+!include _estilo.iuml
+title Diagrama de clases del dominio
+hide empty members
+skinparam classAttributeIconSize 0
+
+abstract class Usuario {
+  - idUsuario : int
+  - email : String
+  - contraseña : String  <<hash bcrypt>>
+  - estado : EstadoUsuario
+  - fechaAlta : DateTime
+  - emailVerificado : DateTime [0..1]
+  + iniciarSesion(email, contraseña) : bool
+  + cerrarSesion() : void
+  + reportar(motivo : String) : Reporte
+}
+class Particular {
+  - ci : String  <<no se muestra>>
+  - nombre : String
+  - apellido : String
+  - telefono : String
+  + registrarse() : void
+  + confirmarCorreo(token : String) : void
+  + solicitarAdopcion(p : PublicacionAdopcion) : SolicitudAdopcion
+  + enviarEvidencia(foto : Archivo) : void
+  + estaRestringido() : bool
+}
+class Refugio {
+  - nombreRefugio : String
+  - certificadoPersoneria : Archivo
+  - comprobanteDomicilio : Archivo
+  - ubicacion : String
+  - latitud : decimal [0..1]
+  - longitud : decimal [0..1]
+  - datosContacto : String [1..*]
+  - estadoValidacion : EstadoValidacion
+  - motivoRechazo : String [0..1]
+  - fechaSolicitud : DateTime
+  - fechaResolucion : DateTime [0..1]
+  + solicitarRegistro() : void
+  + agregarCuenta(c : CuentaBancaria) : void
+  + quitarCuenta(c : CuentaBancaria) : void
+}
+class Administrador {
+  + validarRefugio(r : Refugio) : void
+  + rechazarRefugio(r : Refugio, motivo : String) : void
+  + suspenderRefugio(r : Refugio) : void
+  + darDeBaja(u : Usuario) : void
+  + resolverReporte(r : Reporte, medida : Medida [0..1]) : void
+}
+class CuentaBancaria {
+  - idCuentaBanco : int
+  - banco : String
+  - tipoCuenta : String
+  - numeroCuenta : String
+  - titular : String
+}
+
+abstract class PublicacionAnimal {
+  - idPublicacion : int
+  - especie : Especie
+  - raza : String
+  - sexo : Sexo
+  - descripcion : String [0..1]
+  - estadoModeracion : EstadoModeracion
+  - fechaCreacion : DateTime
+  + publicar() : void
+  + modificar() : void
+  + archivar() : void
+}
+class PublicacionAdopcion {
+  - edadMeses : int
+  - tamaño : Tamaño
+  - estadoSalud : String
+  - estadoEsterilizacion : EstadoEsterilizacion
+  - ubicacionAproximada : String
+  - estado : EstadoAdopcion
+  + esCachorro() : bool  <<edadMeses < 12>>
+  + concretarAdopcion(s : SolicitudAdopcion) : Adopcion
+  + reactivar() : void
+}
+class PublicacionPerdida {
+  - nombreMascota : String
+  - fechaExtravio : Date
+  - zonaExtravio : String
+  - contacto : String
+  - fechaVencimiento : Date
+  - estado : EstadoPerdida
+  + renovar() : void  <<vence a los 30 días>>
+  + marcarEncontrada() : void
+  + estaVencida() : bool
+}
+class FotoAnimal {
+  - idFoto : int
+  - urlFoto : String
+}
+class SolicitudAdopcion {
+  - idSolicitud : int
+  - fechaSolicitud : DateTime
+  - estado : EstadoSolicitud
+  + rechazar() : void
+}
+class Adopcion {
+  - idAdopcion : int
+  - fechaAdopcion : Date
+}
+class Seguimiento {
+  - fechaAviso : Date  <<adopción + 15 días>>
+  - fechaLimite : Date  <<aviso + 7 días>>
+  - urlFoto : String [0..1]
+  - fechaEnvio : DateTime [0..1]
+  - estado : EstadoEvidencia
+  + avisar() : void
+  + aprobar() : void
+  + rechazar() : void
+}
+class Reporte {
+  - idReporte : int
+  - motivo : String
+  - fechaReporte : DateTime
+  - estado : EstadoReporte
+  - medida : Medida [0..1]
+}
+
+Usuario <|-- Particular
+Usuario <|-- Refugio
+Usuario <|-- Administrador
+PublicacionAnimal <|-- PublicacionAdopcion
+PublicacionAnimal <|-- PublicacionPerdida
+
+Usuario "1" -- "0..*" PublicacionAnimal : publica >
+Refugio "1" *-- "0..*" CuentaBancaria : posee >
+PublicacionAnimal "1" *-- "1..6" FotoAnimal : tiene >
+Particular "1" -- "0..*" SolicitudAdopcion : envía >
+PublicacionAdopcion "1" -- "0..*" SolicitudAdopcion : recibe >
+SolicitudAdopcion "1" -- "0..1" Adopcion : se concreta en >
+Adopcion "1" *-- "1" Seguimiento : controla >
+Usuario "1" -- "0..*" Reporte : realiza >
+Reporte "0..*" -- "0..1" Usuario : reporta a >
+Reporte "0..*" -- "0..1" PublicacionAnimal : reporta >
+
+package "Enumeraciones" {
+  enum Especie {
+    Perro
+    Gato
+  }
+  enum Sexo {
+    Macho
+    Hembra
+  }
+  enum Tamaño {
+    Pequeño
+    Mediano
+    Grande
+  }
+  enum EstadoEsterilizacion {
+    Esterilizado
+    No esterilizado
+  }
+  enum EstadoUsuario {
+    Activo
+    En revisión
+    Suspendido
+    Inhabilitado
+    Baja
+  }
+  enum EstadoValidacion {
+    Pendiente de validación
+    Validado
+    Rechazado
+    Suspendido
+    Dado de baja
+  }
+  enum EstadoModeracion {
+    Visible
+    En revisión
+    Suspendida
+  }
+  enum EstadoAdopcion {
+    En adopción
+    Adoptado
+    Archivado
+  }
+  enum EstadoPerdida {
+    Perdida
+    Encontrada
+    Archivada
+  }
+  enum EstadoSolicitud {
+    Pendiente
+    Adoptada
+    Rechazada
+  }
+  enum EstadoEvidencia {
+    Pendiente
+    Enviada
+    Aprobada
+    Rechazada
+  }
+  enum EstadoReporte {
+    Pendiente
+    Desestimado
+    Confirmado
+  }
+  enum Medida {
+    Aviso
+    Suspensión
+    Baja lógica
+  }
+}
+note bottom of FotoAnimal
+  Adopción: 1 a 6 fotografías.
+  Perdida: 1 a 3 fotografías.
+  JPG, PNG o WEBP, hasta 8 MB.
+end note
+note bottom of Reporte
+  Reporta a un usuario o a una
+  publicación (exactamente uno).
+end note
+@enduml

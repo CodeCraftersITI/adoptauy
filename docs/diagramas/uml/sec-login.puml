@@ -1,0 +1,34 @@
+@startuml sec-login
+!include _estilo.iuml
+title Secuencia: inicio y cierre de sesión (RF:0022, RF:0023)
+autonumber
+actor "Usuario registrado" as U
+participant "Navegador" as N
+participant "LoginController" as C
+participant "Limitador de intentos" as L
+database "MySQL" as DB
+
+U -> N : correo y contraseña
+N -> C : POST /login (HTTPS)
+C -> L : ¿superó el límite de intentos?
+alt bloqueado temporalmente
+  L --> C : sí
+  C --> N : «Demasiados intentos. Probá más tarde.»
+else
+  C -> DB : SELECT hash, estado, Email_Verificado\nFROM Usuario WHERE Email = ?
+  DB --> C : fila o vacío
+  alt no existe, contraseña incorrecta, cuenta inhabilitada o dada de baja,\nrefugio no Validado o (desde el Sprint 5) correo sin confirmar
+    C -> L : registrar intento fallido
+    C --> N : mensaje genérico «Correo o contraseña incorrectos»
+  else credenciales válidas
+    C -> C : regenerar el identificador de sesión
+    C --> N : 302 al inicio según el rol
+    N --> U : sesión iniciada
+  end
+end
+== Cierre de sesión ==
+U -> N : «Cerrar sesión»
+N -> C : POST /logout (token CSRF)
+C -> C : invalidar la sesión y regenerar el token
+C --> N : 302 a la página de inicio
+@enduml
