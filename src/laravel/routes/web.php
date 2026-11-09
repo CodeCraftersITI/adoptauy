@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CuentaController;
+use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\NosotrosController;
 use App\Http\Controllers\PublicacionController;
@@ -30,6 +31,12 @@ Route::post('/registro-refugio', [RegistroRefugioController::class, 'store']);
 Route::get('/ingresar', [SesionController::class, 'create']);
 Route::post('/ingresar', [SesionController::class, 'store']);
 Route::post('/salir', [SesionController::class, 'destroy']);
+
+// Continuar con Google (RF:0066): ir a Google, volver de Google y completar CI y teléfono
+Route::get('/auth/google', [GoogleController::class, 'redirigir']);
+Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
+Route::get('/auth/google/completar', [GoogleController::class, 'completar']);
+Route::post('/auth/google/completar', [GoogleController::class, 'guardar']);
 
 // ---------- Rutas privadas, protegidas por rol con el middleware VerificarRol ----------
 

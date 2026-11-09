@@ -35,8 +35,10 @@ CREATE USER 'adoptauy_respaldo'@'localhost' IDENTIFIED BY 'CAMBIAR_clave_respald
 --    Solo lee lo necesario para validar correo, contraseña y estado de la cuenta.
 --    No ve la cédula, el teléfono ni ningún otro dato personal.
 -- -----------------------------------------------------------------------------
-GRANT SELECT (ID_Usuario, Email, `Contraseña`, Tipo_Usuario, Estado_Usuario, Email_Verificado)
-      ON adoptauy.Usuario TO 'adoptauy_login'@'%';
+GRANT SELECT (ID_Usuario, Email, `Contraseña`, Tipo_Usuario, Estado_Usuario,
+              Email_Verificado, Google_ID),
+      UPDATE (Google_ID, Email_Verificado)
+   ON adoptauy.Usuario TO 'adoptauy_login'@'%';
 GRANT SELECT (ID_Usuario, Estado_Validacion) ON adoptauy.Refugio TO 'adoptauy_login'@'%';
 
 -- -----------------------------------------------------------------------------
@@ -53,7 +55,7 @@ GRANT SELECT, INSERT ON adoptauy.Refugio_Datos_Contacto TO 'adoptauy_publico'@'%
 GRANT SELECT (ID_Usuario, Nombre_Refugio, Ubicacion, Latitud, Longitud, Estado_Validacion, URL_Foto)
       ON adoptauy.Refugio TO 'adoptauy_publico'@'%';
 -- Registro: alta y control de correo y cédula repetidos
-GRANT SELECT (ID_Usuario, Email), INSERT ON adoptauy.Usuario    TO 'adoptauy_publico'@'%';
+GRANT SELECT (ID_Usuario, Email, Google_ID), INSERT ON adoptauy.Usuario TO 'adoptauy_publico'@'%';
 GRANT SELECT (ID_Usuario, CI),    INSERT ON adoptauy.Particular TO 'adoptauy_publico'@'%';
 GRANT INSERT ON adoptauy.Refugio TO 'adoptauy_publico'@'%';
 
