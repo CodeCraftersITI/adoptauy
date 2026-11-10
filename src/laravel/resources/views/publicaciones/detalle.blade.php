@@ -23,18 +23,34 @@
     @endif
 
     <div class="detalle">
-        {{-- Fotos: la primera grande y las demás chicas; cada una se abre en tamaño completo --}}
+        {{--
+            Carrusel de fotos: una foto a la vez, con flechas, contador y miniaturas.
+            Las fotos van en fila dentro de "carrusel-pista"; el CSS (scroll-snap) hace que se
+            deslicen de a una (también con el dedo en el celular) y el script de abajo mueve
+            la pista con las flechas y las miniaturas.
+        --}}
+        @php $totalFotos = $publicacion->fotos->count(); @endphp
         <div class="detalle-fotos">
-            <a href="/storage/{{ $publicacion->fotos->first()->URL_Foto }}" target="_blank">
-                <img class="detalle-foto" src="/storage/{{ $publicacion->fotos->first()->URL_Foto }}" alt="Foto principal de la mascota">
-            </a>
+            <div class="carrusel">
+                <div class="carrusel-pista" id="carrusel-pista">
+                    @foreach ($publicacion->fotos as $foto)
+                        <img class="carrusel-foto" src="/storage/{{ $foto->URL_Foto }}" alt="Foto {{ $loop->iteration }} de {{ $totalFotos }}">
+                    @endforeach
+                </div>
 
-            @if ($publicacion->fotos->count() > 1)
+                @if ($totalFotos > 1)
+                    <button type="button" class="carrusel-flecha carrusel-anterior" id="foto-anterior" aria-label="Foto anterior">‹</button>
+                    <button type="button" class="carrusel-flecha carrusel-siguiente" id="foto-siguiente" aria-label="Foto siguiente">›</button>
+                    <span class="carrusel-contador"><span id="foto-actual">1</span> / {{ $totalFotos }}</span>
+                @endif
+            </div>
+
+            @if ($totalFotos > 1)
                 <div class="detalle-miniaturas">
                     @foreach ($publicacion->fotos as $foto)
-                        <a href="/storage/{{ $foto->URL_Foto }}" target="_blank">
-                            <img src="/storage/{{ $foto->URL_Foto }}" alt="Foto {{ $loop->iteration }} de {{ $publicacion->fotos->count() }}">
-                        </a>
+                        <button type="button" class="miniatura-boton {{ $loop->first ? 'miniatura-activa' : '' }}" data-indice="{{ $loop->index }}" aria-label="Ver la foto {{ $loop->iteration }}">
+                            <img src="/storage/{{ $foto->URL_Foto }}" alt="">
+                        </button>
                     @endforeach
                 </div>
             @endif
@@ -106,4 +122,56 @@
         </div>
     </div>
 </div>
+
+{{-- Carrusel: solo hace falta si hay más de una foto --}}
+@if ($totalFotos > 1)
+<script>
+    const pista = document.getElementById('carrusel-pista');
+    const miniaturas = document.querySelectorAll('.miniatura-boton');
+    const total = {{ $totalFotos }};
+    let actual = 0;   // número de la foto que se ve (0 es la primera)
+
+    // Mueve la pista hasta la foto pedida. Desde la última, "siguiente" vuelve a la primera.
+    function mostrarFoto(indice)
+    {
+        actual = (indice + total) % total;
+        pista.scrollTo({ left: pista.clientWidth * actual, behavior: 'smooth' });
+    }
+
+    // Actualiza el contador "2 / 3" y marca la miniatura de la foto que se ve
+    function actualizarIndicadores()
+    {
+        document.getElementById('foto-actual').textContent = actual + 1;
+        miniaturas.forEach(function (boton, i)
+        {
+            boton.classList.toggle('miniatura-activa', i === actual);
+        });
+    }
+
+    document.getElementById('foto-anterior').addEventListener('click', function ()
+    {
+        mostrarFoto(actual - 1);
+    });
+
+    document.getElementById('foto-siguiente').addEventListener('click', function ()
+    {
+        mostrarFoto(actual + 1);
+    });
+
+    miniaturas.forEach(function (boton)
+    {
+        boton.addEventListener('click', function ()
+        {
+            mostrarFoto(Number(boton.dataset.indice));
+        });
+    });
+
+    // Si la persona desliza con el dedo, se calcula qué foto quedó a la vista
+    pista.addEventListener('scroll', function ()
+    {
+        actual = Math.round(pista.scrollLeft / pista.clientWidth);
+        actualizarIndicadores();
+    });
+</script>
+@endif
 @endsection

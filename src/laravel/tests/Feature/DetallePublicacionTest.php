@@ -86,6 +86,27 @@ class DetallePublicacionTest extends TestCase
             ->assertSee('fotos-animales/dos.jpg');
     }
 
+    public function test_con_varias_fotos_muestra_el_carrusel_con_flechas_contador_y_miniaturas()
+    {
+        $publicacion = $this->crearAdopcion(Particular::factory()->create()->usuario);   // tiene 2 fotos
+
+        $this->get('/publicaciones/' . $publicacion->ID_Publicacion)
+            ->assertSee('id="foto-anterior"', false)
+            ->assertSee('id="foto-siguiente"', false)
+            ->assertSee('<span id="foto-actual">1</span> / 2', false)
+            ->assertSee('data-indice="1"', false);
+    }
+
+    public function test_con_una_sola_foto_no_hay_flechas_ni_miniaturas()
+    {
+        $publicacion = $this->crearAviso(Particular::factory()->create()->usuario);   // tiene 1 foto
+
+        $this->get('/publicaciones/' . $publicacion->ID_Publicacion)
+            ->assertSee('fotos-animales/tres.jpg')
+            ->assertDontSee('id="foto-siguiente"', false)
+            ->assertDontSee('miniatura-boton');
+    }
+
     public function test_rnf0013_no_muestra_datos_personales_del_particular()
     {
         $particular = Particular::factory()->create();

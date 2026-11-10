@@ -242,20 +242,69 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
     align-items: start;
 }
 .detalle-fotos { display: flex; flex-direction: column; gap: 10px; }
-.detalle-foto {
+/* Carrusel: las fotos van en fila y la pista se desliza de a una (scroll-snap) */
+.carrusel { position: relative; }
+.carrusel-pista {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    border-radius: 24px;
+    background: var(--rosa-claro);
+    scrollbar-width: none;            /* oculta la barra de desplazamiento (Firefox) */
+}
+.carrusel-pista::-webkit-scrollbar { display: none; }   /* (Chrome, Edge, Safari) */
+.carrusel-foto {
+    flex: 0 0 100%;                   /* cada foto ocupa todo el ancho */
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
-    border-radius: 24px;
-    background: var(--rosa-claro);
+    scroll-snap-align: start;
     display: block;
 }
+.carrusel-flecha {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--tinta);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(58, 31, 45, 0.2);
+}
+.carrusel-flecha:hover { background: var(--blanco); }
+.carrusel-anterior { left: 12px; }
+.carrusel-siguiente { right: 12px; }
+.carrusel-contador {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Miniaturas: botones que llevan el carrusel a esa foto; la que se ve queda marcada */
 .detalle-miniaturas { display: flex; flex-wrap: wrap; gap: 8px; }
+.miniatura-boton {
+    padding: 0;
+    border: 3px solid transparent;
+    border-radius: 16px;
+    background: none;
+    cursor: pointer;
+}
+.miniatura-activa { border-color: var(--rosa); }
 .detalle-miniaturas img {
-    width: 84px;
-    height: 84px;
+    width: 76px;
+    height: 76px;
     object-fit: cover;
-    border-radius: 14px;
+    border-radius: 12px;
     display: block;
 }
 .detalle-datos { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
