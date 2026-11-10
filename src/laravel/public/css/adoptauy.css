@@ -225,6 +225,61 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .perdida-nombre { font-size: 20px; color: var(--blanco); }
 .perdida-contacto { font-weight: 700; color: var(--blanco); margin-top: 4px; }
 
+/* ---------- Detalle de una publicación ---------- */
+/* Las tarjetas del inicio son enlaces al detalle: sin subrayado y con sus colores de siempre */
+.mascota-enlace { text-decoration: none; }
+.mascota-enlace.mascota, .mascota-enlace.mascota:hover { color: var(--tinta); }
+.mascota-enlace.perdida, .mascota-enlace.perdida:hover { color: #E8C4D3; }
+.mascota-enlace:hover .mascota-foto { opacity: 0.9; }
+.mascota-enlace.mascota:hover { box-shadow: 0 8px 26px rgba(176, 58, 105, 0.16); }
+
+.detalle-pagina { display: flex; flex-direction: column; gap: 18px; }
+.detalle-volver { font-weight: 700; text-decoration: none; align-self: flex-start; }
+.detalle {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 36px;
+    align-items: start;
+}
+.detalle-fotos { display: flex; flex-direction: column; gap: 10px; }
+.detalle-foto {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 24px;
+    background: var(--rosa-claro);
+    display: block;
+}
+.detalle-miniaturas { display: flex; flex-wrap: wrap; gap: 8px; }
+.detalle-miniaturas img {
+    width: 84px;
+    height: 84px;
+    object-fit: cover;
+    border-radius: 14px;
+    display: block;
+}
+.detalle-datos { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.detalle-datos .apagado { margin: 0; }
+.detalle-datos p { margin: 6px 0 0; }
+.detalle-subtitulo { font-size: 18px; font-weight: 800; }
+.detalle-contacto { font-size: 18px; }
+
+/* Lista de datos: cada dato con su nombre arriba, separados por una línea */
+.datos {
+    margin: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0 20px;
+}
+.datos div { border-top: 1px solid var(--rosa-borde); padding: 10px 0; }
+.datos dt { font-size: 13px; color: var(--apagado); }
+.datos dd { margin: 2px 0 0; font-weight: 700; }
+
+@media (max-width: 760px) {
+    .detalle { grid-template-columns: 1fr; gap: 20px; }
+}
+
 /* ---------- Mi cuenta ---------- */
 .miniatura { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; display: block; }
 .estado {

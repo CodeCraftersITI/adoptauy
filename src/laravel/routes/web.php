@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CuentaController;
+use App\Http\Controllers\DetallePublicacionController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\NosotrosController;
@@ -15,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 // Página de inicio (RF:0040, RF:0048)
 Route::get('/', [InicioController::class, 'index']);
+
+// Detalle de una publicación: pública, sin necesidad de sesión
+Route::get('/publicaciones/{id}', [DetallePublicacionController::class, 'show']);
 
 // Sobre nosotros
 Route::get('/nosotros', [NosotrosController::class, 'index']);

@@ -65,4 +65,34 @@ class PublicacionAnimal extends Model
     {
         return '/storage/' . $this->fotos->first()->URL_Foto;
     }
+
+    // ¿La puede ver cualquier visitante? Mismas condiciones que los listados del inicio:
+    // visible por moderación (13.2.5) y en estado público (En adopción, o Vigente sin vencer)
+    public function esPublica()
+    {
+        if ($this->Estado_Moderacion != 'Visible')
+        {
+            return false;
+        }
+
+        if ($this->Tipo_Publicacion == 'Adopción')
+        {
+            return $this->adopcion->Estado_Adopcion == 'En adopción';
+        }
+
+        return $this->perdida->Estado_Perdida == 'Vigente'
+            && $this->perdida->Fecha_Vencimiento >= now()->toDateString();
+    }
+
+    // Quién publica, sin datos personales del particular (RNF:0013): de un refugio se
+    // muestra su nombre; de un particular, solo que es un particular
+    public function publicanteVisible()
+    {
+        if ($this->usuario->Tipo_Usuario == 'Refugio')
+        {
+            return 'Refugio ' . $this->usuario->refugio->Nombre_Refugio;
+        }
+
+        return 'Un particular';
+    }
 }

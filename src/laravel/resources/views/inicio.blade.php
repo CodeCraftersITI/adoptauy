@@ -43,7 +43,7 @@
 
         <div class="grilla-tarjetas">
             @forelse ($adopciones as $adopcion)
-                <article class="tarjeta mascota">
+                <a class="tarjeta mascota mascota-enlace" href="/publicaciones/{{ $adopcion->ID_Publicacion }}">  {{-- toda la tarjeta lleva al detalle --}}
                     <img class="mascota-foto" src="{{ $adopcion->publicacion->primeraFoto() }}" alt="Foto de {{ $adopcion->publicacion->Raza }}">
                     <div class="mascota-datos">
                         <div class="mascota-titulo">
@@ -53,7 +53,7 @@
                         <span class="apagado">{{ $adopcion->publicacion->Especie }} · {{ $adopcion->publicacion->Sexo }} · {{ $adopcion->Tamaño }}</span>
                         <span class="apagado">{{ $adopcion->Ubicacion_Aproximada }}</span>
                     </div>
-                </article>
+                </a>
             @empty
                 <div class="tarjeta vacio">Todavía no hay mascotas en adopción.</div>
             @endforelse
@@ -90,7 +90,7 @@
 
         <div class="grilla-tarjetas">
             @forelse ($perdidas as $perdida)
-                <article class="perdida">
+                <a class="perdida mascota-enlace" href="/publicaciones/{{ $perdida->ID_Publicacion }}">
                     <img class="mascota-foto" src="{{ $perdida->publicacion->primeraFoto() }}" alt="Foto de {{ $perdida->Nombre_Mascota }}">
                     <span class="perdida-fecha">Perdido el {{ date('d/m/Y', strtotime($perdida->Fecha_Suceso)) }} · {{ $perdida->Zona_Suceso }}</span>
                     <strong class="perdida-nombre">{{ $perdida->Nombre_Mascota }}</strong>
@@ -98,7 +98,7 @@
                     <span>{{ $perdida->Caracteristicas }}</span>
                     {{-- El contacto es público a propósito: lo cargó el publicante para que lo encuentren (13.2.2) --}}
                     <span class="perdida-contacto">Contacto: {{ $perdida->contactoFormateado() }}</span>
-                </article>
+                </a>
             @empty
                 <div class="vacio">Todavía no hay mascotas perdidas publicadas.</div>
             @endforelse
@@ -114,7 +114,7 @@
 
         <div class="grilla-tarjetas">
             @forelse ($encontradas as $encontrada)
-                <article class="perdida">
+                <a class="perdida mascota-enlace" href="/publicaciones/{{ $encontrada->ID_Publicacion }}">
                     <img class="mascota-foto" src="{{ $encontrada->publicacion->primeraFoto() }}" alt="Foto de la mascota encontrada">
                     <span class="perdida-fecha">Encontrado el {{ date('d/m/Y', strtotime($encontrada->Fecha_Suceso)) }} · {{ $encontrada->Zona_Suceso }}</span>
                     <strong class="perdida-nombre">{{ $encontrada->nombreVisible() }}</strong>
@@ -122,7 +122,7 @@
                     <span>{{ $encontrada->Caracteristicas }}</span>
                     {{-- Contacto público: quien la encontró lo cargó para que la familia se comunique (13.2.2) --}}
                     <span class="perdida-contacto">Contacto: {{ $encontrada->contactoFormateado() }}</span>
-                </article>
+                </a>
             @empty
                 <div class="vacio">Todavía no hay mascotas encontradas publicadas.</div>
             @endforelse
