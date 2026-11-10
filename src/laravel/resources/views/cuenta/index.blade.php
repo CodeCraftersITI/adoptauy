@@ -30,7 +30,7 @@
             <tbody>
                 @forelse ($publicaciones as $publicacion)
                     <tr>
-                        <td><img class="miniatura" src="{{ $publicacion->primeraFoto() }}" alt=""></td>
+                        <td><a href="/publicaciones/{{ $publicacion->ID_Publicacion }}"><img class="miniatura" src="{{ $publicacion->primeraFoto() }}" alt="Ver la publicación"></a></td>
                         <td>
                             {{-- Las perdidas y encontradas se muestran por nombre; las de adopción, por raza --}}
                             @if ($publicacion->Tipo_Publicacion == 'Perdida')
