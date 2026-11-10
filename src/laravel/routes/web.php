@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CuentaController;
+use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\NosotrosController;
 use App\Http\Controllers\PublicacionController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\RegistroRefugioController;
 use App\Http\Controllers\SesionController;
+use App\Http\Controllers\VigenciaController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Rutas públicas ----------
@@ -31,6 +33,12 @@ Route::get('/ingresar', [SesionController::class, 'create']);
 Route::post('/ingresar', [SesionController::class, 'store']);
 Route::post('/salir', [SesionController::class, 'destroy']);
 
+// Continuar con Google (RF:0066): ir a Google, volver de Google y completar CI y teléfono
+Route::get('/auth/google', [GoogleController::class, 'redirigir']);
+Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
+Route::get('/auth/google/completar', [GoogleController::class, 'completar']);
+Route::post('/auth/google/completar', [GoogleController::class, 'guardar']);
+
 // ---------- Rutas privadas, protegidas por rol con el middleware VerificarRol ----------
 
 // Particular y Refugio
@@ -38,11 +46,18 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
 {
     Route::get('/cuenta', [CuentaController::class, 'index']);
 
-    // Publicar mascota en adopción (RF:0017, RF:0024) y perdida (RF:0046)
+    // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) y encontrada (RF:0064)
     Route::get('/publicar/adopcion', [PublicacionController::class, 'crearAdopcion']);
     Route::post('/publicar/adopcion', [PublicacionController::class, 'guardarAdopcion']);
     Route::get('/publicar/perdida', [PublicacionController::class, 'crearPerdida']);
     Route::post('/publicar/perdida', [PublicacionController::class, 'guardarPerdida']);
+    Route::get('/publicar/encontrada', [PublicacionController::class, 'crearEncontrada']);
+    Route::post('/publicar/encontrada', [PublicacionController::class, 'guardarEncontrada']);
+
+    // Perdidas y encontradas: renovar, marcar como resuelta y archivar (RF:0047)
+    Route::put('/publicaciones/{id}/renovar', [VigenciaController::class, 'renovar']);
+    Route::put('/publicaciones/{id}/resolver', [VigenciaController::class, 'resolver']);
+    Route::put('/publicaciones/{id}/archivar', [VigenciaController::class, 'archivar']);
 });
 
 // Administrador

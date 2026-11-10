@@ -33,12 +33,23 @@ class PublicacionAnimal extends Model
         return $this->hasOne(PublicacionPerdida::class, 'ID_Publicacion');
     }
 
+    // Tipo para mostrar: Adopción, Perdida o Encontrada (las dos últimas comparten tabla)
+    public function tipoVisible()
+    {
+        if ($this->Tipo_Publicacion == 'Adopción')
+        {
+            return 'Adopción';
+        }
+
+        return $this->perdida->Tipo_Aviso;
+    }
+
     public function fotos()
     {
         return $this->hasMany(FotoAnimal::class, 'ID_Publicacion');
     }
 
-    // Estado según el tipo: En adopción / Adoptado / Archivado o Perdida / Encontrada / Archivada
+    // Estado según el tipo: En adopción / Adoptado / Archivado o Vigente / Resuelta / Archivada
     public function estado()
     {
         if ($this->Tipo_Publicacion == 'Adopción')

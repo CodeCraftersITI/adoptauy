@@ -1,0 +1,35 @@
+@startuml sec-publicar-adopcion
+!include _estilo.iuml
+title Secuencia: publicar mascota en adopción (RF:0017, RF:0024)
+autonumber
+actor "Publicante\n(Particular o Refugio)" as P
+participant "Navegador" as N
+participant "PublicacionController" as C
+participant "Validación\n(PublicacionRequest)" as V
+participant "Almacenamiento\n(storage/app)" as S
+database "MySQL" as DB
+
+P -> N : especie, raza, sexo, edad, tamaño, salud,\nesterilización, ubicación aproximada y fotos
+N -> C : POST /publicaciones/adopcion (multipart, HTTPS)
+C -> C : ¿sesión iniciada y cuenta no restringida?
+alt cuenta restringida por seguimiento
+  C --> N : «Tu cuenta está restringida hasta que envíes la fotografía»
+else
+  C -> V : validar campos y 1 a 6 fotos JPG, PNG o WEBP de hasta 8 MB
+  alt inválido
+    V --> C : errores
+    C --> N : formulario con mensajes
+  else válido
+    C -> DB : BEGIN
+    C -> DB : INSERT Publicacion_Animal (Tipo = Adopción,\nEstado_Moderacion = Visible)
+    C -> DB : INSERT Publicacion_Adopcion (Estado = En adopción)
+    loop cada fotografía
+      C -> S : guardar archivo con nombre aleatorio
+      C -> DB : INSERT Foto_Animal
+    end
+    C -> DB : COMMIT
+    C --> N : 302 a la publicación
+    N --> P : publicación visible en el listado público
+  end
+end
+@enduml

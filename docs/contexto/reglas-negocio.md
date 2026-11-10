@@ -1,18 +1,25 @@
 # Reglas de negocio por módulo
 
-> Extraído del Documento integrador 2.0 de AdoptaUY (rev. 14/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
+> Extraído del Documento integrador 2.1 de AdoptaUY (rev. 18/10/2026). Si este archivo y el documento difieren, manda el documento; avisá la diferencia.
+> Incluye los cambios de la V3 del integrador: mascotas encontradas y Continuar con Google (D93, D94).
 
 ### 13.2. Módulos
 
 #### 13.2.1. Usuarios y acceso
 
-- El Usuario Invitado se registra como Particular con cédula de identidad, nombre, apellido, teléfono, correo y contraseña. La cédula debe tener 7 u 8 dígitos con dígito verificador válido y no puede repetirse entre cuentas; la contraseña tiene al menos 8 caracteres. El sistema envía un correo para confirmar la dirección.
+- El Usuario Invitado se registra como Particular con cédula de identidad, nombre, apellido, teléfono, correo y contraseña. La cédula se ingresa solo con números, sin puntos ni guion, tiene 7 u 8 dígitos con dígito verificador válido y no puede repetirse entre cuentas. El nombre y el apellido tienen entre 2 y 50 caracteres; el teléfono, 8 dígitos (fijo) o 9 (celular), solo números; el correo, hasta 255 caracteres, y la contraseña, entre 8 y 72. El sistema envía un correo para confirmar la dirección.
+
+- También puede registrarse con su cuenta de Google (RF:0066): Google aporta el correo, el nombre y el apellido, y el usuario completa la cédula y el teléfono, con las mismas validaciones. Esa cuenta se crea sin contraseña y con el correo confirmado, porque Google ya lo verificó, y no recibe el correo de confirmación. Solo se aceptan cuentas de Google con el correo verificado.
 
 - El aspirante a Refugio envía una solicitud de registro con certificado de personería jurídica u organización sin fines de lucro, comprobante de domicilio del predio y datos de contacto verificables.
 
 - El Administrador resuelve la solicitud en un plazo máximo de 5 días hábiles.
 
 - Los usuarios registrados inician sesión con correo y contraseña. Desde el Sprint 5 el ingreso exige el correo confirmado; ante un correo sin confirmar, una cuenta inhabilitada o dada de baja, o un refugio que no está Validado, el sistema muestra un mensaje genérico que no revela si el correo existe.
+
+- El Particular también puede iniciar sesión con su cuenta de Google. Si el identificador de Google o el correo es el de un Particular activo, la cuenta de Google queda vinculada a la suya. El Refugio y el Administrador ingresan solo con correo y contraseña: si el correo de Google es de un Refugio o del Administrador, se muestra el mismo mensaje genérico.
+
+- El Particular que no tiene contraseña la puede definir desde su perfil; el que la tiene la cambia ingresando la actual (RF:0067). Mientras no la defina, ingresa solo con Google.
 Estados del refugio y transiciones válidas:
 
 | Desde | Hacia | Quién | Condición |
@@ -27,7 +34,7 @@ Estados del refugio y transiciones válidas:
 #### 13.2.2. Publicaciones
 Mascotas en adopción (particulares y refugios):
 
-- Campos obligatorios: especie, raza (o "mestizo"), sexo, edad estimada, tamaño, estado de salud, temperamento, estado de esterilización, ubicación aproximada y entre 1 y 6 fotografías en formato JPG, PNG o WEBP, de hasta 8 MB cada una. No se exige certificado veterinario.
+- Campos obligatorios: especie, raza (o "mestizo"), sexo, edad estimada, tamaño, estado de salud, estado de esterilización, ubicación aproximada y entre 1 y 6 fotografías en formato JPG, PNG o WEBP, de hasta 8 MB cada una. No se exige certificado veterinario.
 
 - Se publican de forma automática y quedan sujetas al sistema de reportes.
 
@@ -39,23 +46,27 @@ Mascotas en adopción (particulares y refugios):
 | En adopción | Archivado | Publicante o Administrador | Retiro de la publicación |
 | Archivado | En adopción | Publicante | Reactivación |
 
-Mascotas perdidas (particulares y refugios):
+Mascotas perdidas y mascotas encontradas (particulares y refugios):
 
-- Campos: nombre de la mascota, especie, raza, sexo, características, fecha del extravío, zona del extravío, contacto del publicante y entre 1 y 3 fotografías, con el mismo formato y tamaño máximo que las de adopción.
+- Son dos tipos de aviso con apartados separados en el sitio. Una mascota **perdida** la publica su dueño para que lo ayuden a encontrarla; una mascota **encontrada** la publica quien halló un animal ajeno, para que su familia lo encuentre. Comparten los datos y se guardan en la misma tabla (Publicacion_Perdida), distinguidas por Tipo_Aviso (Perdida o Encontrada).
 
-- El contacto que el publicante carga es público, porque la publicación la ve cualquier visitante.
+- Campos: nombre de la mascota (obligatorio en una perdida, opcional en una encontrada), especie, raza, sexo, características, fecha y zona del suceso (del extravío o del hallazgo), contacto del publicante y entre 1 y 3 fotografías, con el mismo formato y tamaño máximo que las de adopción.
 
-- Vigencia de 30 días desde la creación o la última renovación.
+- El contacto es un número de teléfono de 8 o 9 dígitos y es público, porque la publicación la ve cualquier visitante.
 
-- Consulta pública, sin necesidad de registro.
+- Vigencia de 30 días desde la creación o la última renovación, igual para los dos tipos.
+
+- Consulta pública, sin necesidad de registro, en dos listados: mascotas perdidas y mascotas encontradas.
 
 | Desde | Hacia | Quién | Condición |
 |---|---|---|---|
-| Perdida | Encontrada | Publicante | La mascota apareció |
-| Perdida | Archivada | Sistema | Pasaron 30 días sin renovación |
-| Perdida | Archivada | Publicante o Administrador | Retiro de la publicación |
-| Archivada | Perdida | Publicante | Renueva: vence 30 días después de la renovación |
-| Perdida | Perdida | Publicante | Renueva antes del vencimiento: vence 30 días después de la renovación |
+| Vigente | Resuelta | Publicante | La mascota volvió con su dueño |
+| Vigente | Archivada | Sistema | Pasaron 30 días sin renovación |
+| Vigente | Archivada | Publicante o Administrador | Retiro de la publicación |
+| Archivada | Vigente | Publicante | Renueva: vence 30 días después de la renovación |
+| Vigente | Vigente | Publicante | Renueva antes del vencimiento: vence 30 días después de la renovación |
+
+Los estados son los mismos para los dos tipos. Se llaman Vigente, Resuelta y Archivada (antes Perdida, Encontrada y Archivada) para no confundir el estado «Encontrada» con el tipo de aviso nuevo.
 
 #### 13.2.3. Adopción y seguimiento
 
@@ -103,7 +114,7 @@ Seguimiento posterior a la adopción:
 | Particular | 10 reportes | Cuenta inhabilitada | Puede restituirla si desestima los reportes |
 | Refugio | 3 reportes | Estado Suspendido | Levanta la suspensión o da de baja al refugio |
 
-En todos los casos solo cuentan los reportes de usuarios distintos. El refugio se suspende con menos reportes que un particular (3 frente a 5) porque difunde datos bancarios para donaciones. Se mantiene de D27 la inhabilitación automática del particular a los 10 reportes (D42).
+En todos los casos solo cuentan los reportes de usuarios distintos, y no cuentan los que el Administrador desestimó. El refugio se suspende con menos reportes que un particular (3 frente a 5) porque difunde datos bancarios para donaciones. Se mantiene de D27 la inhabilitación automática del particular a los 10 reportes (D42).
 La revisión de una publicación se modela como una marca de moderación (Visible, En revisión, Suspendida) independiente de su estado, para conservar los tres estados definidos en 13.2.2.
 Motivos de reporte:
 
@@ -122,8 +133,10 @@ Motivos de reporte:
 
 | Evento | Destinatario |
 |---|---|
-| Registro de un Particular | El Particular, para confirmar su dirección |
+| Registro de un Particular con el formulario | El Particular, para confirmar su dirección |
 | Solicitud de registro de un refugio recibida | El refugio solicitante |
 | Alta definitiva de un refugio | El refugio |
 | Solicitud de adopción recibida | El publicante |
 | Aviso de seguimiento del día 15 | El adoptante |
+
+El registro con Google no envía el correo de confirmación, porque Google ya verificó la dirección (RF:0066).

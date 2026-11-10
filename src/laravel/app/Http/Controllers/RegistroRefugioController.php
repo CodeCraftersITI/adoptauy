@@ -39,7 +39,7 @@ class RegistroRefugioController extends Controller
             'certificado' => 'required|file|mimes:pdf,jpg,jpeg,png|max:8192',
             'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:8192',
             'email' => 'required|email|max:255|unique:Usuario,Email',
-            'password' => 'required|min:8',
+            'password' => 'required|min:8|max:72',
         ], [
             'nombre_refugio.required' => 'Ingresá el nombre del refugio.',
             'nombre_refugio.min' => 'El nombre debe tener al menos 2 letras.',
@@ -59,6 +59,7 @@ class RegistroRefugioController extends Controller
             'email.unique' => 'Ya existe una cuenta con ese correo electrónico.',
             'password.required' => 'Ingresá una contraseña.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña puede tener hasta 72 caracteres.',
         ]);
 
         // Los documentos se guardan en storage/app/private: no se pueden abrir desde

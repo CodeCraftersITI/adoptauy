@@ -1,0 +1,15 @@
+@startuml est-perdida
+!include _estilo.iuml
+title Estados de la publicación de mascota perdida o encontrada
+[*] --> Vigente : publicar perdida (RF:0046)\no encontrada (RF:0064)\nvence = hoy + 30
+Vigente --> Vigente : renovar antes del vencimiento\nvence = hoy + 30
+Vigente --> Resuelta : publicante (la mascota\nvolvió con su dueño)
+Vigente --> Archivada : sistema: 30 días sin renovar
+Vigente --> Archivada : publicante o Administrador la retira
+Archivada --> Vigente : publicante renueva\nvence = hoy + 30
+Resuelta --> [*]
+note right of Vigente
+  Mismos estados para los dos tipos
+  (Tipo_Aviso = Perdida o Encontrada).
+end note
+@enduml

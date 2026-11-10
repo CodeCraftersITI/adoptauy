@@ -1,0 +1,15 @@
+skinparam defaultFontName DejaVu Sans
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam ActorBorderColor #333333
+skinparam UsecaseBorderColor #333333
+skinparam UsecaseBackgroundColor #F4F4F4
+skinparam PackageBorderColor #777777
+skinparam ClassBorderColor #333333
+skinparam ClassBackgroundColor #F4F4F4
+skinparam StateBorderColor #333333
+skinparam StateBackgroundColor #F4F4F4
+skinparam ParticipantBorderColor #333333
+skinparam ParticipantBackgroundColor #F4F4F4
+skinparam NoteBackgroundColor #FFFFF0

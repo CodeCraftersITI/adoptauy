@@ -1,0 +1,34 @@
+@startuml sec-publicar-perdida
+!include _estilo.iuml
+title Secuencia: publicar mascota perdida o encontrada (RF:0046, RF:0064, RF:0047)
+autonumber
+actor "Publicante\n(Particular o Refugio)" as P
+participant "Navegador" as N
+participant "PublicacionController" as C
+participant "Validación" as V
+participant "Almacenamiento" as S
+database "MySQL" as DB
+participant "Planificador\n(03:00)" as T
+
+P -> N : tipo (perdida o encontrada), nombre, especie, raza, sexo,\ncaracterísticas, fecha y zona del suceso, teléfono y fotos
+alt mascota perdida (es del publicante)
+  N -> C : POST /publicar/perdida (HTTPS)
+  C -> V : nombre obligatorio, fecha del extravío
+else mascota encontrada (es ajena)
+  N -> C : POST /publicar/encontrada (HTTPS)
+  C -> V : nombre opcional, fecha del hallazgo
+end
+C -> V : teléfono de 8 o 9 dígitos, zona de 3 a 100\ncaracteres y 1 a 3 fotos de hasta 8 MB
+alt inválido
+  V --> C : errores
+  C --> N : formulario con mensajes
+else válido
+  C -> DB : INSERT Publicacion_Animal (Tipo_Publicacion = Perdida)
+  C -> DB : INSERT Publicacion_Perdida (Tipo_Aviso = Perdida o Encontrada,\nEstado = Vigente, Fecha_Vencimiento = hoy + 30 días)
+  C -> S : guardar fotos
+  C -> DB : INSERT Foto_Animal (1 a 3)
+  C --> N : publicación visible sin registro,\nen el apartado de su tipo
+end
+== Todos los días ==
+T -> DB : UPDATE Publicacion_Perdida SET Estado = Archivada\nWHERE Estado = Vigente AND Fecha_Vencimiento < hoy
+@enduml

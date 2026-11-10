@@ -1,0 +1,39 @@
+@startuml sec-registro
+!include _estilo.iuml
+title Secuencia: registro de Particular (RF:0039, RF:0043, RF:0063)
+autonumber
+actor "Usuario Invitado" as I
+participant "Navegador" as N
+participant "Nginx\n(HTTPS)" as W
+participant "RegistroController" as C
+participant "Validación\n(RegistroRequest)" as V
+database "MySQL" as DB
+queue "Cola de correo" as Q
+participant "Mailpit / Postfix" as M
+
+I -> N : completa CI, nombre, apellido,\nteléfono, correo y contraseña
+N -> W : POST /registro
+W -> C : reenvía (PHP-FPM)
+C -> V : validar(datos)
+V -> DB : ¿existe la CI o el correo?
+DB --> V : resultado
+alt datos inválidos o CI/correo repetidos
+  V --> C : errores
+  C --> N : 422 formulario con mensajes en español
+  N --> I : muestra errores
+else datos válidos
+  V --> C : ok
+  C -> DB : BEGIN; INSERT Usuario (contraseña con bcrypt,\nEmail_Verificado = NULL); INSERT Particular; COMMIT
+  DB --> C : ID_Usuario
+  C -> Q : encolar correo de confirmación
+  C --> N : 302 a la página de inicio con sesión iniciada
+  N --> I : «Te enviamos un correo para confirmar tu dirección»
+  Q -> M : enviar enlace firmado
+  M --> I : correo de confirmación
+  I -> N : abre el enlace
+  N -> W : GET /email/verificar/{id}/{hash}
+  W -> C : verificar firma
+  C -> DB : UPDATE Usuario SET Email_Verificado = NOW()
+  C --> N : «Correo confirmado»
+end
+@enduml
