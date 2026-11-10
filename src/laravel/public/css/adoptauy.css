@@ -280,6 +280,11 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
     .detalle { grid-template-columns: 1fr; gap: 20px; }
 }
 
+/* ---------- Solicitar adopción ---------- */
+.solicitud-mascota { display: flex; gap: 14px; align-items: center; }
+.consentimiento { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+.consentimiento input { width: 20px; height: 20px; accent-color: var(--rosa); margin-top: 2px; flex: 0 0 auto; }
+
 /* ---------- Mi cuenta ---------- */
 .miniatura { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; display: block; }
 .estado {

@@ -10,7 +10,14 @@
             <h1 class="pagina-titulo">Mi cuenta</h1>
             <p class="apagado">{{ $tipo }} · {{ $nombre }}</p>
         </div>
-        <a class="btn btn-primario" href="/publicar/adopcion">Publicar mascota</a>
+        <div class="nav-acciones-fila">
+            {{-- Solicitudes (RF:0050, RF:0054): el Refugio no envía, solo recibe --}}
+            @if ($tipo == 'Particular')
+                <a class="btn btn-suave" href="/solicitudes">Mis solicitudes</a>
+            @endif
+            <a class="btn btn-suave" href="/solicitudes/recibidas">Solicitudes recibidas</a>
+            <a class="btn btn-primario" href="/publicar/adopcion">Publicar mascota</a>
+        </div>
     </div>
 
     <h2 class="seccion-titulo">Mis publicaciones</h2>

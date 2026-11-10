@@ -75,6 +75,22 @@
                     <h2 class="detalle-subtitulo">Estado de salud</h2>
                     <p>{{ $adopcion->Estado_Salud }}</p>
                 </div>
+
+                {{-- Solicitar adopción (RF:0049): el botón depende de quién mira la publicación --}}
+                @if ($esPublicante)
+                    {{-- El publicante ve sus solicitudes (RF:0050) --}}
+                    <a class="btn btn-suave" href="/publicaciones/{{ $publicacion->ID_Publicacion }}/solicitudes">
+                        Ver solicitudes recibidas ({{ $adopcion->solicitudes->count() }})
+                    </a>
+                @elseif ($adopcion->Estado_Adopcion == 'En adopción' && session('tipo') != 'Refugio' && session('tipo') != 'Administrador')
+                    {{-- Pueden solicitar el Particular y el invitado (al tocar, el middleware lo manda a ingresar).
+                         El Refugio no solicita adopciones (D49) y el Administrador tampoco: no ven el botón. --}}
+                    @if ($solicitudPendiente)
+                        <p class="apagado">Ya enviaste una solicitud para esta mascota. <a href="/solicitudes">Ver mis solicitudes</a></p>
+                    @else
+                        <a class="btn btn-primario detalle-contacto" href="/publicaciones/{{ $publicacion->ID_Publicacion }}/solicitar">Solicitar adopción</a>
+                    @endif
+                @endif
             @else
                 <div>
                     <h2 class="detalle-subtitulo">Características</h2>
