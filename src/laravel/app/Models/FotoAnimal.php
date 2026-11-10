@@ -15,4 +15,10 @@ class FotoAnimal extends Model
     public $timestamps = false;
 
     protected $fillable = ['ID_Publicacion', 'URL_Foto'];
+
+    // La publicación a la que pertenece la foto
+    public function publicacion()
+    {
+        return $this->belongsTo(PublicacionAnimal::class, 'ID_Publicacion');
+    }
 }

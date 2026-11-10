@@ -53,7 +53,7 @@
             <h2 class="seccion-titulo">¿Tenés un refugio?</h2>
             <div class="nav-acciones-fila">
                 <a class="btn btn-suave" href="/registro-refugio">Registrar un refugio</a>
-                <a class="btn btn-primario" href="/#adopcion">Ver mascotas</a>
+                <a class="btn btn-primario" href="/adopcion">Ver mascotas</a>
             </div>
         </div>
     </section>

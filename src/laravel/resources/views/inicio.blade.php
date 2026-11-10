@@ -13,14 +13,14 @@
         <h1>Adoptar cambia dos vidas. <span>La tuya también.</span></h1>
 
         <div class="accesos">
-            <a class="tarjeta acceso" href="/#adopcion">
+            <a class="tarjeta acceso" href="/adopcion">
                 <span class="acceso-icono">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
                 </span>
                 <strong>Quiero adoptar</strong>
                 <span class="apagado">Filtrá por especie, edad, raza y sexo.</span>
             </a>
-            <a class="tarjeta acceso" href="/#perdidas">
+            <a class="tarjeta acceso" href="/perdidas">
                 <span class="acceso-icono">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
                 </span>
@@ -39,21 +39,14 @@
 
     {{-- RF:0040: últimas publicaciones En adopción ($adopciones llega desde InicioController) --}}
     <section class="seccion" id="adopcion">
-        <h2 class="seccion-titulo">Recién publicados</h2>
+        <div class="seccion-cabecera">
+            <h2 class="seccion-titulo">Recién publicados</h2>
+            <a class="btn btn-suave" href="/adopcion">Ver todas y filtrar</a>
+        </div>
 
         <div class="grilla-tarjetas">
             @forelse ($adopciones as $adopcion)
-                <a class="tarjeta mascota mascota-enlace" href="/publicaciones/{{ $adopcion->ID_Publicacion }}">  {{-- toda la tarjeta lleva al detalle --}}
-                    <img class="mascota-foto" src="{{ $adopcion->publicacion->primeraFoto() }}" alt="Foto de {{ $adopcion->publicacion->Raza }}">
-                    <div class="mascota-datos">
-                        <div class="mascota-titulo">
-                            <strong>{{ $adopcion->publicacion->Raza }}</strong>
-                            <span class="mascota-edad">{{ $adopcion->edadTexto() }}</span>
-                        </div>
-                        <span class="apagado">{{ $adopcion->publicacion->Especie }} · {{ $adopcion->publicacion->Sexo }} · {{ $adopcion->Tamaño }}</span>
-                        <span class="apagado">{{ $adopcion->Ubicacion_Aproximada }}</span>
-                    </div>
-                </a>
+                @include('partials.tarjeta-adopcion', ['adopcion' => $adopcion])
             @empty
                 <div class="tarjeta vacio">Todavía no hay mascotas en adopción.</div>
             @endforelse
@@ -85,20 +78,15 @@
     <section class="seccion bloque-oscuro" id="perdidas">
         <div class="seccion-cabecera">
             <h2 class="seccion-titulo">Mascotas perdidas</h2>
-            <a class="btn btn-suave" href="/publicar/perdida">Publicar perdida</a>
+            <div class="nav-acciones-fila">
+                <a class="btn btn-suave" href="/perdidas">Ver todas</a>
+                <a class="btn btn-suave" href="/publicar/perdida">Publicar perdida</a>
+            </div>
         </div>
 
         <div class="grilla-tarjetas">
             @forelse ($perdidas as $perdida)
-                <a class="perdida mascota-enlace" href="/publicaciones/{{ $perdida->ID_Publicacion }}">
-                    <img class="mascota-foto" src="{{ $perdida->publicacion->primeraFoto() }}" alt="Foto de {{ $perdida->Nombre_Mascota }}">
-                    <span class="perdida-fecha">Perdido el {{ date('d/m/Y', strtotime($perdida->Fecha_Suceso)) }} · {{ $perdida->Zona_Suceso }}</span>
-                    <strong class="perdida-nombre">{{ $perdida->Nombre_Mascota }}</strong>
-                    <span>{{ $perdida->publicacion->Especie }} · {{ $perdida->publicacion->Raza }} · {{ $perdida->publicacion->Sexo }}</span>
-                    <span>{{ $perdida->Caracteristicas }}</span>
-                    {{-- El contacto es público a propósito: lo cargó el publicante para que lo encuentren (13.2.2) --}}
-                    <span class="perdida-contacto">Contacto: {{ $perdida->contactoFormateado() }}</span>
-                </a>
+                @include('partials.tarjeta-aviso', ['aviso' => $perdida])
             @empty
                 <div class="vacio">Todavía no hay mascotas perdidas publicadas.</div>
             @endforelse
@@ -109,20 +97,15 @@
     <section class="seccion" id="encontradas">
         <div class="seccion-cabecera">
             <h2 class="seccion-titulo">Mascotas encontradas</h2>
-            <a class="btn btn-suave" href="/publicar/encontrada">Publicar encontrada</a>
+            <div class="nav-acciones-fila">
+                <a class="btn btn-suave" href="/encontradas">Ver todas</a>
+                <a class="btn btn-suave" href="/publicar/encontrada">Publicar encontrada</a>
+            </div>
         </div>
 
         <div class="grilla-tarjetas">
             @forelse ($encontradas as $encontrada)
-                <a class="perdida mascota-enlace" href="/publicaciones/{{ $encontrada->ID_Publicacion }}">
-                    <img class="mascota-foto" src="{{ $encontrada->publicacion->primeraFoto() }}" alt="Foto de la mascota encontrada">
-                    <span class="perdida-fecha">Encontrado el {{ date('d/m/Y', strtotime($encontrada->Fecha_Suceso)) }} · {{ $encontrada->Zona_Suceso }}</span>
-                    <strong class="perdida-nombre">{{ $encontrada->nombreVisible() }}</strong>
-                    <span>{{ $encontrada->publicacion->Especie }} · {{ $encontrada->publicacion->Raza }} · {{ $encontrada->publicacion->Sexo }}</span>
-                    <span>{{ $encontrada->Caracteristicas }}</span>
-                    {{-- Contacto público: quien la encontró lo cargó para que la familia se comunique (13.2.2) --}}
-                    <span class="perdida-contacto">Contacto: {{ $encontrada->contactoFormateado() }}</span>
-                </a>
+                @include('partials.tarjeta-aviso', ['aviso' => $encontrada])
             @empty
                 <div class="vacio">Todavía no hay mascotas encontradas publicadas.</div>
             @endforelse
