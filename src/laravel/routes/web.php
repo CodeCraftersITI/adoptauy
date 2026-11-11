@@ -10,6 +10,7 @@ use App\Http\Controllers\PublicacionController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\RegistroRefugioController;
 use App\Http\Controllers\SesionController;
+use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\VigenciaController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +63,25 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     Route::put('/publicaciones/{id}/renovar', [VigenciaController::class, 'renovar']);
     Route::put('/publicaciones/{id}/resolver', [VigenciaController::class, 'resolver']);
     Route::put('/publicaciones/{id}/archivar', [VigenciaController::class, 'archivar']);
+
+    // Solicitudes recibidas en todas mis publicaciones (RF:0050)
+    Route::get('/solicitudes/recibidas', [SolicitudController::class, 'recibidas']);
+});
+
+// Solo Particular: el Refugio no solicita adopciones (RF:0049, D49)
+Route::middleware('rol:Particular')->group(function ()
+{
+    Route::get('/publicaciones/{id}/solicitar', [SolicitudController::class, 'crear']);
+    Route::post('/publicaciones/{id}/solicitar', [SolicitudController::class, 'guardar']);
+
+    // Mis solicitudes enviadas (RF:0054)
+    Route::get('/solicitudes', [SolicitudController::class, 'enviadas']);
+});
+
+// Solicitudes de una publicación: su publicante o el Administrador (RF:0050, RNF:0013)
+Route::middleware('rol:Particular,Refugio,Administrador')->group(function ()
+{
+    Route::get('/publicaciones/{id}/solicitudes', [SolicitudController::class, 'dePublicacion']);
 });
 
 // Administrador

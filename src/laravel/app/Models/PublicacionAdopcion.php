@@ -26,6 +26,12 @@ class PublicacionAdopcion extends Model
         return $this->belongsTo(PublicacionAnimal::class, 'ID_Publicacion');
     }
 
+    // Solicitudes de adopción que recibió (RF:0049, RF:0050)
+    public function solicitudes()
+    {
+        return $this->hasMany(SolicitudAdopcion::class, 'ID_Publicacion');
+    }
+
     // Edad para mostrar: "8 meses", "1 año", "2 años y 3 meses"
     public function edadTexto()
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PublicacionAnimal;
+use App\Models\SolicitudAdopcion;
 
 /**
  * Detalle de una publicación (pantalla «Detalle de mascota» del prototipo).
@@ -31,9 +32,20 @@ class DetallePublicacionController extends Controller
             abort(404);
         }
 
+        // Para el botón Solicitar adopción (RF:0049): ¿ya tiene una solicitud Pendiente sobre esta mascota?
+        $solicitudPendiente = false;
+        if ($publicacion->Tipo_Publicacion == 'Adopción' && session('tipo') == 'Particular')
+        {
+            $solicitudPendiente = SolicitudAdopcion::where('ID_Publicacion', $publicacion->ID_Publicacion)
+                ->where('ID_Usuario', session('id_usuario'))
+                ->where('Estado_Solicitud', 'Pendiente')
+                ->exists();
+        }
+
         return view('publicaciones.detalle', [
             'publicacion' => $publicacion,
             'esPublicante' => $esPublicante,
+            'solicitudPendiente' => $solicitudPendiente,
         ]);
     }
 }
