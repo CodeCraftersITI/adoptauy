@@ -36,7 +36,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="vacio">Todavía no enviaste ninguna solicitud. <a href="/#adopcion">Ver mascotas en adopción</a></td>
+                        <td colspan="5" class="vacio">Todavía no enviaste ninguna solicitud. <a href="/adopcion">Ver mascotas en adopción</a></td>
                     </tr>
                 @endforelse
             </tbody>

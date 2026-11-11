@@ -5,6 +5,7 @@ use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DetallePublicacionController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InicioController;
+use App\Http\Controllers\ListadoController;
 use App\Http\Controllers\NosotrosController;
 use App\Http\Controllers\PublicacionController;
 use App\Http\Controllers\RegistroController;
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Route;
 
 // Página de inicio (RF:0040, RF:0048)
 Route::get('/', [InicioController::class, 'index']);
+
+// Listados públicos completos: adopción con filtros (RF:0041), perdidas (RF:0048) y encontradas (RF:0065)
+Route::get('/adopcion', [ListadoController::class, 'adopcion']);
+Route::get('/perdidas', [ListadoController::class, 'perdidas']);
+Route::get('/encontradas', [ListadoController::class, 'encontradas']);
 
 // Detalle de una publicación: pública, sin necesidad de sesión
 Route::get('/publicaciones/{id}', [DetallePublicacionController::class, 'show']);

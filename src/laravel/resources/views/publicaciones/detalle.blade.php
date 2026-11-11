@@ -15,7 +15,7 @@
 @endphp
 
 <div class="detalle-pagina">
-    <a class="detalle-volver" href="/#{{ $esAdopcion ? 'adopcion' : ($aviso->esEncontrada() ? 'encontradas' : 'perdidas') }}">← Volver al inicio</a>
+    <a class="detalle-volver" href="/{{ $esAdopcion ? 'adopcion' : ($aviso->esEncontrada() ? 'encontradas' : 'perdidas') }}">← Volver al listado</a>
 
     {{-- El publicante ve su publicación aunque ya no sea pública (archivada, resuelta, adoptada) --}}
     @if (!$publicacion->esPublica())

@@ -1,10 +1,9 @@
 {{--
-    Enlaces del menú principal.
-    "En adopción", "Perdidas" y "Encontradas" llevan a su sección de la página de inicio.
+    Enlaces del menú principal. El enlace de la página actual se marca con nav-enlace-activo.
     "Refugios" (mapa y listado, RF:0038, RF:0042) se agrega en el Hito 3.
 --}}
 <a class="nav-enlace {{ request()->is('/') ? 'nav-enlace-activo' : '' }}" href="/">Inicio</a>
-<a class="nav-enlace" href="/#adopcion">En adopción</a>   {{-- RF:0040 --}}
-<a class="nav-enlace" href="/#perdidas">Perdidas</a>      {{-- RF:0048 --}}
-<a class="nav-enlace" href="/#encontradas">Encontradas</a>  {{-- RF:0065 --}}
+<a class="nav-enlace {{ request()->is('adopcion') ? 'nav-enlace-activo' : '' }}" href="/adopcion">En adopción</a>       {{-- RF:0040, RF:0041 --}}
+<a class="nav-enlace {{ request()->is('perdidas') ? 'nav-enlace-activo' : '' }}" href="/perdidas">Perdidas</a>          {{-- RF:0048 --}}
+<a class="nav-enlace {{ request()->is('encontradas') ? 'nav-enlace-activo' : '' }}" href="/encontradas">Encontradas</a>  {{-- RF:0065 --}}
 <a class="nav-enlace {{ request()->is('nosotros') ? 'nav-enlace-activo' : '' }}" href="/nosotros">Sobre nosotros</a>
