@@ -1,4 +1,4 @@
-{{-- Sobre nosotros. $equipo llega desde NosotrosController. --}}
+{{-- Sobre nosotros: qué es AdoptaUY. El crédito del equipo va en el pie de página. --}}
 @extends('layouts.app')
 
 @section('titulo', 'Sobre nosotros')
@@ -25,26 +25,6 @@
         <div class="tarjeta paso">
             <strong>Sin fines de lucro</strong>
             <span class="apagado">La plataforma es gratuita: no cobra comisión ni procesa pagos. Las donaciones van directo a la cuenta de cada refugio.</span>
-        </div>
-    </section>
-
-    <section class="seccion">
-        <div>
-            <h2 class="seccion-titulo">El equipo: CodeCrafters</h2>
-            <p class="apagado">Estudiantes de la Tecnicatura en Redes y Software, ITI CETP-UTU. AdoptaUY es nuestro proyecto final.</p>
-        </div>
-
-        <div class="pasos">
-            @foreach ($equipo as $integrante)
-                <div class="tarjeta integrante">
-                    {{-- Iniciales: primera letra del nombre y del apellido --}}
-                    <span class="integrante-iniciales">{{ mb_substr($integrante['nombre'], 0, 1) }}{{ mb_substr(explode(' ', $integrante['nombre'])[1], 0, 1) }}</span>
-                    <div>
-                        <strong>{{ $integrante['nombre'] }}</strong>
-                        <div class="apagado">{{ $integrante['rol'] }}</div>
-                    </div>
-                </div>
-            @endforeach
         </div>
     </section>
 

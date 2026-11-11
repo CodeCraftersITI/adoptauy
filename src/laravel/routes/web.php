@@ -11,6 +11,7 @@ use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\RegistroRefugioController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\VigenciaController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Rutas públicas ----------
@@ -57,6 +58,11 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     Route::post('/publicar/perdida', [PublicacionController::class, 'guardarPerdida']);
     Route::get('/publicar/encontrada', [PublicacionController::class, 'crearEncontrada']);
     Route::post('/publicar/encontrada', [PublicacionController::class, 'guardarEncontrada']);
+
+    // Perdidas y encontradas: renovar, marcar como resuelta y archivar (RF:0047)
+    Route::put('/publicaciones/{id}/renovar', [VigenciaController::class, 'renovar']);
+    Route::put('/publicaciones/{id}/resolver', [VigenciaController::class, 'resolver']);
+    Route::put('/publicaciones/{id}/archivar', [VigenciaController::class, 'archivar']);
 
     // Solicitudes recibidas en todas mis publicaciones (RF:0050)
     Route::get('/solicitudes/recibidas', [SolicitudController::class, 'recibidas']);
