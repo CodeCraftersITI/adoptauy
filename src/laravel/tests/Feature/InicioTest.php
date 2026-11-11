@@ -23,16 +23,19 @@ class InicioTest extends TestCase
 
         $respuesta->assertOk();
         $respuesta->assertSee('Adoptar cambia dos vidas.');
-        $respuesta->assertSee('AdoptaUY · CodeCrafters · ITI CETP-UTU');   // viene del partial pie
-        $respuesta->assertSee('Ingresar');                                  // viene del partial acciones-usuario
+        $respuesta->assertSee('AdoptaUY · Realizado por CodeCrafters');   // viene del partial pie
+        $respuesta->assertSee('Ingresar');                                 // viene del partial acciones-usuario
     }
 
-    public function test_la_pagina_sobre_nosotros_muestra_al_equipo()
+    // Pedido del docente: Sobre nosotros no muestra al equipo; el crédito va solo en el pie
+    public function test_sobre_nosotros_no_muestra_al_equipo()
     {
         $this->get('/nosotros')
             ->assertOk()
-            ->assertSee('El equipo: CodeCrafters')
-            ->assertSee('Iñaki Pérez');
+            ->assertSee('Nuestra misión')
+            ->assertDontSee('El equipo: CodeCrafters')
+            ->assertDontSee('Iñaki Pérez')
+            ->assertSee('Realizado por CodeCrafters');
     }
 
     public function test_el_menu_no_tiene_enlaces_vacios()

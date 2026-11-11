@@ -28,12 +28,13 @@ class PublicacionPerdida extends Model
     ];
 
     // Publicaciones vigentes de un tipo para la consulta pública (RF:0048, RF:0065):
-    // no vencidas (RF:0047) y no ocultas por moderación (13.2.5)
+    // no vencidas (RF:0047) y no ocultas por moderación (13.2.5).
+    // El día del vencimiento ya no se muestra: ese día la tarea de las 03:00 la archiva (CP-14).
     public function scopeVigentes($consulta, $tipo)
     {
         return $consulta->where('Tipo_Aviso', $tipo)
             ->where('Estado_Perdida', 'Vigente')
-            ->where('Fecha_Vencimiento', '>=', now()->toDateString())
+            ->where('Fecha_Vencimiento', '>', now()->toDateString())
             ->whereHas('publicacion', function ($publicacion)
             {
                 $publicacion->where('Estado_Moderacion', 'Visible');
