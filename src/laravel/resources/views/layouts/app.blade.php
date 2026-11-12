@@ -13,6 +13,9 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap">
     <link rel="stylesheet" href="/css/adoptauy.css">
+
+    {{-- Lo que una página necesite agregar en el head (por ejemplo, el mapa de Leaflet) --}}
+    @yield('cabecera')
 </head>
 <body>
     @include('partials.encabezado')

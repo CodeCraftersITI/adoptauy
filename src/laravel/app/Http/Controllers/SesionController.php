@@ -49,6 +49,12 @@ class SesionController extends Controller
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }
 
+        // Una cuenta inhabilitada o dada de baja no entra (RF:0022, RF:0010), con el mismo mensaje
+        if (in_array($usuario->Estado_Usuario, ['Inhabilitado', 'Baja']))
+        {
+            return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
+        }
+
         // Un refugio solo entra si el Administrador ya lo validó (13.2.1). Se usa el mismo
         // mensaje para no revelar que el correo existe ni en qué estado está la solicitud.
         if ($usuario->Tipo_Usuario == 'Refugio' && $usuario->refugio->Estado_Validacion != 'Validado')

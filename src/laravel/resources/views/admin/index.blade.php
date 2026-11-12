@@ -6,6 +6,7 @@
 @section('contenido')
 <div class="seccion">
     <h1 class="pagina-titulo">Panel de administración</h1>
+    @include('partials.menu-admin')
 
     <h2 class="seccion-titulo">Solicitudes de refugio pendientes</h2>
     <p class="apagado">Cada solicitud se resuelve en un máximo de 5 días hábiles desde su fecha.</p>

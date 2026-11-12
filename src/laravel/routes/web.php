@@ -1,13 +1,18 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminParticularController;
+use App\Http\Controllers\AdminPublicacionController;
+use App\Http\Controllers\AdminRefugioController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DetallePublicacionController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\ListadoController;
+use App\Http\Controllers\MiRefugioController;
 use App\Http\Controllers\NosotrosController;
 use App\Http\Controllers\PublicacionController;
+use App\Http\Controllers\RefugioController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\RegistroRefugioController;
 use App\Http\Controllers\SesionController;
@@ -27,6 +32,10 @@ Route::get('/encontradas', [ListadoController::class, 'encontradas']);
 
 // Detalle de una publicación: pública, sin necesidad de sesión
 Route::get('/publicaciones/{id}', [DetallePublicacionController::class, 'show']);
+
+// Refugios: mapa y listado (RF:0038, RF:0042) y perfil público con cuentas para donaciones (RF:0062)
+Route::get('/refugios', [RefugioController::class, 'index']);
+Route::get('/refugios/{id}', [RefugioController::class, 'show']);
 
 // Sobre nosotros
 Route::get('/nosotros', [NosotrosController::class, 'index']);
@@ -90,6 +99,15 @@ Route::middleware('rol:Particular,Refugio,Administrador')->group(function ()
     Route::get('/publicaciones/{id}/solicitudes', [SolicitudController::class, 'dePublicacion']);
 });
 
+// Solo Refugio: ubicación en el mapa y cuentas bancarias (RF:0035 a RF:0038)
+Route::middleware('rol:Refugio')->group(function ()
+{
+    Route::get('/mi-refugio', [MiRefugioController::class, 'index']);
+    Route::put('/mi-refugio/ubicacion', [MiRefugioController::class, 'guardarUbicacion']);
+    Route::post('/mi-refugio/cuentas', [MiRefugioController::class, 'guardarCuenta']);
+    Route::delete('/mi-refugio/cuentas/{numero}', [MiRefugioController::class, 'eliminarCuenta']);
+});
+
 // Administrador
 Route::middleware('rol:Administrador')->group(function ()
 {
@@ -99,4 +117,18 @@ Route::middleware('rol:Administrador')->group(function ()
     Route::get('/admin/refugios/{id}/documento/{tipo}', [AdminController::class, 'verDocumento']);
     Route::put('/admin/refugios/{id}/validar', [AdminController::class, 'validar']);
     Route::put('/admin/refugios/{id}/rechazar', [AdminController::class, 'rechazar']);
+
+    // Publicaciones: listado y consulta con filtros (RF:0002, RF:0004, RF:0011, RF:0012) y baja (RF:0001)
+    Route::get('/admin/publicaciones', [AdminPublicacionController::class, 'index']);
+    Route::put('/admin/publicaciones/{id}/archivar', [AdminPublicacionController::class, 'archivar']);
+
+    // Refugios: listado y consulta (RF:0008, RF:0009), suspensión y baja lógica (RF:0006)
+    Route::get('/admin/refugios', [AdminRefugioController::class, 'index']);
+    Route::put('/admin/refugios/{id}/suspender', [AdminRefugioController::class, 'suspender']);
+    Route::put('/admin/refugios/{id}/levantar', [AdminRefugioController::class, 'levantarSuspension']);
+    Route::put('/admin/refugios/{id}/baja', [AdminRefugioController::class, 'darDeBaja']);
+
+    // Particulares: listado (RF:0014) y baja lógica (RF:0010)
+    Route::get('/admin/particulares', [AdminParticularController::class, 'index']);
+    Route::put('/admin/particulares/{id}/baja', [AdminParticularController::class, 'darDeBaja']);
 });

@@ -15,6 +15,10 @@
             @if ($tipo == 'Particular')
                 <a class="btn btn-suave" href="/solicitudes">Mis solicitudes</a>
             @endif
+            {{-- Ubicación en el mapa y cuentas para donaciones (RF:0035 a RF:0038) --}}
+            @if ($tipo == 'Refugio')
+                <a class="btn btn-suave" href="/mi-refugio">Mi refugio</a>
+            @endif
             <a class="btn btn-suave" href="/solicitudes/recibidas">Solicitudes recibidas</a>
             <a class="btn btn-primario" href="/publicar/adopcion">Publicar mascota</a>
         </div>

@@ -12,7 +12,7 @@
 --  foránea compuesta. Así una fila no puede estar en dos subtipos a la vez
 --  (RNE10, RNE25).
 --
---  Cuenta_Bancaria, Solicitud_Adopcion, Adopcion, Seguimiento y Reporte son de
+--  Adopcion, Seguimiento y Reporte son de
 --  los Sprints 5 y 6 y todavía no tienen migración: cuando se implementen, la
 --  migración tiene que crear exactamente lo que está acá.
 --

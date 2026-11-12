@@ -588,6 +588,30 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 }
 .bloque-oscuro .seccion-titulo { color: var(--blanco); font-size: clamp(26px, 4vw, 34px); }
 .bloque-oscuro .vacio { color: #E8C4D3; }
+.bloque-oscuro .datos dt { color: #E8C4D3; }
+.bloque-oscuro .datos dd { color: var(--blanco); }
+.datos-cuenta { margin: 0; }
+
+/* ---------- Mapa de refugios (RF:0038) ---------- */
+.mapa-caja { display: flex; flex-direction: column; gap: 10px; }
+.mapa {
+    height: 420px;
+    border-radius: var(--radio-tarjeta);
+    box-shadow: var(--sombra);
+    background: var(--rosa-pastel);
+    z-index: 0;   /* para que el mapa no tape el menú del celular */
+}
+.mapa-leyenda { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; color: var(--apagado); }
+.punto {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.punto-validado { background: var(--rosa); }
+.punto-no-registrado { background: var(--blanco); border: 3px solid #9C7A88; }
 
 /* ---------- Celular ---------- */
 @media (max-width: 760px) {

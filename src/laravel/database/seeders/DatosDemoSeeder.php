@@ -25,31 +25,31 @@ use Illuminate\Support\Facades\Storage;
 class DatosDemoSeeder extends Seeder
 {
     // Cuántas publicaciones de cada tipo
-    private const CANTIDAD = 20;
+    protected const CANTIDAD = 20;
 
-    private const RAZAS = [
+    protected const RAZAS = [
         'Perro' => ['Mestizo', 'Labrador', 'Caniche', 'Ovejero alemán', 'Beagle', 'Golden', 'Cimarrón uruguayo'],
         'Gato' => ['Mestizo', 'Siamés', 'Persa', 'Común europeo', 'Angora'],
     ];
 
-    private const BARRIOS = [
+    protected const BARRIOS = [
         'Pocitos', 'Malvín', 'Centro', 'Cordón', 'Parque Rodó', 'Buceo', 'La Blanqueada',
         'Prado', 'Carrasco', 'Unión', 'Sayago', 'Cerro', 'Ciudad Vieja', 'Tres Cruces',
     ];
 
-    private const SALUD = [
+    protected const SALUD = [
         'Vacunas al día y desparasitado.',
         'Sano, con todas las vacunas.',
         'Vacunado. Necesita control de peso.',
         'Desparasitado, falta la última vacuna.',
     ];
 
-    private const CARACTERISTICAS = [
+    protected const CARACTERISTICAS = [
         'Collar rojo con chapita.', 'Manchas blancas en el pecho.', 'Muy asustadizo, no se deja agarrar.',
         'Tiene una oreja caída.', 'Pelo largo, color marrón.', 'Cola corta.', 'Collar azul sin chapa.',
     ];
 
-    private $numeroFoto = 0;
+    protected $numeroFoto = 0;
 
     public function run(): void
     {
@@ -90,7 +90,7 @@ class DatosDemoSeeder extends Seeder
     }
 
     // Datos comunes (Publicacion_Animal), con fecha de creación en los últimos 20 días
-    private function crearPublicacion($usuario, $tipo)
+    protected function crearPublicacion($usuario, $tipo)
     {
         $especie = fake()->randomElement(['Perro', 'Gato']);
 
@@ -116,7 +116,7 @@ class DatosDemoSeeder extends Seeder
         return $publicacion;
     }
 
-    private function crearAdopcion($usuario)
+    protected function crearAdopcion($usuario)
     {
         $publicacion = $this->crearPublicacion($usuario, 'Adopción');
 
@@ -130,7 +130,7 @@ class DatosDemoSeeder extends Seeder
         ]);
     }
 
-    private function crearAviso($usuario, $tipoAviso)
+    protected function crearAviso($usuario, $tipoAviso)
     {
         $publicacion = $this->crearPublicacion($usuario, 'Perdida');
 
@@ -151,7 +151,7 @@ class DatosDemoSeeder extends Seeder
 
     // Baja una foto de un perro o un gato (FotosDePrueba) y la guarda en
     // storage/app/public/fotos-animales con el prefijo demo-
-    private function generarFoto($especie)
+    protected function generarFoto($especie)
     {
         $this->numeroFoto++;
         $ruta = 'fotos-animales/demo-' . uniqid() . '-' . $this->numeroFoto . '.jpg';

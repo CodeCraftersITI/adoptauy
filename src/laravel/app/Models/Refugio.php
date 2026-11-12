@@ -35,4 +35,16 @@ class Refugio extends Model
     {
         return $this->hasMany(RefugioDatoContacto::class, 'ID_Usuario');
     }
+
+    // Cuentas para donaciones, en el orden en que se cargaron (RF:0035 a RF:0037)
+    public function cuentas()
+    {
+        return $this->hasMany(CuentaBancaria::class, 'ID_Usuario')->orderBy('ID_Cuenta_Banco');
+    }
+
+    // ¿Ya marcó su ubicación en el mapa? Sin latitud y longitud no aparece en el mapa
+    public function tieneUbicacion()
+    {
+        return $this->Latitud !== null && $this->Longitud !== null;
+    }
 }
