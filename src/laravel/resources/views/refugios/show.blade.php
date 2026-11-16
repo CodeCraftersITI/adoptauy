@@ -10,6 +10,10 @@
 <div class="seccion">
     <a class="detalle-volver" href="/refugios">← Volver a refugios</a>
 
+    @if ($refugio->URL_Foto)
+        <img class="foto-refugio" src="/storage/{{ $refugio->URL_Foto }}" alt="Foto de {{ $refugio->Nombre_Refugio }}">
+    @endif
+
     <div>
         <span class="estado">Refugio validado</span>
         <h1 class="pagina-titulo">{{ $refugio->Nombre_Refugio }}</h1>

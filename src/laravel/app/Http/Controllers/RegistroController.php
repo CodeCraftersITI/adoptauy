@@ -35,32 +35,19 @@ class RegistroController extends Controller
 
         // Criterio de aceptación de RF:0039. Si algo falla, Laravel vuelve al
         // formulario con los errores y no se ejecuta nada de lo que sigue.
+        // Nombre, apellido, teléfono y contraseña usan las reglas compartidas de los modelos
         $request->validate([
             'ci' => ['required', new CedulaUruguaya, 'unique:Particular,CI'],
-            'nombre' => 'required|min:2|max:50',
-            'apellido' => 'required|min:2|max:50',
-            'telefono' => 'required|regex:/^[0-9]{8,9}$/',
             'email' => 'required|email|max:255|unique:Usuario,Email',
-            'password' => 'required|min:8|max:72',
-        ], [
+            'password' => Usuario::REGLA_CONTRASENA,
+        ] + Particular::REGLAS, [
             'ci.required' => 'Ingresá tu cédula.',
             'ci.unique' => 'Ya existe una cuenta con esa cédula.',
-            'nombre.required' => 'Ingresá tu nombre.',
-            'nombre.min' => 'El nombre debe tener al menos 2 letras.',
-            'nombre.max' => 'El nombre puede tener hasta 50 letras.',
-            'apellido.required' => 'Ingresá tu apellido.',
-            'apellido.min' => 'El apellido debe tener al menos 2 letras.',
-            'apellido.max' => 'El apellido puede tener hasta 50 letras.',
-            'telefono.required' => 'Ingresá tu teléfono.',
-            'telefono.regex' => 'El teléfono debe tener 8 o 9 números.',
             'email.required' => 'Ingresá tu correo electrónico.',
             'email.email' => 'Ingresá un correo electrónico válido.',
             'email.max' => 'El correo puede tener hasta 255 caracteres.',
             'email.unique' => 'Ya existe una cuenta con ese correo electrónico.',
-            'password.required' => 'Ingresá una contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.max' => 'La contraseña puede tener hasta 72 caracteres.',
-        ]);
+        ] + Particular::MENSAJES + Usuario::MENSAJES_CONTRASENA);
 
         // El Usuario y su fila de Particular se guardan juntos: si falla uno,
         // no se guarda ninguno (transacción, RNE11)

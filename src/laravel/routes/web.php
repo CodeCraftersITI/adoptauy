@@ -14,6 +14,7 @@ use App\Http\Controllers\InicioController;
 use App\Http\Controllers\ListadoController;
 use App\Http\Controllers\MiRefugioController;
 use App\Http\Controllers\NosotrosController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\PublicacionController;
 use App\Http\Controllers\RefugioController;
 use App\Http\Controllers\RegistroController;
@@ -76,6 +77,11 @@ Route::post('/auth/google/completar', [GoogleController::class, 'guardar']);
 Route::middleware('rol:Particular,Refugio')->group(function ()
 {
     Route::get('/cuenta', [CuentaController::class, 'index']);
+
+    // Mi perfil: datos (RF:0016 Particular, RF:0029 Refugio) y contraseña (RF:0067)
+    Route::get('/perfil', [PerfilController::class, 'index']);
+    Route::put('/perfil/datos', [PerfilController::class, 'guardarDatos']);
+    Route::put('/perfil/contrasena', [PerfilController::class, 'guardarContrasena']);
 
     // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) o encontrada (RF:0064):
     // un único formulario que muestra los campos del tipo elegido

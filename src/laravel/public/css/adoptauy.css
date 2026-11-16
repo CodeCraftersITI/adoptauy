@@ -235,6 +235,7 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .elegir-tipo .pestana:has(input:checked) { background: var(--bordo); color: var(--blanco); }
 .elegir-tipo .pestana:has(input:focus-visible) { outline: 3px solid #F2B8CC; outline-offset: 2px; }
 /* Edad: el número angosto y la unidad al lado, con aire entre los dos */
+.foto-refugio { width: 100%; max-height: 320px; object-fit: cover; border-radius: var(--radio-tarjeta); }
 .miniaturas-actuales { display: flex; flex-wrap: wrap; gap: 8px; }
 .edad { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
 

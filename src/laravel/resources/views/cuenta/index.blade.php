@@ -11,6 +11,8 @@
             <p class="apagado">{{ $tipo }} · {{ $nombre }}</p>
         </div>
         <div class="nav-acciones-fila">
+            {{-- Mis datos y contraseña (RF:0016, RF:0029, RF:0067) --}}
+            <a class="btn btn-suave" href="/perfil">Mi perfil</a>
             {{-- Solicitudes (RF:0050, RF:0054): el Refugio no envía, solo recibe --}}
             @if ($tipo == 'Particular')
                 <a class="btn btn-suave" href="/solicitudes">Mis solicitudes</a>

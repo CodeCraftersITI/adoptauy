@@ -252,13 +252,14 @@ Decisiones del 06/10/2026 que precisan o reemplazan a las anteriores:
 | D95 | Correo: Laravel envía por SMTP directo al proveedor externo (puerto 587, STARTTLS); se quita el contenedor de Postfix y SRV-MAIL. | D54, D75 |
 | D96 | Proveedor de SMTP: Gmail, con la cuenta del proyecto noreply.adoptauy@gmail.com (smtp.gmail.com, puerto 587) y una contraseña de aplicación, que va solo en el `.env` de la raíz (Docker pisa las variables MAIL_ de `src/laravel/.env`). En desarrollo se sigue usando Mailpit. | Proveedor de SMTP (Gmail o Brevo) |
 | D97 | Modelo de datos final: Reporte suma Detalle (texto del motivo Otro) y Fecha_Resolucion (RF:0060), y dos UNIQUE para que un usuario no reporte dos veces lo mismo (RNE22). No se usan triggers: las RNE que no se expresan con claves, UNIQUE o CHECK las valida Laravel. Con esto todas las tablas de adoptauy.sql tienen migración y no se prevén más cambios de base de datos. | Triggers para el Hito 3 |
+| D98 | Definir o cambiar la contraseña desde «Mi perfil» vale para el Particular y para el Refugio (RF:0029 ya incluye la contraseña del refugio). Quien no tiene contraseña (cuenta de Google) la define sin pedir la actual; quien la tiene la cambia ingresando la actual. RF:0067. | Punto abierto (2) de Continuar con Google |
 
 ## Aspectos a completar
 
 | Aspecto | Sección |
 |---|---|
 | Numeración de RNE: el repositorio y la V3 del integrador numeran distinto desde RNE23 (ver `modelo-datos.md`) | 16.1.2 |
-| Continuar con Google, por confirmar: (1) al vincular un Particular sin correo confirmado, ¿se da por confirmado? (2) RF:0067, ¿solo para el Particular? (3) la contraseña actual se comprueba con adoptauy_login | 13.2.1, 16.3 |
+| Continuar con Google, por confirmar: (1) al vincular un Particular sin correo confirmado, ¿se da por confirmado? (2) resuelto en D98 (3) la contraseña actual se comprueba con adoptauy_login | 13.2.1, 16.3 |
 | Correspondencia entre los servidores de la sección 16 y los contenedores del servidor local | 17.3 |
 | DER y prototipos actualizados al alcance vigente | 14, 15 |
 | Matriz de trazabilidad | 19.6 |

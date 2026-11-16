@@ -26,6 +26,21 @@ class Refugio extends Model
         'Ubicacion', 'Latitud', 'Longitud', 'URL_Foto',
     ];
 
+    // Reglas y mensajes del nombre y la ubicación del refugio. Las usan la solicitud de
+    // registro (RF:0034) y el perfil (RF:0029)
+    public const REGLAS = [
+        'nombre_refugio' => 'required|min:2|max:100',
+        'ubicacion' => 'required|max:255',
+    ];
+
+    public const MENSAJES = [
+        'nombre_refugio.required' => 'Ingresá el nombre del refugio.',
+        'nombre_refugio.min' => 'El nombre debe tener al menos 2 letras.',
+        'nombre_refugio.max' => 'El nombre puede tener hasta 100 caracteres.',
+        'ubicacion.required' => 'Ingresá la ubicación del refugio.',
+        'ubicacion.max' => 'La ubicación puede tener hasta 255 caracteres.',
+    ];
+
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'ID_Usuario');

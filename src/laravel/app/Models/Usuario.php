@@ -25,6 +25,16 @@ class Usuario extends Model
     // desde un formulario y volverse administrador (mass assignment, como en el teórico)
     protected $fillable = ['Email', 'Contraseña'];
 
+    // Contraseña: entre 8 y 72 caracteres (13.2.1; 72 es el máximo que admite bcrypt, RNF:0007).
+    // La usan el registro, el registro de refugio y el cambio de contraseña (RF:0067)
+    public const REGLA_CONTRASENA = 'required|min:8|max:72';
+
+    public const MENSAJES_CONTRASENA = [
+        'password.required' => 'Ingresá una contraseña.',
+        'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+        'password.max' => 'La contraseña puede tener hasta 72 caracteres.',
+    ];
+
     // Relaciones 1 a 1 con cada subtipo (la clave de las dos tablas es ID_Usuario)
     public function particular()
     {

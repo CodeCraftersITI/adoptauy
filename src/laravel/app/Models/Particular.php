@@ -23,6 +23,25 @@ class Particular extends Model
 
     protected $fillable = ['ID_Usuario', 'CI', 'Nombre', 'Apellido', 'Telefono'];
 
+    // Reglas y mensajes de nombre, apellido y teléfono (13.2.1). Están escritas una sola vez y
+    // las usan el registro (RF:0039), el registro con Google (RF:0066) y el perfil (RF:0016)
+    public const REGLAS = [
+        'nombre' => 'required|min:2|max:50',
+        'apellido' => 'required|min:2|max:50',
+        'telefono' => 'required|regex:/^[0-9]{8,9}$/',
+    ];
+
+    public const MENSAJES = [
+        'nombre.required' => 'Ingresá tu nombre.',
+        'nombre.min' => 'El nombre debe tener al menos 2 letras.',
+        'nombre.max' => 'El nombre puede tener hasta 50 letras.',
+        'apellido.required' => 'Ingresá tu apellido.',
+        'apellido.min' => 'El apellido debe tener al menos 2 letras.',
+        'apellido.max' => 'El apellido puede tener hasta 50 letras.',
+        'telefono.required' => 'Ingresá tu teléfono.',
+        'telefono.regex' => 'El teléfono debe tener 8 o 9 números.',
+    ];
+
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'ID_Usuario');
