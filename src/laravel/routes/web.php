@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminParticularController;
 use App\Http\Controllers\AdminPublicacionController;
 use App\Http\Controllers\AdminRefugioController;
+use App\Http\Controllers\ConfirmacionCorreoController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DetallePublicacionController;
 use App\Http\Controllers\GoogleController;
@@ -44,6 +45,12 @@ Route::get('/nosotros', [NosotrosController::class, 'index']);
 Route::get('/registro', [RegistroController::class, 'create']);
 Route::post('/registro', [RegistroController::class, 'store']);
 
+// Confirmación del correo del Particular (RF:0043): el enlace del correo (lleva un nombre
+// porque URL::signedRoute arma el enlace firmado a partir de él) y el pedido de otro enlace
+Route::get('/confirmar-correo/{id}', [ConfirmacionCorreoController::class, 'confirmar'])->name('correo.confirmar');
+Route::get('/confirmar-correo', [ConfirmacionCorreoController::class, 'create']);
+Route::post('/confirmar-correo', [ConfirmacionCorreoController::class, 'reenviar']);
+
 // Solicitud de registro de refugio (RF:0034)
 Route::get('/registro-refugio', [RegistroRefugioController::class, 'create']);
 Route::post('/registro-refugio', [RegistroRefugioController::class, 'store']);
@@ -78,6 +85,10 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
 
     // Solicitudes recibidas en todas mis publicaciones (RF:0050)
     Route::get('/solicitudes/recibidas', [SolicitudController::class, 'recibidas']);
+
+    // Responder una solicitud recibida: rechazarla (RF:0051) o elegir al adoptante (RF:0052)
+    Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar']);
+    Route::put('/solicitudes/{id}/elegir', [SolicitudController::class, 'elegir']);
 });
 
 // Solo Particular: el Refugio no solicita adopciones (RF:0049, D49)
