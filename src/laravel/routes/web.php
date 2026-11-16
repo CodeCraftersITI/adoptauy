@@ -66,13 +66,10 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
 {
     Route::get('/cuenta', [CuentaController::class, 'index']);
 
-    // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) y encontrada (RF:0064)
-    Route::get('/publicar/adopcion', [PublicacionController::class, 'crearAdopcion']);
-    Route::post('/publicar/adopcion', [PublicacionController::class, 'guardarAdopcion']);
-    Route::get('/publicar/perdida', [PublicacionController::class, 'crearPerdida']);
-    Route::post('/publicar/perdida', [PublicacionController::class, 'guardarPerdida']);
-    Route::get('/publicar/encontrada', [PublicacionController::class, 'crearEncontrada']);
-    Route::post('/publicar/encontrada', [PublicacionController::class, 'guardarEncontrada']);
+    // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) o encontrada (RF:0064):
+    // un único formulario que muestra los campos del tipo elegido
+    Route::get('/publicar', [PublicacionController::class, 'crear']);
+    Route::post('/publicar', [PublicacionController::class, 'guardar']);
 
     // Perdidas y encontradas: renovar, marcar como resuelta y archivar (RF:0047)
     Route::put('/publicaciones/{id}/renovar', [VigenciaController::class, 'renovar']);

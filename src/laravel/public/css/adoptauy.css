@@ -101,6 +101,15 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .btn-oscuro:hover { background: #2A1520; color: var(--blanco); }
 .btn-fantasma { background: transparent; color: var(--rosa); padding: 12px 8px; }
 
+/* Íconos de los botones (PNG de 64 px que se muestran a 20 px: se ven nítidos en celulares) */
+.icono { width: 20px; height: 20px; flex-shrink: 0; }
+/* Botón redondo con solo el ícono */
+.btn-icono { width: 46px; padding: 0; border-radius: 50%; }
+/* El texto de un botón de solo ícono se ve únicamente en el menú del celular */
+.texto-movil { display: none; }
+.menu-movil-panel .btn-icono { width: 100%; border-radius: var(--radio); padding: 13px 20px; }
+.menu-movil-panel .texto-movil { display: inline; }
+
 /* ---------- Tarjetas ---------- */
 .tarjeta {
     background: var(--blanco);
@@ -191,6 +200,36 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 }
 .pestana:hover { color: var(--rosa-texto); background: #F2C3D5; }
 .pestana-activa, .pestana-activa:hover { background: var(--bordo); color: var(--blanco); }
+
+/* Elegir el tipo en "Publicar mascota": cada opción es un radio con forma de pestaña */
+[hidden] { display: none !important; }   /* que .campo (display: flex) no le gane a hidden */
+.elegir-tipo { border: 0; margin: 0; padding: 0; min-width: 0; }
+.elegir-tipo legend { font-size: 14px; font-weight: 700; padding: 0; margin-bottom: 8px; }
+/* Las tres opciones del mismo ancho, dentro de una franja rosa clarito */
+.elegir-tipo .pestanas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 4px;
+    background: var(--rosa-pastel);
+    border-radius: 18px;
+}
+.elegir-tipo .pestana {
+    position: relative;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 8px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.elegir-tipo .pestana:hover { background: #F2C3D5; }
+/* El círculo del radio no se ve (pero sigue andando con el teclado): se ve la opción entera */
+.elegir-tipo input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.elegir-tipo .pestana:has(input:checked) { background: var(--bordo); color: var(--blanco); }
+.elegir-tipo .pestana:has(input:focus-visible) { outline: 3px solid #F2B8CC; outline-offset: 2px; }
+/* Edad: el número angosto y la unidad al lado, con aire entre los dos */
+.edad { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
 
 /* ---------- Tarjetas de mascotas (inicio) ---------- */
 .grilla-tarjetas {

@@ -80,7 +80,7 @@
             <h2 class="seccion-titulo">Mascotas perdidas</h2>
             <div class="nav-acciones-fila">
                 <a class="btn btn-suave" href="/perdidas">Ver todas</a>
-                <a class="btn btn-suave" href="/publicar/perdida">Publicar perdida</a>
+                <a class="btn btn-suave" href="/publicar?tipo=Perdida">Publicar perdida</a>
             </div>
         </div>
 
@@ -99,7 +99,7 @@
             <h2 class="seccion-titulo">Mascotas encontradas</h2>
             <div class="nav-acciones-fila">
                 <a class="btn btn-suave" href="/encontradas">Ver todas</a>
-                <a class="btn btn-suave" href="/publicar/encontrada">Publicar encontrada</a>
+                <a class="btn btn-suave" href="/publicar?tipo=Encontrada">Publicar encontrada</a>
             </div>
         </div>
 

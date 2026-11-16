@@ -13,7 +13,7 @@
             <h1 class="seccion-titulo">{{ $titulo }}</h1>
             <p>{{ $descripcion }}</p>
         </div>
-        <a class="btn btn-suave" href="/publicar/{{ $tipo == 'Perdida' ? 'perdida' : 'encontrada' }}">
+        <a class="btn btn-suave" href="/publicar?tipo={{ $tipo }}">
             {{ $tipo == 'Perdida' ? 'Publicar perdida' : 'Publicar encontrada' }}
         </a>
     </div>

@@ -20,7 +20,7 @@
                 <a class="btn btn-suave" href="/mi-refugio">Mi refugio</a>
             @endif
             <a class="btn btn-suave" href="/solicitudes/recibidas">Solicitudes recibidas</a>
-            <a class="btn btn-primario" href="/publicar/adopcion">Publicar mascota</a>
+            <a class="btn btn-primario" href="/publicar">Publicar mascota</a>
         </div>
     </div>
 

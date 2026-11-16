@@ -13,17 +13,7 @@
     <form action="/registro" method="POST" class="tarjeta formulario formulario-grilla">
         @csrf
 
-        <label class="campo">
-            Cédula de identidad
-            <input class="entrada" type="text" name="ci" value="{{ old('ci') }}" placeholder="Sin puntos ni guion" required>
-            @error('ci') <span class="campo-error">{{ $message }}</span> @enderror
-        </label>
-
-        <label class="campo">
-            Teléfono
-            <input class="entrada" type="tel" name="telefono" value="{{ old('telefono') }}" placeholder="09X XXX XXX" required>
-            @error('telefono') <span class="campo-error">{{ $message }}</span> @enderror
-        </label>
+        @include('partials.campos-ci-telefono')
 
         <label class="campo">
             Nombre
