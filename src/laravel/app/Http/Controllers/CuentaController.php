@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PublicacionAnimal;
+use App\Models\Usuario;
 
 /**
  * Panel "Mi cuenta" del Particular y del Refugio.
@@ -23,6 +24,8 @@ class CuentaController extends Controller
             'nombre' => session('nombre'),
             'tipo' => session('tipo'),
             'publicaciones' => $publicaciones,
+            // Aviso si la cuenta está restringida por un seguimiento incumplido (RF:0058)
+            'restringida' => Usuario::estaRestringido(session('id_usuario')),
         ]);
     }
 }

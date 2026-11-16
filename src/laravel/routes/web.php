@@ -16,6 +16,7 @@ use App\Http\Controllers\PublicacionController;
 use App\Http\Controllers\RefugioController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\RegistroRefugioController;
+use App\Http\Controllers\SeguimientoController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\VigenciaController;
@@ -89,6 +90,12 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     // Responder una solicitud recibida: rechazarla (RF:0051) o elegir al adoptante (RF:0052)
     Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar']);
     Route::put('/solicitudes/{id}/elegir', [SolicitudController::class, 'elegir']);
+
+    // Seguimiento de la adopción: el adoptante envía la foto (RF:0056) y el publicante la revisa (RF:0057)
+    Route::get('/seguimientos', [SeguimientoController::class, 'index']);
+    Route::post('/seguimientos/{id}/foto', [SeguimientoController::class, 'enviarFoto']);
+    Route::put('/seguimientos/{id}/aprobar', [SeguimientoController::class, 'aprobar']);
+    Route::put('/seguimientos/{id}/rechazar', [SeguimientoController::class, 'rechazar']);
 });
 
 // Solo Particular: el Refugio no solicita adopciones (RF:0049, D49)

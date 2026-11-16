@@ -6,7 +6,9 @@ use App\Mail\SolicitudAdopcionRecibida;
 use App\Models\Adopcion;
 use App\Models\Particular;
 use App\Models\PublicacionAnimal;
+use App\Models\Seguimiento;
 use App\Models\SolicitudAdopcion;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -168,9 +170,16 @@ class SolicitudController extends Controller
             $mascota->save();
 
             // Se registra la fecha de adopción (de ahí se cuentan los días del seguimiento)
-            Adopcion::create([
+            $adopcion = Adopcion::create([
                 'ID_Solicitud' => $solicitud->ID_Solicitud,
                 'Fecha_Adopcion' => now()->toDateString(),
+            ]);
+
+            // Y su seguimiento (RNE20): aviso el día 15 y límite el día 22, en días corridos
+            Seguimiento::create([
+                'ID_Adopcion' => $adopcion->ID_Adopcion,
+                'Fecha_Aviso' => now()->addDays(15)->toDateString(),
+                'Fecha_Limite' => now()->addDays(22)->toDateString(),
             ]);
         });
 
@@ -216,6 +225,12 @@ class SolicitudController extends Controller
         if ($publicacion->ID_Usuario == session('id_usuario'))
         {
             return 'No podés solicitar la adopción de tu propia publicación.';
+        }
+
+        // Cuenta restringida por seguimiento incumplido (RF:0058)
+        if (Usuario::estaRestringido(session('id_usuario')))
+        {
+            return Seguimiento::MENSAJE_RESTRINGIDA;
         }
 
         $yaPendiente = SolicitudAdopcion::where('ID_Publicacion', $publicacion->ID_Publicacion)

@@ -1,4 +1,4 @@
-{{-- Panel "Mi cuenta" del Particular y del Refugio. $nombre, $tipo y $publicaciones llegan desde CuentaController. --}}
+{{-- Panel "Mi cuenta" del Particular y del Refugio. $nombre, $tipo, $publicaciones y $restringida llegan desde CuentaController. --}}
 @extends('layouts.app')
 
 @section('titulo', 'Mi cuenta')
@@ -20,9 +20,19 @@
                 <a class="btn btn-suave" href="/mi-refugio">Mi refugio</a>
             @endif
             <a class="btn btn-suave" href="/solicitudes/recibidas">Solicitudes recibidas</a>
+            {{-- Foto de seguimiento de las adopciones (RF:0056, RF:0057) --}}
+            <a class="btn btn-suave" href="/seguimientos">Seguimientos</a>
             <a class="btn btn-primario" href="/publicar">Publicar mascota</a>
         </div>
     </div>
+
+    {{-- RF:0058: con un seguimiento incumplido solo puede enviar la foto --}}
+    @if ($restringida)
+        <div class="mensaje mensaje-error">
+            Tu cuenta está restringida: no podés solicitar adopciones ni publicar hasta que envíes
+            la foto de seguimiento de tu adopción. <a href="/seguimientos">Enviar la foto</a>
+        </div>
+    @endif
 
     <h2 class="seccion-titulo">Mis publicaciones</h2>
 

@@ -360,9 +360,10 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 0 20px;
 }
-.datos div { border-top: 1px solid var(--rosa-borde); padding: 10px 0; }
+.datos div { border-top: 1px solid var(--rosa-borde); padding: 10px 0; min-width: 0; }
 .datos dt { font-size: 13px; color: var(--apagado); }
-.datos dd { margin: 2px 0 0; font-weight: 700; }
+/* overflow-wrap: un correo largo no tiene espacios donde cortar; así se parte dentro de su columna */
+.datos dd { margin: 2px 0 0; font-weight: 700; overflow-wrap: anywhere; }
 
 @media (max-width: 760px) {
     .detalle { grid-template-columns: 1fr; gap: 20px; }

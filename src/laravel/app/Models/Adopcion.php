@@ -21,4 +21,10 @@ class Adopcion extends Model
     {
         return $this->belongsTo(SolicitudAdopcion::class, 'ID_Solicitud');
     }
+
+    // Su seguimiento: uno por adopción (RNE20)
+    public function seguimiento()
+    {
+        return $this->hasOne(Seguimiento::class, 'ID_Adopcion');
+    }
 }

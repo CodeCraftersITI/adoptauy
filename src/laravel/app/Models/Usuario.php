@@ -41,6 +41,28 @@ class Usuario extends Model
         return $this->hasOne(Administrador::class, 'ID_Usuario');
     }
 
+    // ¿Tiene la cuenta restringida por un seguimiento incumplido? (RF:0058, RNE21)
+    // Desde el día 22 de una adopción suya sin foto presentada. Mientras tanto no puede
+    // solicitar adopciones ni publicar; solo enviar la foto, y al enviarla se levanta sola.
+    public function tieneCuentaRestringida()
+    {
+        return Seguimiento::where('Fecha_Limite', '<=', now()->toDateString())
+            ->whereIn('Estado_Evidencia', ['Pendiente', 'Rechazada'])
+            ->whereHas('adopcion.solicitud', function ($solicitud)
+            {
+                $solicitud->where('ID_Usuario', $this->ID_Usuario);
+            })
+            ->exists();
+    }
+
+    // Lo mismo, a partir del ID de la sesión. Si el usuario no existe, no está restringido
+    public static function estaRestringido($idUsuario)
+    {
+        $usuario = Usuario::find($idUsuario);
+
+        return $usuario && $usuario->tieneCuentaRestringida();
+    }
+
     // Nombre que se muestra en el encabezado y en los paneles
     public function nombreVisible()
     {

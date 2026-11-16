@@ -12,8 +12,8 @@
 --  foránea compuesta. Así una fila no puede estar en dos subtipos a la vez
 --  (RNE10, RNE25).
 --
---  Seguimiento y Reporte son de
---  los Sprints 5 y 6 y todavía no tienen migración: cuando se implementen, la
+--  Reporte es del
+--  Sprint 6 y todavía no tiene migración: cuando se implemente, la
 --  migración tiene que crear exactamente lo que está acá.
 --
 --  Las RNE que dependen de otras filas o de la fecha actual (por ejemplo, el

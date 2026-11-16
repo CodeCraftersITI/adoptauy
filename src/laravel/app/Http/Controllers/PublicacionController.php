@@ -6,6 +6,8 @@ use App\Models\FotoAnimal;
 use App\Models\PublicacionAdopcion;
 use App\Models\PublicacionAnimal;
 use App\Models\PublicacionPerdida;
+use App\Models\Seguimiento;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -45,6 +47,11 @@ class PublicacionController extends Controller
     // El tipo de la URL solo elige cuál aparece marcado al abrir (por ejemplo, desde "Publicar perdida")
     public function crear(Request $request)
     {
+        if ($this->cuentaRestringida())
+        {
+            return redirect('/seguimientos')->with('error', Seguimiento::MENSAJE_RESTRINGIDA);
+        }
+
         $tipo = in_array($request->input('tipo'), self::TIPOS) ? $request->input('tipo') : 'Adopción';
 
         return view('publicaciones.crear', ['tipo' => $tipo]);
@@ -53,6 +60,11 @@ class PublicacionController extends Controller
     // POST /publicar
     public function guardar(Request $request)
     {
+        if ($this->cuentaRestringida())
+        {
+            return redirect('/seguimientos')->with('error', Seguimiento::MENSAJE_RESTRINGIDA);
+        }
+
         $tipo = $request->input('tipo');
 
         // El contacto es un teléfono (RNE12): se guarda solo con números, como en el registro
@@ -84,6 +96,12 @@ class PublicacionController extends Controller
 
         return redirect('/cuenta')->with('exito', 'Publicaste la mascota ' . ($tipo == 'Perdida' ? 'perdida' : 'encontrada')
             . '. La publicación vence en 30 días y la podés renovar.');
+    }
+
+    // RF:0058: con un seguimiento incumplido no se puede publicar de ningún tipo
+    private function cuentaRestringida()
+    {
+        return Usuario::estaRestringido(session('id_usuario'));
     }
 
     // Reglas de validación: las comunes más las del tipo elegido (13.2.2, RNE01)
