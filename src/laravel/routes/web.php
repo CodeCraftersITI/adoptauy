@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminReporteController;
 use App\Http\Controllers\ConfirmacionCorreoController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DetallePublicacionController;
+use App\Http\Controllers\EstadoAdopcionController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\ListadoController;
@@ -85,6 +86,10 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     Route::put('/publicaciones/{id}/renovar', [VigenciaController::class, 'renovar']);
     Route::put('/publicaciones/{id}/resolver', [VigenciaController::class, 'resolver']);
     Route::put('/publicaciones/{id}/archivar', [VigenciaController::class, 'archivar']);
+
+    // Mascotas en adopción: archivar (baja, RF:0018, RF:0025) y reactivar (RF:0045)
+    Route::put('/adopciones/{id}/archivar', [EstadoAdopcionController::class, 'archivar']);
+    Route::put('/adopciones/{id}/reactivar', [EstadoAdopcionController::class, 'reactivar']);
 
     // Reportar una publicación, a un particular o a un refugio (RF:0059)
     Route::get('/reportar', [ReporteController::class, 'crear']);

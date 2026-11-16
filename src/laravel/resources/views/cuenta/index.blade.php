@@ -94,6 +94,27 @@
                                         </form>
                                     @endif
                                 </div>
+                            @else
+                                {{-- Adopción (RF:0018, RF:0025, RF:0045): archivar y reactivar. Adoptado es definitivo --}}
+                                <div class="acciones-fila">
+                                    @if ($publicacion->adopcion->Estado_Adopcion == 'En adopción')
+                                        <a class="btn btn-suave btn-chico" href="/publicaciones/{{ $publicacion->ID_Publicacion }}/solicitudes">Ver solicitudes</a>
+                                        <form action="/adopciones/{{ $publicacion->ID_Publicacion }}/archivar" method="POST"
+                                              onsubmit="return confirm('¿Archivar la publicación? Deja de verse en el sitio, y la podés reactivar después.')">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit" class="btn btn-fantasma btn-chico">Archivar</button>
+                                        </form>
+                                    @endif
+
+                                    @if ($publicacion->adopcion->Estado_Adopcion == 'Archivado')
+                                        <form action="/adopciones/{{ $publicacion->ID_Publicacion }}/reactivar" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit" class="btn btn-suave btn-chico">Reactivar</button>
+                                        </form>
+                                    @endif
+                                </div>
                             @endif
                         </td>
                     </tr>
