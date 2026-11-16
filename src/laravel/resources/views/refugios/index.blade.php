@@ -29,7 +29,7 @@
     <h2 class="seccion-titulo">Listado de refugios</h2>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Refugio</th>
@@ -41,8 +41,8 @@
                 @forelse ($refugios as $refugio)
                     <tr>
                         <td><a href="/refugios/{{ $refugio->ID_Usuario }}"><strong>{{ $refugio->Nombre_Refugio }}</strong></a></td>
-                        <td>{{ $refugio->Ubicacion }}</td>
-                        <td>
+                        <td data-etiqueta="Ubicación">{{ $refugio->Ubicacion }}</td>
+                        <td data-etiqueta="Contacto">
                             @foreach ($refugio->contactos as $contacto)
                                 {{ $contacto->Dato_Contacto }}<br>
                             @endforeach

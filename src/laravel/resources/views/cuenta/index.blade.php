@@ -36,8 +36,10 @@
 
     <h2 class="seccion-titulo">Mis publicaciones</h2>
 
+    {{-- tabla-tarjetas: en el celular cada fila se muestra como una tarjeta; data-etiqueta es
+         el nombre del dato que se ve adelante, porque ahí no está la fila de títulos --}}
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas tabla-con-foto">
             <thead>
                 <tr>
                     <th>Foto</th>
@@ -59,63 +61,53 @@
                             @endif
                             {{ $publicacion->Especie }} · {{ $publicacion->Raza }} · {{ $publicacion->Sexo }}
                         </td>
-                        <td>{{ $publicacion->tipoVisible() }}</td>
-                        <td>
+                        <td data-etiqueta="Tipo">{{ $publicacion->tipoVisible() }}</td>
+                        <td data-etiqueta="Estado">
                             <span class="estado">{{ $publicacion->estado() }}</span>
                             @if ($publicacion->Tipo_Publicacion == 'Perdida')
                                 <br><span class="apagado">Vence el {{ date('d/m/Y', strtotime($publicacion->perdida->Fecha_Vencimiento)) }}</span>
                             @endif
                         </td>
-                        <td>{{ date('d/m/Y', strtotime($publicacion->Fecha_Creacion)) }}</td>
-                        <td>
-                            {{-- RF:0047: solo se ofrecen las transiciones válidas según el estado (13.2.2) --}}
-                            @if ($publicacion->Tipo_Publicacion == 'Perdida')
-                                <div class="acciones-fila">
+                        <td data-etiqueta="Publicada">{{ date('d/m/Y', strtotime($publicacion->Fecha_Creacion)) }}</td>
+                        <td class="celda-acciones">
+                            {{--
+                                Acciones con íconos (corrección del docente: botones chicos). El nombre de
+                                cada una aparece al pasar el mouse. Solo se ofrecen las transiciones válidas
+                                según el estado (13.2.2): RF:0047 para perdidas y encontradas,
+                                RF:0018, RF:0025 y RF:0045 para adopción. Adoptado y Resuelta son finales.
+                            --}}
+                            @php $id = $publicacion->ID_Publicacion; @endphp
+                            <div class="acciones-iconos">
+                                {{-- Editar (RF:0019, RF:0026) --}}
+                                @if ($publicacion->sePuedeEditar())
+                                    <a class="btn btn-suave btn-icono-chico" href="/publicaciones/{{ $id }}/editar" title="Editar" aria-label="Editar">
+                                        <img class="icono" src="/img/editar.png" alt="">
+                                    </a>
+                                @endif
+
+                                @if ($publicacion->Tipo_Publicacion == 'Perdida')
                                     @if (in_array($publicacion->perdida->Estado_Perdida, ['Vigente', 'Archivada']))
-                                        <form action="/publicaciones/{{ $publicacion->ID_Publicacion }}/renovar" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-suave btn-chico">Renovar 30 días</button>
-                                        </form>
+                                        @include('partials.boton-accion', ['url' => '/publicaciones/' . $id . '/renovar', 'icono' => 'renovar', 'texto' => 'Renovar 30 días', 'clase' => 'btn-suave'])
                                     @endif
 
                                     @if ($publicacion->perdida->Estado_Perdida == 'Vigente')
-                                        <form action="/publicaciones/{{ $publicacion->ID_Publicacion }}/resolver" method="POST"
-                                              onsubmit="return confirm('¿La mascota ya volvió con su familia? Esto no se puede deshacer.')">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-primario btn-chico">Marcar como resuelta</button>
-                                        </form>
-
-                                        <form action="/publicaciones/{{ $publicacion->ID_Publicacion }}/archivar" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-fantasma btn-chico">Archivar</button>
-                                        </form>
+                                        @include('partials.boton-accion', ['url' => '/publicaciones/' . $id . '/resolver', 'icono' => 'resuelta', 'texto' => 'Marcar como resuelta', 'clase' => 'btn-primario',
+                                            'confirmar' => '¿La mascota ya volvió con su familia? Esto no se puede deshacer.'])
+                                        @include('partials.boton-accion', ['url' => '/publicaciones/' . $id . '/archivar', 'icono' => 'archivar', 'texto' => 'Archivar', 'clase' => 'btn-fantasma'])
                                     @endif
-                                </div>
-                            @else
-                                {{-- Adopción (RF:0018, RF:0025, RF:0045): archivar y reactivar. Adoptado es definitivo --}}
-                                <div class="acciones-fila">
+                                @else
                                     @if ($publicacion->adopcion->Estado_Adopcion == 'En adopción')
-                                        <a class="btn btn-suave btn-chico" href="/publicaciones/{{ $publicacion->ID_Publicacion }}/solicitudes">Ver solicitudes</a>
-                                        <form action="/adopciones/{{ $publicacion->ID_Publicacion }}/archivar" method="POST"
-                                              onsubmit="return confirm('¿Archivar la publicación? Deja de verse en el sitio, y la podés reactivar después.')">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-fantasma btn-chico">Archivar</button>
-                                        </form>
+                                        @include('partials.boton-accion', ['url' => '/adopciones/' . $id . '/archivar', 'icono' => 'archivar', 'texto' => 'Archivar', 'clase' => 'btn-fantasma',
+                                            'confirmar' => '¿Archivar la publicación? Deja de verse en el sitio, y la podés reactivar después.'])
+                                        {{-- Con texto: solo con el ícono no se entendería --}}
+                                        <a class="btn btn-suave btn-chico" href="/publicaciones/{{ $id }}/solicitudes">Ver solicitudes</a>
                                     @endif
 
                                     @if ($publicacion->adopcion->Estado_Adopcion == 'Archivado')
-                                        <form action="/adopciones/{{ $publicacion->ID_Publicacion }}/reactivar" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-suave btn-chico">Reactivar</button>
-                                        </form>
+                                        @include('partials.boton-accion', ['url' => '/adopciones/' . $id . '/reactivar', 'icono' => 'reactivar', 'texto' => 'Reactivar', 'clase' => 'btn-suave'])
                                     @endif
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

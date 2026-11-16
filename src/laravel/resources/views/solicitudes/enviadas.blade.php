@@ -13,7 +13,7 @@
     <p class="apagado">Quien publicó tiene tus datos y se comunica con vos por fuera de AdoptaUY.</p>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas tabla-con-foto">
             <thead>
                 <tr>
                     <th>Foto</th>
@@ -28,11 +28,11 @@
                     @php $publicacion = $solicitud->adopcion->publicacion; @endphp
                     <tr>
                         <td><a href="/publicaciones/{{ $publicacion->ID_Publicacion }}"><img class="miniatura" src="{{ $publicacion->primeraFoto() }}" alt="Ver la publicación"></a></td>
-                        <td>{{ $publicacion->Especie }} · {{ $publicacion->Raza }}<br>
+                        <td data-etiqueta="Mascota">{{ $publicacion->Especie }} · {{ $publicacion->Raza }}<br>
                             <span class="apagado">{{ $solicitud->adopcion->Ubicacion_Aproximada }}</span></td>
-                        <td>{{ $publicacion->publicanteVisible() }}</td>
-                        <td>{{ date('d/m/Y', strtotime($solicitud->Fecha_Solicitud)) }}</td>
-                        <td><span class="estado">{{ $solicitud->Estado_Solicitud }}</span></td>
+                        <td data-etiqueta="Publica">{{ $publicacion->publicanteVisible() }}</td>
+                        <td data-etiqueta="Enviada">{{ date('d/m/Y', strtotime($solicitud->Fecha_Solicitud)) }}</td>
+                        <td data-etiqueta="Estado"><span class="estado">{{ $solicitud->Estado_Solicitud }}</span></td>
                     </tr>
                 @empty
                     <tr>

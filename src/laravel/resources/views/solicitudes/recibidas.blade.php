@@ -30,7 +30,7 @@
         Cuando se concrete la adopción, elegí al adoptante: las demás solicitudes se rechazan solas.</p>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     @if (!$publicacion)
@@ -50,18 +50,18 @@
                         @if (!$publicacion)
                             <td><a href="/publicaciones/{{ $solicitud->ID_Publicacion }}">{{ $solicitud->adopcion->publicacion->Especie }} · {{ $solicitud->adopcion->publicacion->Raza }}</a></td>
                         @endif
-                        <td>
+                        <td data-etiqueta="Solicitante">
                             {{ $solicitud->particular->Nombre }} {{ $solicitud->particular->Apellido }}
                             {{-- Reportar al solicitante (RF:0059) --}}
                             @if ($solicitud->adopcion->publicacion->ID_Usuario == session('id_usuario'))
                                 <div class="enlaces-reportar"><a href="/reportar?usuario={{ $solicitud->ID_Usuario }}&volver=/solicitudes/recibidas">Reportar</a></div>
                             @endif
                         </td>
-                        <td><a href="tel:{{ $solicitud->particular->Telefono }}">{{ $solicitud->particular->Telefono }}</a></td>
-                        <td><a href="mailto:{{ $solicitud->particular->usuario->Email }}">{{ $solicitud->particular->usuario->Email }}</a></td>
-                        <td>{{ date('d/m/Y', strtotime($solicitud->Fecha_Solicitud)) }}</td>
-                        <td><span class="estado">{{ $solicitud->Estado_Solicitud }}</span></td>
-                        <td>
+                        <td data-etiqueta="Teléfono"><a href="tel:{{ $solicitud->particular->Telefono }}">{{ $solicitud->particular->Telefono }}</a></td>
+                        <td data-etiqueta="Correo"><a href="mailto:{{ $solicitud->particular->usuario->Email }}">{{ $solicitud->particular->usuario->Email }}</a></td>
+                        <td data-etiqueta="Fecha">{{ date('d/m/Y', strtotime($solicitud->Fecha_Solicitud)) }}</td>
+                        <td data-etiqueta="Estado"><span class="estado">{{ $solicitud->Estado_Solicitud }}</span></td>
+                        <td class="celda-acciones">
                             {{-- Solo el publicante, y solo sobre una Pendiente de una mascota En adopción (13.2.3) --}}
                             @if ($solicitud->Estado_Solicitud == 'Pendiente'
                                 && $solicitud->adopcion->Estado_Adopcion == 'En adopción'

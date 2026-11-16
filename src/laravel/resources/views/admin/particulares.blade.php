@@ -39,7 +39,7 @@
     </form>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Nombre</th>
@@ -53,13 +53,13 @@
                 @forelse ($particulares as $particular)
                     <tr>
                         <td><strong>{{ $particular->Nombre }} {{ $particular->Apellido }}</strong></td>
-                        <td>
+                        <td data-etiqueta="Contacto">
                             {{ $particular->usuario->Email }}<br>
                             <span class="apagado">{{ $particular->Telefono }}</span>
                         </td>
-                        <td>{{ date('d/m/Y', strtotime($particular->usuario->Fecha_Alta)) }}</td>
-                        <td><span class="estado">{{ $particular->usuario->Estado_Usuario }}</span></td>
-                        <td>
+                        <td data-etiqueta="Alta">{{ date('d/m/Y', strtotime($particular->usuario->Fecha_Alta)) }}</td>
+                        <td data-etiqueta="Estado"><span class="estado">{{ $particular->usuario->Estado_Usuario }}</span></td>
+                        <td class="celda-acciones">
                             {{-- Restituir: después de una revisión, suspensión o inhabilitación por reportes (RF:0060) --}}
                             @if (in_array($particular->usuario->Estado_Usuario, ['En revisión', 'Suspendido', 'Inhabilitado']))
                                 <form action="/admin/particulares/{{ $particular->ID_Usuario }}/restituir" method="POST">

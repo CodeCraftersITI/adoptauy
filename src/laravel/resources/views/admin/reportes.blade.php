@@ -18,7 +18,7 @@
     {{-- ---------- Publicaciones ---------- --}}
     <h3 class="detalle-subtitulo">Publicaciones</h3>
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Publicación</th>
@@ -37,9 +37,9 @@
                             {{ $publicacion->tipoVisible() }}: {{ $publicacion->Especie }} · {{ $publicacion->Raza }}<br>
                             <span class="apagado">{{ $publicacion->usuario->nombreVisible() }}</span>
                         </td>
-                        <td><span class="estado">{{ $publicacion->Estado_Moderacion }}</span></td>
-                        <td>@include('admin.partials.motivos', ['reportes' => $publicacion->reportes()->where('Estado_Reporte', 'Pendiente')->get()])</td>
-                        <td>
+                        <td data-etiqueta="Estado"><span class="estado">{{ $publicacion->Estado_Moderacion }}</span></td>
+                        <td data-etiqueta="Motivos">@include('admin.partials.motivos', ['reportes' => $publicacion->reportes()->where('Estado_Reporte', 'Pendiente')->get()])</td>
+                        <td class="celda-acciones">
                             <div class="acciones-fila">
                                 @foreach (['desestimar' => 'Desestimar', 'suspension' => 'Suspender publicación'] as $medida => $texto)
                                     <form action="/admin/reportes/publicacion/{{ $publicacion->ID_Publicacion }}" method="POST">
@@ -62,7 +62,7 @@
     {{-- ---------- Particulares y refugios ---------- --}}
     <h3 class="detalle-subtitulo">Particulares y refugios</h3>
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Usuario</th>
@@ -78,11 +78,11 @@
                             <strong>{{ $usuario->nombreVisible() }}</strong><br>
                             <span class="apagado">{{ $usuario->Tipo_Usuario }} · {{ $usuario->Email }}</span>
                         </td>
-                        <td>
+                        <td data-etiqueta="Estado">
                             <span class="estado">{{ $usuario->Tipo_Usuario == 'Refugio' ? $usuario->refugio->Estado_Validacion : $usuario->Estado_Usuario }}</span>
                         </td>
-                        <td>@include('admin.partials.motivos', ['reportes' => $usuario->reportesRecibidos()->where('Estado_Reporte', 'Pendiente')->get()])</td>
-                        <td>
+                        <td data-etiqueta="Motivos">@include('admin.partials.motivos', ['reportes' => $usuario->reportesRecibidos()->where('Estado_Reporte', 'Pendiente')->get()])</td>
+                        <td class="celda-acciones">
                             <div class="acciones-fila">
                                 @foreach (['desestimar' => 'Desestimar', 'aviso' => 'Aviso', 'suspension' => 'Suspender', 'baja' => 'Dar de baja'] as $medida => $texto)
                                     <form action="/admin/reportes/usuario/{{ $usuario->ID_Usuario }}" method="POST"

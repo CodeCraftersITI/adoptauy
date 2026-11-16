@@ -42,7 +42,7 @@
     <h2 class="seccion-titulo">Cuentas para donaciones</h2>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Banco</th>
@@ -56,10 +56,10 @@
                 @forelse ($refugio->cuentas as $cuenta)
                     <tr>
                         <td>{{ $cuenta->Banco }}</td>
-                        <td>{{ $cuenta->Tipo_Cuenta }}</td>
-                        <td>{{ $cuenta->Numero_Cuenta }}</td>
-                        <td>{{ $cuenta->Titular }}</td>
-                        <td>
+                        <td data-etiqueta="Tipo de cuenta">{{ $cuenta->Tipo_Cuenta }}</td>
+                        <td data-etiqueta="Número">{{ $cuenta->Numero_Cuenta }}</td>
+                        <td data-etiqueta="Titular">{{ $cuenta->Titular }}</td>
+                        <td class="celda-acciones">
                             <form action="/mi-refugio/cuentas/{{ $cuenta->ID_Cuenta_Banco }}" method="POST">
                                 @csrf
                                 @method('DELETE')

@@ -22,6 +22,13 @@
         <div class="mensaje mensaje-error">Esta publicación no está visible para el público: solo la ves vos.</div>
     @endif
 
+    {{-- Editar (RF:0019, RF:0026, RF:0003): su publicante o el Administrador, si no está Adoptada ni Resuelta --}}
+    @if (($esPublicante || session('tipo') == 'Administrador') && $publicacion->sePuedeEditar())
+        <div class="nav-acciones-fila">
+            <a class="btn btn-suave btn-chico" href="/publicaciones/{{ $publicacion->ID_Publicacion }}/editar">Editar publicación</a>
+        </div>
+    @endif
+
     <div class="detalle">
         {{--
             Carrusel de fotos: una foto a la vez, con flechas, contador y miniaturas.
@@ -75,7 +82,7 @@
                 @if ($esAdopcion)
                     <div><dt>Sexo</dt><dd>{{ $publicacion->Sexo }}</dd></div>
                     <div><dt>Tamaño</dt><dd>{{ $adopcion->Tamaño }}</dd></div>
-                    <div><dt>Esterilización</dt><dd>{{ $adopcion->Estado_Esterilizacion }}</dd></div>
+                    <div><dt>Castración</dt><dd>{{ $adopcion->castracionTexto() }}</dd></div>
                     <div><dt>Edad estimada</dt><dd>{{ $adopcion->edadTexto() }}</dd></div>
                     <div><dt>Ubicación aproximada</dt><dd>{{ $adopcion->Ubicacion_Aproximada }}</dd></div>
                 @else

@@ -105,6 +105,11 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .icono { width: 20px; height: 20px; flex-shrink: 0; }
 /* Botón redondo con solo el ícono */
 .btn-icono { width: 46px; padding: 0; border-radius: 50%; }
+/* Acciones de las tablas (Mi cuenta): botones redondos chicos en una fila */
+.acciones-iconos { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.btn-icono-chico { width: 40px; height: 40px; min-height: 40px; padding: 0; border-radius: 50%; flex-shrink: 0; }
+.btn-icono-chico .icono { width: 18px; height: 18px; }
+.btn-fantasma.btn-icono-chico:hover { background: var(--rosa-claro); }
 /* El texto de un botón de solo ícono se ve únicamente en el menú del celular */
 .texto-movil { display: none; }
 .menu-movil-panel .btn-icono { width: 100%; border-radius: var(--radio); padding: 13px 20px; }
@@ -208,7 +213,8 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 /* Las tres opciones del mismo ancho, dentro de una franja rosa clarito */
 .elegir-tipo .pestanas {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;   /* las opciones se reparten el ancho: tres al publicar, una al editar */
     gap: 4px;
     padding: 4px;
     background: var(--rosa-pastel);
@@ -229,6 +235,7 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .elegir-tipo .pestana:has(input:checked) { background: var(--bordo); color: var(--blanco); }
 .elegir-tipo .pestana:has(input:focus-visible) { outline: 3px solid #F2B8CC; outline-offset: 2px; }
 /* Edad: el número angosto y la unidad al lado, con aire entre los dos */
+.miniaturas-actuales { display: flex; flex-wrap: wrap; gap: 8px; }
 .edad { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
 
 /* ---------- Tarjetas de mascotas (inicio) ---------- */
@@ -447,6 +454,29 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 }
 .tabla td { padding: 12px; border-bottom: 1px solid var(--rosa-borde); vertical-align: top; }
 .tabla form { margin: 0; }
+
+/* Tablas que en el celular pasan a tarjetas (RNF:0003, desde 360 px): sin fila de títulos,
+   cada dato con su nombre adelante (data-etiqueta) y los botones abajo (celda-acciones).
+   tabla-con-foto: la primera columna es la foto y queda a la izquierda de los datos */
+@media (max-width: 760px) {
+    .tabla-tarjetas { min-width: 0; }
+    .tabla-tarjetas thead { display: none; }
+    .tabla-tarjetas tr {
+        display: grid;
+        grid-template-columns: 1fr;
+        row-gap: 6px;
+        padding: 16px;
+        border-bottom: 1px solid var(--rosa-borde);
+    }
+    .tabla-tarjetas td { display: block; padding: 0; border: 0; min-width: 0; overflow-wrap: anywhere; }
+    .tabla-tarjetas td[data-etiqueta]::before { content: attr(data-etiqueta) ": "; color: var(--apagado); font-size: 13px; }
+    .tabla-tarjetas .celda-acciones { grid-column: 1 / -1; padding-top: 8px; }
+    .tabla-tarjetas td.vacio { grid-column: 1 / -1; grid-row: auto; }
+
+    .tabla-con-foto tr { grid-template-columns: 64px 1fr; column-gap: 14px; }
+    .tabla-con-foto td { grid-column: 2; }
+    .tabla-con-foto td:first-child { grid-column: 1; grid-row: 1 / span 4; }
+}
 .acciones-fila { display: flex; flex-direction: column; gap: 8px; }
 .btn-chico { padding: 8px 14px; min-height: 40px; font-size: 14px; border-radius: 12px; }
 .btn-peligro { background: #BF4747; color: var(--blanco); }

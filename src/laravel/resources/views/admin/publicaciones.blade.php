@@ -68,7 +68,7 @@
     </form>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas tabla-con-foto">
             <thead>
                 <tr>
                     <th>Foto</th>
@@ -84,21 +84,24 @@
                 @forelse ($publicaciones as $publicacion)
                     <tr>
                         <td><a href="/publicaciones/{{ $publicacion->ID_Publicacion }}"><img class="miniatura" src="{{ $publicacion->primeraFoto() }}" alt="Ver la publicación"></a></td>
-                        <td>{{ $publicacion->Especie }} · {{ $publicacion->Raza }} · {{ $publicacion->Sexo }}</td>
-                        <td>{{ $publicacion->tipoVisible() }}</td>
-                        <td>
+                        <td data-etiqueta="Mascota">{{ $publicacion->Especie }} · {{ $publicacion->Raza }} · {{ $publicacion->Sexo }}</td>
+                        <td data-etiqueta="Tipo">{{ $publicacion->tipoVisible() }}</td>
+                        <td data-etiqueta="Estado">
                             <span class="estado">{{ $publicacion->estado() }}</span>
                             @if ($publicacion->Estado_Moderacion != 'Visible')
                                 <br><span class="apagado">{{ $publicacion->Estado_Moderacion }}</span>
                             @endif
                         </td>
-                        <td>
+                        <td data-etiqueta="Publicante">
                             <strong>{{ $publicacion->usuario->nombreVisible() }}</strong><br>
                             <span class="apagado">{{ $publicacion->usuario->Tipo_Usuario }} · {{ $publicacion->usuario->Email }}</span>
                         </td>
-                        <td>{{ date('d/m/Y H:i', strtotime($publicacion->Fecha_Creacion)) }}</td>
-                        <td>
-                            {{-- Solo se ofrece la baja si la transición es válida (13.2.2) --}}
+                        <td data-etiqueta="Publicada">{{ date('d/m/Y H:i', strtotime($publicacion->Fecha_Creacion)) }}</td>
+                        <td class="celda-acciones">
+                            {{-- Editar (RF:0003) y dar de baja (RF:0001): solo si la transición es válida (13.2.2) --}}
+                            @if ($publicacion->sePuedeEditar())
+                                <a class="btn btn-suave btn-chico" href="/publicaciones/{{ $publicacion->ID_Publicacion }}/editar">Editar</a>
+                            @endif
                             @if (in_array($publicacion->estado(), ['En adopción', 'Vigente']))
                                 <form action="/admin/publicaciones/{{ $publicacion->ID_Publicacion }}/archivar" method="POST">
                                     @csrf

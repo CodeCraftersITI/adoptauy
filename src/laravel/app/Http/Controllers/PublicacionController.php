@@ -10,6 +10,7 @@ use App\Models\Seguimiento;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Alta de publicaciones con un único formulario (corrección del docente: código DRY).
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\DB;
  *  - Adopción: mascota en adopción (RF:0017, RF:0024), entre 1 y 6 fotos.
  *  - Perdida: mascota perdida (RF:0046), entre 1 y 3 fotos.
  *  - Encontrada: mascota ajena encontrada (RF:0064), entre 1 y 3 fotos.
+ * Editar (RF:0019 Particular, RF:0026 Refugio, RF:0003 Administrador) usa el mismo formulario
+ * y las mismas validaciones; el tipo no se cambia y las fotos solo se reemplazan si se suben nuevas.
  * Las rutas están protegidas con rol:Particular,Refugio: solo publican los usuarios con
  * sesión iniciada, y un refugio solo puede iniciar sesión si está Validado (RNE04, RNE16).
  */
@@ -98,15 +101,104 @@ class PublicacionController extends Controller
             . '. La publicación vence en 30 días y la podés renovar.');
     }
 
+    // GET /publicaciones/{id}/editar: el mismo formulario, con los datos cargados
+    public function editar(string $id)
+    {
+        $publicacion = $this->buscarEditable($id);
+
+        if (!$publicacion->sePuedeEditar())
+        {
+            return redirect('/publicaciones/' . $id)->with('error', 'Una publicación adoptada o resuelta ya no se puede editar.');
+        }
+
+        return view('publicaciones.crear', [
+            'tipo' => $publicacion->tipoVisible(),
+            'publicacion' => $publicacion,
+        ]);
+    }
+
+    // PUT /publicaciones/{id}: guarda los cambios (RF:0019, RF:0026, RF:0003)
+    public function actualizar(Request $request, string $id)
+    {
+        $publicacion = $this->buscarEditable($id);
+
+        if (!$publicacion->sePuedeEditar())
+        {
+            return redirect('/publicaciones/' . $id)->with('error', 'Una publicación adoptada o resuelta ya no se puede editar.');
+        }
+
+        // El tipo no se cambia: sale de la publicación, no del formulario
+        $tipo = $publicacion->tipoVisible();
+        $request->merge([
+            'tipo' => $tipo,
+            'contacto' => str_replace(' ', '', $request->input('contacto') ?? ''),
+        ]);
+
+        $request->validate($this->reglas($tipo, true), self::MENSAJES + $this->mensajes($tipo));
+
+        DB::transaction(function () use ($request, $publicacion)
+        {
+            $publicacion->update([
+                'Especie' => $request->input('especie'),
+                'Raza' => $request->input('raza'),
+                'Sexo' => $request->input('sexo'),
+            ]);
+
+            if ($publicacion->Tipo_Publicacion == 'Adopción')
+            {
+                $publicacion->adopcion->update($this->datosAdopcion($request));
+            }
+            else
+            {
+                $publicacion->perdida->update($this->datosAviso($request));
+            }
+
+            // Si subió fotos nuevas, reemplazan a las anteriores; si no, quedan las que había
+            if ($request->hasFile('fotos'))
+            {
+                foreach ($publicacion->fotos as $foto)
+                {
+                    Storage::disk('public')->delete($foto->URL_Foto);
+                    $foto->delete();
+                }
+
+                $this->guardarFotos($request, $publicacion);
+            }
+        });
+
+        return redirect('/publicaciones/' . $id)->with('exito', 'Guardaste los cambios de la publicación.');
+    }
+
+    // Busca la publicación; la edita su publicante o el Administrador (RF:0003). Si no, 403
+    private function buscarEditable($id)
+    {
+        $publicacion = PublicacionAnimal::find($id);
+
+        if (!$publicacion)
+        {
+            abort(404);
+        }
+
+        if ($publicacion->ID_Usuario != session('id_usuario') && session('tipo') != 'Administrador')
+        {
+            abort(403, 'No podés editar una publicación de otra persona.');
+        }
+
+        return $publicacion;
+    }
+
     // RF:0058: con un seguimiento incumplido no se puede publicar de ningún tipo
     private function cuentaRestringida()
     {
         return Usuario::estaRestringido(session('id_usuario'));
     }
 
-    // Reglas de validación: las comunes más las del tipo elegido (13.2.2, RNE01)
-    private function reglas($tipo)
+    // Reglas de validación: las comunes más las del tipo elegido (13.2.2, RNE01).
+    // Al editar ($editando), las fotos son opcionales: si no se suben, quedan las que había
+    private function reglas($tipo, $editando = false)
     {
+        $fotos = $editando ? 'nullable|array|min:1' : 'required|array|min:1';
+
         $reglas = [
             'tipo' => 'required|in:Adopción,Perdida,Encontrada',
             'especie' => 'required|in:Perro,Gato',
@@ -126,7 +218,7 @@ class PublicacionController extends Controller
                 'salud' => 'required|max:255',
                 'esterilizacion' => 'required|in:Esterilizado,No esterilizado',
                 'ubicacion' => 'required|min:3|max:100',
-                'fotos' => 'required|array|min:1|max:6',
+                'fotos' => $fotos . '|max:6',
             ];
         }
 
@@ -137,7 +229,7 @@ class PublicacionController extends Controller
             'fecha' => 'required|date|before_or_equal:today',
             'zona' => 'required|min:3|max:100',
             'contacto' => 'required|regex:/^[0-9]{8,9}$/',
-            'fotos' => 'required|array|min:1|max:3',
+            'fotos' => $fotos . '|max:3',
         ];
     }
 
@@ -157,8 +249,8 @@ class PublicacionController extends Controller
                 'tamanio.in' => 'El tamaño tiene que ser Pequeño, Mediano o Grande.',
                 'salud.required' => 'Contá el estado de salud.',
                 'salud.max' => 'El estado de salud puede tener hasta 255 caracteres.',
-                'esterilizacion.required' => 'Indicá si está esterilizado.',
-                'esterilizacion.in' => 'Elegí Esterilizado o No esterilizado.',
+                'esterilizacion.required' => 'Indicá si está castrado.',
+                'esterilizacion.in' => 'Elegí Castrado o No castrado.',
                 'ubicacion.required' => 'Ingresá la ubicación aproximada.',
                 'ubicacion.min' => 'La ubicación debe tener al menos 3 caracteres.',
                 'ubicacion.max' => 'La ubicación puede tener hasta 100 caracteres.',
@@ -198,8 +290,9 @@ class PublicacionController extends Controller
         return $publicacion;
     }
 
-    // Datos propios de la adopción. La edad se guarda en meses (RNE12): 2 años = 24, 4 meses = 4
-    private function guardarAdopcion(Request $request, $publicacion)
+    // Datos propios de la adopción, para crear y para editar.
+    // La edad se guarda en meses (RNE12): 2 años = 24, 4 meses = 4
+    private function datosAdopcion(Request $request)
     {
         $edadEnMeses = $request->input('edad');
 
@@ -208,14 +301,30 @@ class PublicacionController extends Controller
             $edadEnMeses = $edadEnMeses * 12;
         }
 
-        PublicacionAdopcion::create([
-            'ID_Publicacion' => $publicacion->ID_Publicacion,
+        return [
             'Edad_Meses' => $edadEnMeses,
             'Tamaño' => $request->input('tamanio'),
             'Estado_Salud' => $request->input('salud'),
             'Estado_Esterilizacion' => $request->input('esterilizacion'),
             'Ubicacion_Aproximada' => $request->input('ubicacion'),
-        ]);
+        ];
+    }
+
+    private function guardarAdopcion(Request $request, $publicacion)
+    {
+        PublicacionAdopcion::create(['ID_Publicacion' => $publicacion->ID_Publicacion] + $this->datosAdopcion($request));
+    }
+
+    // Datos propios de la perdida o la encontrada, para crear y para editar
+    private function datosAviso(Request $request)
+    {
+        return [
+            'Nombre_Mascota' => $request->input('nombre_mascota') ?: null,
+            'Caracteristicas' => $request->input('caracteristicas'),
+            'Fecha_Suceso' => $request->input('fecha'),
+            'Zona_Suceso' => $request->input('zona'),
+            'Contacto' => $request->input('contacto'),
+        ];
     }
 
     // Datos propios de la perdida o la encontrada. Vence a los 30 días (RNE17)
@@ -225,12 +334,7 @@ class PublicacionController extends Controller
         $aviso = new PublicacionPerdida([
             'ID_Publicacion' => $publicacion->ID_Publicacion,
             'Tipo_Aviso' => $tipo,
-            'Nombre_Mascota' => $request->input('nombre_mascota') ?: null,
-            'Caracteristicas' => $request->input('caracteristicas'),
-            'Fecha_Suceso' => $request->input('fecha'),
-            'Zona_Suceso' => $request->input('zona'),
-            'Contacto' => $request->input('contacto'),
-        ]);
+        ] + $this->datosAviso($request));
         $aviso->Fecha_Vencimiento = now()->addDays(30)->toDateString();
         $aviso->save();
     }

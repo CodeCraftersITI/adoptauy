@@ -45,7 +45,7 @@
     </form>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Refugio</th>
@@ -61,14 +61,14 @@
                             <strong>{{ $refugio->Nombre_Refugio }}</strong><br>
                             <span class="apagado">{{ $refugio->Ubicacion }}</span>
                         </td>
-                        <td>
+                        <td data-etiqueta="Contacto">
                             {{ $refugio->usuario->Email }}<br>
                             @foreach ($refugio->contactos as $contacto)
                                 <span class="apagado">{{ $contacto->Dato_Contacto }}</span><br>
                             @endforeach
                         </td>
-                        <td><span class="estado">{{ $refugio->Estado_Validacion }}</span></td>
-                        <td>
+                        <td data-etiqueta="Estado"><span class="estado">{{ $refugio->Estado_Validacion }}</span></td>
+                        <td class="celda-acciones">
                             {{-- Solo se ofrecen las transiciones válidas según el estado (13.2.1) --}}
                             <div class="acciones-fila">
                                 @if ($refugio->Estado_Validacion == 'Validado')

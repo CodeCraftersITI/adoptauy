@@ -123,6 +123,10 @@ Route::middleware('rol:Particular')->group(function ()
 Route::middleware('rol:Particular,Refugio,Administrador')->group(function ()
 {
     Route::get('/publicaciones/{id}/solicitudes', [SolicitudController::class, 'dePublicacion']);
+
+    // Editar una publicación: su publicante (RF:0019, RF:0026) o el Administrador (RF:0003)
+    Route::get('/publicaciones/{id}/editar', [PublicacionController::class, 'editar']);
+    Route::put('/publicaciones/{id}', [PublicacionController::class, 'actualizar']);
 });
 
 // Solo Refugio: ubicación en el mapa y cuentas bancarias (RF:0035 a RF:0038)
