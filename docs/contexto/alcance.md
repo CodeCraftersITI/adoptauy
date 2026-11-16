@@ -250,12 +250,12 @@ Decisiones del 06/10/2026 que precisan o reemplazan a las anteriores:
 | D93 | Continuar con Google (pedido del docente de Programación), solo para el Particular, con Laravel Socialite y Google OAuth 2.0. Google_ID se guarda en Usuario (único, admite vacío). Si el Google_ID o el correo coincide con un Particular activo, se vincula automáticamente; si no hay cuenta, se piden CI y teléfono y se crea el Particular sin contraseña y con el correo confirmado. El Refugio y el Administrador nunca se vinculan: reciben el mensaje genérico. URI de redirección https://localhost:8443/auth/google/callback; el client secret solo en el `.env`. RF:0066, RNE27. | D2, D67 |
 | D94 | El Particular sin contraseña la define desde «Editar perfil»; el que tiene una la cambia ingresando la actual (8 a 72 caracteres). Mientras no la defina, ingresa solo con Google. RF:0067. | RF:0016 (la contraseña sale de ese requisito) |
 | D95 | Correo: Laravel envía por SMTP directo al proveedor externo (puerto 587, STARTTLS); se quita el contenedor de Postfix y SRV-MAIL. | D54, D75 |
+| D96 | Proveedor de SMTP: Gmail, con la cuenta del proyecto noreply.adoptauy@gmail.com (smtp.gmail.com, puerto 587) y una contraseña de aplicación, que va solo en el `.env` de la raíz (Docker pisa las variables MAIL_ de `src/laravel/.env`). En desarrollo se sigue usando Mailpit. | Proveedor de SMTP (Gmail o Brevo) |
 
 ## Aspectos a completar
 
 | Aspecto | Sección |
 |---|---|
-| Proveedor externo de SMTP (Gmail o Brevo) | 12.1, 17.4 |
 | Numeración de RNE: el repositorio y la V3 del integrador numeran distinto desde RNE23 (ver `modelo-datos.md`) | 16.1.2 |
 | Continuar con Google, por confirmar: (1) al vincular un Particular sin correo confirmado, ¿se da por confirmado? (2) RF:0067, ¿solo para el Particular? (3) la contraseña actual se comprueba con adoptauy_login | 13.2.1, 16.3 |
 | Correspondencia entre los servidores de la sección 16 y los contenedores del servidor local | 17.3 |

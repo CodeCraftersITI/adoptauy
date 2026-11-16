@@ -23,7 +23,7 @@ La fuente de verdad es el **Documento integrador (V3)**. En `docs/contexto/` hay
 ## Stack y comandos
 
 - Laravel 13 sobre PHP 8.4 (FPM), MySQL 8.4, Nginx 1.27, Docker Compose. Vistas Blade con HTML5 y CSS3, web adaptable desde 360 px. Sin app móvil ni PWA.
-- Colas y planificador de Laravel en contenedores propios (`queue`, `scheduler`). Correo: Mailpit en desarrollo; en producción, Laravel envía por SMTP directo a un proveedor externo (puerto 587, sin Postfix, D95).
+- Colas y planificador de Laravel en contenedores propios (`queue`, `scheduler`). Correo: Mailpit en desarrollo; en producción, Laravel envía por SMTP directo a Gmail con la cuenta noreply.adoptauy@gmail.com (puerto 587, sin Postfix, D95, D96). Las variables MAIL_ van en el `.env` de la raíz, no en `src/laravel/.env`: Docker pisa las de Laravel.
 - Mapas: OpenStreetMap con Leaflet.
 - **Laravel vive en `src/laravel/`** (en los contenedores: `/var/www/laravel`). La configuración de Docker está en la raíz: `docker-compose.yml` y `docker/`.
 - Primera vez en cualquier máquina: `docker compose up -d --build` (el contenedor `app` instala Composer, genera APP_KEY y migra; ver `docker compose logs -f app`). En la VM del servidor local: `bash infra/setup.sh`.
@@ -69,7 +69,6 @@ Las reglas de negocio (estados, plazos y umbrales) se cargan siempre:
 
 ## Temas pendientes (no decidir sin consultar)
 
-- Proveedor externo de SMTP (Gmail o Brevo).
 - Numeración de RNE entre el repositorio y la V3 del integrador.
 - Los tres puntos abiertos de Continuar con Google (`alcance.md`).
 - Correspondencia entre los servidores de la sección 16 y los contenedores del servidor local: en la DMZ queda solo SRV-WEB (Nginx, Laravel y MySQL en contenedores); falta reflejarlo en el documento y en la pestaña Red del draw.io, que todavía muestra SRV-DNS.
