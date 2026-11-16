@@ -44,7 +44,7 @@ Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige
 
 - `docs/contexto/requisitos.md`: actores, RF:0001 a RF:0067 (61 vigentes, 6 dados de baja) y RNF:0001 a RNF:0014, con criterios de aceptación.
 - `docs/contexto/modelo-datos.md`: cambios del DER, restricciones RNE01 a RNE27 y pasaje a tablas (15.2.1). Usa la numeración de RNE del repositorio, que difiere de la V3 desde RNE23 (está explicado al principio del archivo).
-- `docs/base-de-datos/adoptauy.sql`: tablas en MySQL según el DER (supertipo Publicacion_Animal con los subtipos Publicacion_Adopcion y Publicacion_Perdida). Solo CREATE TABLE con claves, NOT NULL, UNIQUE, DEFAULT y ENUM; las RNE las valida Laravel y los triggers quedan para el Hito 3.
+- `docs/base-de-datos/adoptauy.sql`: tablas en MySQL según el DER (supertipo Publicacion_Animal con los subtipos Publicacion_Adopcion y Publicacion_Perdida). Es el modelo final (D97): todas las tablas tienen migración, sin triggers; las RNE que no se expresan con claves, UNIQUE o CHECK las valida Laravel.
 - `docs/contexto/diseno-ui.md`: pantallas por actor, sistema de diseño (colores, tipografía Outfit) y lo que falta prototipar (sección 14 de la V3).
 - `docs/contexto/plan-pruebas.md`: estrategia, herramientas y casos CP-01 a CP-50.
 - `docs/contexto/infraestructura.md`: stack, red, servidores, servicios y entorno local.

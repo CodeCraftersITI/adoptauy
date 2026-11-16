@@ -60,6 +60,14 @@
                         <td>{{ date('d/m/Y', strtotime($particular->usuario->Fecha_Alta)) }}</td>
                         <td><span class="estado">{{ $particular->usuario->Estado_Usuario }}</span></td>
                         <td>
+                            {{-- Restituir: después de una revisión, suspensión o inhabilitación por reportes (RF:0060) --}}
+                            @if (in_array($particular->usuario->Estado_Usuario, ['En revisión', 'Suspendido', 'Inhabilitado']))
+                                <form action="/admin/particulares/{{ $particular->ID_Usuario }}/restituir" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn btn-suave btn-chico">Restituir</button>
+                                </form>
+                            @endif
                             @if ($particular->usuario->Estado_Usuario != 'Baja')
                                 <form action="/admin/particulares/{{ $particular->ID_Usuario }}/baja" method="POST"
                                       onsubmit="return confirm('¿Dar de baja esta cuenta? No va a poder volver a iniciar sesión.')">

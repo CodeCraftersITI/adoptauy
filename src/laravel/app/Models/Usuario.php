@@ -41,6 +41,18 @@ class Usuario extends Model
         return $this->hasOne(Administrador::class, 'ID_Usuario');
     }
 
+    // Reportes recibidos por este particular o refugio (RF:0059)
+    public function reportesRecibidos()
+    {
+        return $this->hasMany(Reporte::class, 'ID_Usuario_Reportado');
+    }
+
+    // Sus publicaciones
+    public function publicaciones()
+    {
+        return $this->hasMany(PublicacionAnimal::class, 'ID_Usuario');
+    }
+
     // ¿Tiene la cuenta restringida por un seguimiento incumplido? (RF:0058, RNE21)
     // Desde el día 22 de una adopción suya sin foto presentada. Mientras tanto no puede
     // solicitar adopciones ni publicar; solo enviar la foto, y al enviarla se levanta sola.

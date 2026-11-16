@@ -391,6 +391,12 @@ h1, h2, h3 { margin: 0; line-height: 1.1; letter-spacing: -0.02em; }
 .consentimiento { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
 .consentimiento input { width: 20px; height: 20px; accent-color: var(--rosa); margin-top: 2px; flex: 0 0 auto; }
 
+/* Reportes (RF:0059): lista de motivos y enlaces discretos para reportar */
+.elegir-motivo { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.elegir-motivo legend { font-weight: 700; margin-bottom: 8px; padding: 0; }
+.enlaces-reportar { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
+.enlaces-reportar a { color: var(--apagado); }
+
 /* ---------- Mi cuenta ---------- */
 .miniatura { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; display: block; }
 .estado {

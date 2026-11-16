@@ -69,7 +69,7 @@ class GoogleController extends Controller
         {
             // El Refugio y el Administrador nunca se vinculan con Google (D93), y una cuenta
             // inhabilitada o dada de baja no entra. Mismo mensaje en todos los casos.
-            if ($usuario->Tipo_Usuario != 'Particular' || in_array($usuario->Estado_Usuario, ['Inhabilitado', 'Baja']))
+            if ($usuario->Tipo_Usuario != 'Particular' || in_array($usuario->Estado_Usuario, ['Suspendido', 'Inhabilitado', 'Baja']))
             {
                 return redirect('/ingresar')->with('error', self::MENSAJE_ERROR);
             }

@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PublicacionAdopcion;
-use App\Models\PublicacionPerdida;
 use App\Models\Refugio;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Refugios en el panel del Administrador (rutas protegidas con rol:Administrador):
@@ -92,30 +89,9 @@ class AdminRefugioController extends Controller
             return back()->with('error', 'Solo se puede dar de baja un refugio Validado o Suspendido.');
         }
 
-        // El refugio, su cuenta y sus publicaciones cambian juntos: o todo o nada
-        DB::transaction(function () use ($refugio)
-        {
-            $refugio->Estado_Validacion = 'Dado de baja';
-            $refugio->save();
-
-            $refugio->usuario->Estado_Usuario = 'Baja';
-            $refugio->usuario->save();
-
-            // Sus publicaciones activas se archivan (las Adoptadas y Resueltas quedan como están)
-            PublicacionAdopcion::where('Estado_Adopcion', 'En adopción')
-                ->whereHas('publicacion', function ($publicacion) use ($refugio)
-                {
-                    $publicacion->where('ID_Usuario', $refugio->ID_Usuario);
-                })
-                ->update(['Estado_Adopcion' => 'Archivado']);
-
-            PublicacionPerdida::where('Estado_Perdida', 'Vigente')
-                ->whereHas('publicacion', function ($publicacion) use ($refugio)
-                {
-                    $publicacion->where('ID_Usuario', $refugio->ID_Usuario);
-                })
-                ->update(['Estado_Perdida' => 'Archivada']);
-        });
+        // El refugio, su cuenta y sus publicaciones cambian juntos (método del modelo Refugio,
+        // que también usa la resolución de reportes, RF:0060)
+        $refugio->darDeBaja();
 
         return back()->with('exito', $refugio->Nombre_Refugio . ' quedó dado de baja y sus publicaciones se archivaron.');
     }

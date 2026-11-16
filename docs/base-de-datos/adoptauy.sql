@@ -12,9 +12,9 @@
 --  foránea compuesta. Así una fila no puede estar en dos subtipos a la vez
 --  (RNE10, RNE25).
 --
---  Reporte es del
---  Sprint 6 y todavía no tiene migración: cuando se implemente, la
---  migración tiene que crear exactamente lo que está acá.
+--  Todas las tablas tienen su migración y este archivo crea exactamente lo
+--  mismo. Es el modelo final del proyecto (D97): no hay triggers, las RNE que
+--  no se pueden expresar con claves, UNIQUE o CHECK las valida Laravel.
 --
 --  Las RNE que dependen de otras filas o de la fecha actual (por ejemplo, el
 --  límite de fotos o la restricción por seguimiento) las valida Laravel.
@@ -234,20 +234,25 @@ CREATE TABLE Seguimiento (
 ) ENGINE=InnoDB;
 
 -- -----------------------------------------------------------------------------
--- Reportes (Sprint 6, sin migración todavía)
+-- Reportes
 -- -----------------------------------------------------------------------------
 
--- Se completa ID_Usuario_Reportado o ID_Publicacion_Reportada, nunca los dos (RNE22)
+-- Se completa ID_Usuario_Reportado o ID_Publicacion_Reportada, nunca los dos (RNE22).
+-- Un usuario no reporta dos veces lo mismo (las UNIQUE); que no se reporte a sí mismo lo valida Laravel
 CREATE TABLE Reporte (
   ID_Reporte                INT UNSIGNED NOT NULL AUTO_INCREMENT,
   ID_Usuario_Reportante     INT UNSIGNED NOT NULL,
   ID_Usuario_Reportado      INT UNSIGNED NULL,
   ID_Publicacion_Reportada  INT UNSIGNED NULL,
   Motivo                    VARCHAR(120) NOT NULL,
+  Detalle                   VARCHAR(500) NULL,                 -- texto del motivo Otro (D97)
   Fecha_Reporte             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   Estado_Reporte            ENUM('Pendiente','Desestimado','Confirmado') NOT NULL DEFAULT 'Pendiente',
   Medida                    ENUM('Aviso','Suspensión','Baja lógica') NULL,   -- se completa al resolver
+  Fecha_Resolucion          DATETIME NULL,                     -- se completa al resolver (RF:0060, D97)
   PRIMARY KEY (ID_Reporte),
+  UNIQUE KEY uq_reporte_usuario     (ID_Usuario_Reportante, ID_Usuario_Reportado),
+  UNIQUE KEY uq_reporte_publicacion (ID_Usuario_Reportante, ID_Publicacion_Reportada),
   CONSTRAINT fk_reporte_reportante  FOREIGN KEY (ID_Usuario_Reportante)    REFERENCES Usuario (ID_Usuario),
   CONSTRAINT fk_reporte_reportado   FOREIGN KEY (ID_Usuario_Reportado)     REFERENCES Usuario (ID_Usuario),
   CONSTRAINT fk_reporte_publicacion FOREIGN KEY (ID_Publicacion_Reportada) REFERENCES Publicacion_Animal (ID_Publicacion),

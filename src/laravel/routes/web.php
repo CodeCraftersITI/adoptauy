@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminParticularController;
 use App\Http\Controllers\AdminPublicacionController;
 use App\Http\Controllers\AdminRefugioController;
+use App\Http\Controllers\AdminReporteController;
 use App\Http\Controllers\ConfirmacionCorreoController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DetallePublicacionController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\PublicacionController;
 use App\Http\Controllers\RefugioController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\RegistroRefugioController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\SeguimientoController;
 use App\Http\Controllers\SesionController;
 use App\Http\Controllers\SolicitudController;
@@ -84,6 +86,10 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     Route::put('/publicaciones/{id}/resolver', [VigenciaController::class, 'resolver']);
     Route::put('/publicaciones/{id}/archivar', [VigenciaController::class, 'archivar']);
 
+    // Reportar una publicación, a un particular o a un refugio (RF:0059)
+    Route::get('/reportar', [ReporteController::class, 'crear']);
+    Route::post('/reportar', [ReporteController::class, 'guardar']);
+
     // Solicitudes recibidas en todas mis publicaciones (RF:0050)
     Route::get('/solicitudes/recibidas', [SolicitudController::class, 'recibidas']);
 
@@ -146,4 +152,10 @@ Route::middleware('rol:Administrador')->group(function ()
     // Particulares: listado (RF:0014) y baja lógica (RF:0010)
     Route::get('/admin/particulares', [AdminParticularController::class, 'index']);
     Route::put('/admin/particulares/{id}/baja', [AdminParticularController::class, 'darDeBaja']);
+    Route::put('/admin/particulares/{id}/restituir', [AdminParticularController::class, 'restituir']);
+
+    // Reportes: resolverlos por publicación o por usuario (RF:0060)
+    Route::get('/admin/reportes', [AdminReporteController::class, 'index']);
+    Route::put('/admin/reportes/publicacion/{id}', [AdminReporteController::class, 'resolverPublicacion']);
+    Route::put('/admin/reportes/usuario/{id}', [AdminReporteController::class, 'resolverUsuario']);
 });

@@ -44,6 +44,12 @@ class PublicacionAnimal extends Model
         return $this->perdida->Tipo_Aviso;
     }
 
+    // Reportes recibidos por esta publicación (RF:0059)
+    public function reportes()
+    {
+        return $this->hasMany(Reporte::class, 'ID_Publicacion_Reportada');
+    }
+
     public function fotos()
     {
         return $this->hasMany(FotoAnimal::class, 'ID_Publicacion');

@@ -4,4 +4,5 @@
     <a class="btn {{ request()->is('admin/publicaciones*') ? 'btn-primario' : 'btn-suave' }}" href="/admin/publicaciones">Publicaciones</a>
     <a class="btn {{ request()->is('admin/refugios*') ? 'btn-primario' : 'btn-suave' }}" href="/admin/refugios">Refugios</a>
     <a class="btn {{ request()->is('admin/particulares*') ? 'btn-primario' : 'btn-suave' }}" href="/admin/particulares">Particulares</a>
+    <a class="btn {{ request()->is('admin/reportes*') ? 'btn-primario' : 'btn-suave' }}" href="/admin/reportes">Reportes</a>
 </nav>

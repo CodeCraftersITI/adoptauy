@@ -251,6 +251,7 @@ Decisiones del 06/10/2026 que precisan o reemplazan a las anteriores:
 | D94 | El Particular sin contraseña la define desde «Editar perfil»; el que tiene una la cambia ingresando la actual (8 a 72 caracteres). Mientras no la defina, ingresa solo con Google. RF:0067. | RF:0016 (la contraseña sale de ese requisito) |
 | D95 | Correo: Laravel envía por SMTP directo al proveedor externo (puerto 587, STARTTLS); se quita el contenedor de Postfix y SRV-MAIL. | D54, D75 |
 | D96 | Proveedor de SMTP: Gmail, con la cuenta del proyecto noreply.adoptauy@gmail.com (smtp.gmail.com, puerto 587) y una contraseña de aplicación, que va solo en el `.env` de la raíz (Docker pisa las variables MAIL_ de `src/laravel/.env`). En desarrollo se sigue usando Mailpit. | Proveedor de SMTP (Gmail o Brevo) |
+| D97 | Modelo de datos final: Reporte suma Detalle (texto del motivo Otro) y Fecha_Resolucion (RF:0060), y dos UNIQUE para que un usuario no reporte dos veces lo mismo (RNE22). No se usan triggers: las RNE que no se expresan con claves, UNIQUE o CHECK las valida Laravel. Con esto todas las tablas de adoptauy.sql tienen migración y no se prevén más cambios de base de datos. | Triggers para el Hito 3 |
 
 ## Aspectos a completar
 

@@ -49,8 +49,9 @@ class SesionController extends Controller
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }
 
-        // Una cuenta inhabilitada o dada de baja no entra (RF:0022, RF:0010), con el mismo mensaje
-        if (in_array($usuario->Estado_Usuario, ['Inhabilitado', 'Baja']))
+        // Una cuenta suspendida, inhabilitada o dada de baja no entra (RF:0022, RF:0010, RF:0060),
+        // con el mismo mensaje. "En revisión" sí entra: es una marca para el Administrador
+        if (in_array($usuario->Estado_Usuario, ['Suspendido', 'Inhabilitado', 'Baja']))
         {
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Refugio u organización (tabla Refugio, 15.2.1). RF:0034.
@@ -46,5 +47,36 @@ class Refugio extends Model
     public function tieneUbicacion()
     {
         return $this->Latitud !== null && $this->Longitud !== null;
+    }
+
+    // Baja lógica (RF:0006, 13.2.1): no puede iniciar sesión, sale del mapa y del listado, y sus
+    // publicaciones activas pasan a Archivado o Archivada. Es definitiva. La usan el panel de
+    // refugios (AdminRefugioController) y la resolución de reportes (AdminReporteController).
+    public function darDeBaja()
+    {
+        // El refugio, su cuenta y sus publicaciones cambian juntos: o todo o nada
+        DB::transaction(function ()
+        {
+            $this->Estado_Validacion = 'Dado de baja';
+            $this->save();
+
+            $this->usuario->Estado_Usuario = 'Baja';
+            $this->usuario->save();
+
+            // Las Adoptadas y Resueltas quedan como están
+            PublicacionAdopcion::where('Estado_Adopcion', 'En adopción')
+                ->whereHas('publicacion', function ($publicacion)
+                {
+                    $publicacion->where('ID_Usuario', $this->ID_Usuario);
+                })
+                ->update(['Estado_Adopcion' => 'Archivado']);
+
+            PublicacionPerdida::where('Estado_Perdida', 'Vigente')
+                ->whereHas('publicacion', function ($publicacion)
+                {
+                    $publicacion->where('ID_Usuario', $this->ID_Usuario);
+                })
+                ->update(['Estado_Perdida' => 'Archivada']);
+        });
     }
 }

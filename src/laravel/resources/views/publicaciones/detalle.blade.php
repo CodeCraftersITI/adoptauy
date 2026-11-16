@@ -119,6 +119,14 @@
                     Llamar al {{ $aviso->contactoFormateado() }}
                 </a>
             @endif
+
+            {{-- Reportar (RF:0059): todos menos quien publicó y el Administrador. Sin sesión, pide ingresar --}}
+            @if (!$esPublicante && session('tipo') != 'Administrador')
+                <div class="enlaces-reportar">
+                    <a href="/reportar?publicacion={{ $publicacion->ID_Publicacion }}">Reportar publicación</a>
+                    <a href="/reportar?usuario={{ $publicacion->ID_Usuario }}&volver=/publicaciones/{{ $publicacion->ID_Publicacion }}">Reportar a quien publicó</a>
+                </div>
+            @endif
         </div>
     </div>
 </div>

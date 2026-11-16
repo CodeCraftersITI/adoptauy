@@ -52,6 +52,28 @@ class AdminParticularController extends Controller
         return view('admin.particulares', ['particulares' => $particulares]);
     }
 
+    // PUT /admin/particulares/{id}/restituir: la cuenta vuelve a Activo después de una revisión,
+    // una suspensión o una inhabilitación por reportes (13.2.5, RF:0060). La Baja es definitiva
+    public function restituir(string $id)
+    {
+        $particular = Particular::find($id);
+
+        if (!$particular)
+        {
+            abort(404);
+        }
+
+        if (!in_array($particular->usuario->Estado_Usuario, ['En revisión', 'Suspendido', 'Inhabilitado']))
+        {
+            return back()->with('error', 'Solo se restituye una cuenta en revisión, suspendida o inhabilitada.');
+        }
+
+        $particular->usuario->Estado_Usuario = 'Activo';
+        $particular->usuario->save();
+
+        return back()->with('exito', 'La cuenta de ' . $particular->Nombre . ' ' . $particular->Apellido . ' volvió a estar activa.');
+    }
+
     // PUT /admin/particulares/{id}/baja: baja lógica (RF:0010)
     public function darDeBaja(string $id)
     {

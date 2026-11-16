@@ -53,6 +53,13 @@
         @endforelse
     </div>
 
+    {{-- Reportar al refugio (RF:0059): todos menos el propio refugio y el Administrador --}}
+    @if (session('id_usuario') != $refugio->ID_Usuario && session('tipo') != 'Administrador')
+        <div class="enlaces-reportar">
+            <a href="/reportar?usuario={{ $refugio->ID_Usuario }}">Reportar este refugio</a>
+        </div>
+    @endif
+
     @if ($avisos->count() > 0)
         <h2 class="seccion-titulo">Perdidas y encontradas</h2>
         <div class="grilla-tarjetas">
