@@ -26,24 +26,20 @@ class AppServiceProvider extends ServiceProvider
         // ->middleware('throttle:registro'). Cada límite se cuenta por IP y por formulario
         // (by), así reportar varias veces no le gasta el cupo de iniciar sesión a la misma persona.
         // Si se pasa del límite, Laravel muestra la página errors/429.
-        RateLimiter::for('registro', function (Request $request)
-        {
-            return Limit::perMinute(5)->by($request->ip() . '|' . $request->path());
-        });
+        $limites = ['registro' => 5, 'ingresar' => 10, 'correo' => 3, 'formularios' => 10];
 
-        RateLimiter::for('ingresar', function (Request $request)
+        foreach ($limites as $nombre => $porMinuto)
         {
-            return Limit::perMinute(10)->by($request->ip() . '|' . $request->path());
-        });
+            RateLimiter::for($nombre, function (Request $request) use ($porMinuto)
+            {
+                // En la prueba de carga (LIMITES_ACTIVOS=false) no hay límite
+                if (!config('app.limites'))
+                {
+                    return Limit::none();
+                }
 
-        RateLimiter::for('correo', function (Request $request)
-        {
-            return Limit::perMinute(3)->by($request->ip() . '|' . $request->path());
-        });
-
-        RateLimiter::for('formularios', function (Request $request)
-        {
-            return Limit::perMinute(10)->by($request->ip() . '|' . $request->path());
-        });
+                return Limit::perMinute($porMinuto)->by($request->ip() . '|' . $request->path());
+            });
+        }
     }
 }

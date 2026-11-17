@@ -64,6 +64,66 @@ jobs:
           path: src/laravel/reportes
           retention-days: 30
 
+  dusk:
+    # Pruebas funcionales en Chrome (Laravel Dusk): prueba de humo CP-01, CP-04, CP-05, CP-06
+    # y vista a 360 px (CP-39). Chrome ya viene instalado en el runner de GitHub.
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: src/laravel
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: adoptauy_test
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: adoptauy_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      APP_ENV: testing
+      APP_URL: http://127.0.0.1:8000
+      MAIL_MAILER: log
+      DUSK_URL: http://127.0.0.1:8000
+      DUSK_DRIVER_URL: http://localhost:9515
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_mysql, mbstring, intl, zip, gd, bcmath, exif
+      - name: Dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Preparar entorno
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+          php artisan storage:link
+      - name: ChromeDriver igual a la versión de Chrome del runner
+        run: php artisan dusk:chrome-driver --detect
+      - name: Levantar ChromeDriver y el sitio
+        run: |
+          vendor/laravel/dusk/bin/chromedriver-linux --port=9515 &
+          php -S 127.0.0.1:8000 -t public tests/Browser/servidor.php > /dev/null 2>&1 &
+          sleep 3
+      - name: Dusk
+        run: php artisan dusk
+      - name: Capturas si algo falló
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-dusk
+          path: src/laravel/tests/Browser/screenshots
+          retention-days: 7
+
   base-de-datos:
     # Crea la base con docs/base-de-datos/adoptauy.sql en MySQL 8.4 y prueba
     # tablas, claves y valores por defecto
