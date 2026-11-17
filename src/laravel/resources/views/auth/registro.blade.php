@@ -12,6 +12,7 @@
     {{-- old('campo') vuelve a mostrar lo que el usuario escribió si hubo un error --}}
     <form action="/registro" method="POST" class="tarjeta formulario formulario-grilla">
         @csrf
+        @include('partials.antibot')
 
         @include('partials.campos-ci-telefono')
 

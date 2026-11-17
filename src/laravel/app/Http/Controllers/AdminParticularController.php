@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Particular;
+use App\Rules\CedulaUruguaya;
 use Illuminate\Http\Request;
 
 /**
@@ -50,6 +51,55 @@ class AdminParticularController extends Controller
             ->withQueryString();
 
         return view('admin.particulares', ['particulares' => $particulares]);
+    }
+
+    // GET /admin/particulares/{id}/editar (RF:0013)
+    public function editar(string $id)
+    {
+        return view('admin.editar-particular', ['particular' => $this->buscar($id)]);
+    }
+
+    // PUT /admin/particulares/{id}: modifica los atributos del Particular (RF:0013):
+    // cédula, nombre, apellido y teléfono, con las mismas reglas que el registro
+    public function actualizar(Request $request, string $id)
+    {
+        $particular = $this->buscar($id);
+
+        $request->merge([
+            'ci' => str_replace(['.', '-', ' '], '', $request->input('ci') ?? ''),
+            'telefono' => str_replace(' ', '', $request->input('telefono') ?? ''),
+        ]);
+
+        // La cédula es opcional: el Administrador no la ve (RNF:0013) y solo la escribe para
+        // corregirla. Si la escribe, tiene que ser válida y única (RNE23), sin contar la de este particular
+        $request->validate([
+            'ci' => ['nullable', new CedulaUruguaya, 'unique:Particular,CI,' . $particular->ID_Usuario . ',ID_Usuario'],
+        ] + Particular::REGLAS, [
+            'ci.unique' => 'Ya existe otra cuenta con esa cédula.',
+        ] + Particular::MENSAJES);
+
+        if ($request->filled('ci'))
+        {
+            $particular->CI = $request->input('ci');
+        }
+        $particular->Nombre = $request->input('nombre');
+        $particular->Apellido = $request->input('apellido');
+        $particular->Telefono = $request->input('telefono');
+        $particular->save();
+
+        return redirect('/admin/particulares')->with('exito', 'Guardaste los datos de ' . $particular->Nombre . ' ' . $particular->Apellido . '.');
+    }
+
+    private function buscar($id)
+    {
+        $particular = Particular::find($id);
+
+        if (!$particular)
+        {
+            abort(404);
+        }
+
+        return $particular;
     }
 
     // PUT /admin/particulares/{id}/restituir: la cuenta vuelve a Activo después de una revisión,

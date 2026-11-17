@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Particular;
 use App\Models\Refugio;
-use App\Models\RefugioDatoContacto;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -66,46 +64,29 @@ class PerfilController extends Controller
     // Refugio (RF:0029): nombre, ubicación, contactos (uno por línea) y foto
     private function guardarDatosRefugio(Request $request, $refugio)
     {
-        // Los contactos llegan en un cuadro de texto, uno por línea: se separan y se limpian
-        $contactos = array_values(array_unique(array_filter(array_map('trim', explode("\n", $request->input('contactos') ?? '')))));
+        // Los contactos llegan en un cuadro de texto, uno por línea (reglas compartidas del modelo)
+        $contactos = Refugio::contactosDesdeTexto($request->input('contactos'));
         $request->merge(['lista_contactos' => $contactos]);
 
-        $request->validate(Refugio::REGLAS + [
-            'lista_contactos' => 'required|array|min:1',
-            'lista_contactos.*' => 'max:255',
+        $request->validate(Refugio::REGLAS + Refugio::REGLAS_CONTACTOS + [
             'foto' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:8192',
-        ], Refugio::MENSAJES + [
-            'lista_contactos.required' => 'Ingresá al menos un dato de contacto.',
-            'lista_contactos.min' => 'Ingresá al menos un dato de contacto.',
-            'lista_contactos.*.max' => 'Cada dato de contacto puede tener hasta 255 caracteres.',
+        ], Refugio::MENSAJES + Refugio::MENSAJES_CONTACTOS + [
             'foto.mimes' => 'La foto tiene que ser JPG, PNG o WEBP.',
             'foto.max' => 'La foto puede pesar hasta 8 MB.',
         ]);
 
-        DB::transaction(function () use ($request, $refugio, $contactos)
+        // Foto nueva: reemplaza a la anterior
+        if ($request->hasFile('foto'))
         {
-            $refugio->Nombre_Refugio = $request->input('nombre_refugio');
-            $refugio->Ubicacion = $request->input('ubicacion');
-
-            // Foto nueva: reemplaza a la anterior
-            if ($request->hasFile('foto'))
+            if ($refugio->URL_Foto)
             {
-                if ($refugio->URL_Foto)
-                {
-                    Storage::disk('public')->delete($refugio->URL_Foto);
-                }
-                $refugio->URL_Foto = $request->file('foto')->store('refugios', 'public');
+                Storage::disk('public')->delete($refugio->URL_Foto);
             }
+            $refugio->URL_Foto = $request->file('foto')->store('refugios', 'public');
+        }
 
-            $refugio->save();
-
-            // Los contactos se reemplazan por la lista nueva (atributo multivaluado del refugio)
-            RefugioDatoContacto::where('ID_Usuario', $refugio->ID_Usuario)->delete();
-            foreach ($contactos as $contacto)
-            {
-                RefugioDatoContacto::create(['ID_Usuario' => $refugio->ID_Usuario, 'Dato_Contacto' => $contacto]);
-            }
-        });
+        // Nombre, ubicación y contactos se guardan juntos (método del modelo, también lo usa el Administrador)
+        $refugio->actualizarDatos($request->input('nombre_refugio'), $request->input('ubicacion'), $contactos);
     }
 
     // PUT /perfil/contrasena (RF:0067)

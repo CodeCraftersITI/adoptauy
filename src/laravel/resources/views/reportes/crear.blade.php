@@ -15,6 +15,7 @@
 
     <form action="/reportar" method="POST" class="tarjeta formulario">
         @csrf
+        @include('partials.antibot')
 
         {{-- Qué se reporta y a dónde volver viajan ocultos; el servidor los vuelve a comprobar --}}
         @if ($objeto['publicacion'])

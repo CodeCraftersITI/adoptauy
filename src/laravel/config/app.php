@@ -15,6 +15,10 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Freno contra bots en los formularios (middleware AntiBot). Las pruebas lo apagan con
+    // ANTIBOT_ACTIVO=false, salvo AntiBotTest, que lo prende para probarlo
+    'antibot' => env('ANTIBOT_ACTIVO', true),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

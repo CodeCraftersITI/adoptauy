@@ -15,6 +15,7 @@
     {{-- enctype="multipart/form-data" es obligatorio para que el formulario pueda enviar archivos --}}
     <form action="/registro-refugio" method="POST" enctype="multipart/form-data" class="tarjeta formulario formulario-grilla">
         @csrf
+        @include('partials.antibot')
 
         <label class="campo">
             Nombre del refugio

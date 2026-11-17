@@ -11,6 +11,7 @@
 
     <form action="/confirmar-correo" method="POST" class="tarjeta formulario">
         @csrf
+        @include('partials.antibot')
 
         <label class="campo">
             Correo electrónico

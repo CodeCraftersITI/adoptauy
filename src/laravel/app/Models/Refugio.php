@@ -41,6 +41,43 @@ class Refugio extends Model
         'ubicacion.max' => 'La ubicación puede tener hasta 255 caracteres.',
     ];
 
+    // Los contactos se cargan en un cuadro de texto, uno por línea: se separan, se limpian
+    // y se sacan las líneas vacías y repetidas
+    public static function contactosDesdeTexto($texto)
+    {
+        return array_values(array_unique(array_filter(array_map('trim', explode("\n", $texto ?? '')))));
+    }
+
+    // Reglas de la lista de contactos (al menos uno, de hasta 255 caracteres cada uno)
+    public const REGLAS_CONTACTOS = [
+        'lista_contactos' => 'required|array|min:1',
+        'lista_contactos.*' => 'max:255',
+    ];
+
+    public const MENSAJES_CONTACTOS = [
+        'lista_contactos.required' => 'Ingresá al menos un dato de contacto.',
+        'lista_contactos.min' => 'Ingresá al menos un dato de contacto.',
+        'lista_contactos.*.max' => 'Cada dato de contacto puede tener hasta 255 caracteres.',
+    ];
+
+    // Guarda nombre, ubicación y contactos. La usan "Mi perfil" (RF:0029) y el Administrador
+    // (RF:0007). Los contactos se reemplazan por la lista nueva (atributo multivaluado)
+    public function actualizarDatos($nombre, $ubicacion, $contactos)
+    {
+        DB::transaction(function () use ($nombre, $ubicacion, $contactos)
+        {
+            $this->Nombre_Refugio = $nombre;
+            $this->Ubicacion = $ubicacion;
+            $this->save();
+
+            RefugioDatoContacto::where('ID_Usuario', $this->ID_Usuario)->delete();
+            foreach ($contactos as $contacto)
+            {
+                RefugioDatoContacto::create(['ID_Usuario' => $this->ID_Usuario, 'Dato_Contacto' => $contacto]);
+            }
+        });
+    }
+
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'ID_Usuario');

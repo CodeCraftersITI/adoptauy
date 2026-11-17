@@ -47,6 +47,29 @@ class AdminRefugioController extends Controller
         return view('admin.refugios', ['refugios' => $refugios]);
     }
 
+    // GET /admin/refugios/{id}/editar (RF:0007)
+    public function editar(string $id)
+    {
+        return view('admin.editar-refugio', ['refugio' => $this->buscar($id)]);
+    }
+
+    // PUT /admin/refugios/{id}: nombre, datos de contacto y ubicación (RF:0007), con las mismas
+    // reglas y el mismo método del modelo que "Mi perfil". El estado de validación se cambia con
+    // los botones de las transiciones válidas (13.2.1), para que no se salte ninguna regla
+    public function actualizar(Request $request, string $id)
+    {
+        $refugio = $this->buscar($id);
+
+        $contactos = Refugio::contactosDesdeTexto($request->input('contactos'));
+        $request->merge(['lista_contactos' => $contactos]);
+
+        $request->validate(Refugio::REGLAS + Refugio::REGLAS_CONTACTOS, Refugio::MENSAJES + Refugio::MENSAJES_CONTACTOS);
+
+        $refugio->actualizarDatos($request->input('nombre_refugio'), $request->input('ubicacion'), $contactos);
+
+        return redirect('/admin/refugios')->with('exito', 'Guardaste los datos de ' . $refugio->Nombre_Refugio . '.');
+    }
+
     // PUT /admin/refugios/{id}/suspender
     public function suspender(string $id)
     {

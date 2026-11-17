@@ -41,6 +41,7 @@
     {{-- enctype="multipart/form-data" es obligatorio para enviar archivos --}}
     <form action="{{ $editando ? '/publicaciones/' . $publicacion->ID_Publicacion : '/publicar' }}" method="POST" enctype="multipart/form-data" class="tarjeta formulario formulario-grilla" id="form-publicar">
         @csrf
+        @include('partials.antibot')
         @if ($editando)
             @method('PUT')
         @endif

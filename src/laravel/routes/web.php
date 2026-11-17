@@ -27,6 +27,8 @@ use App\Http\Controllers\VigenciaController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Rutas públicas ----------
+// Contra bots (pedido del docente): los formularios que crean datos llevan 'antibot' (tiempo mínimo
+// de 3 segundos y campo trampa) y 'throttle:...' (límite de envíos por minuto, definido en AppServiceProvider)
 
 // Página de inicio (RF:0040, RF:0048)
 Route::get('/', [InicioController::class, 'index']);
@@ -48,28 +50,28 @@ Route::get('/nosotros', [NosotrosController::class, 'index']);
 
 // Registro de Particular (RF:0039)
 Route::get('/registro', [RegistroController::class, 'create']);
-Route::post('/registro', [RegistroController::class, 'store']);
+Route::post('/registro', [RegistroController::class, 'store'])->middleware(['antibot', 'throttle:registro']);
 
 // Confirmación del correo del Particular (RF:0043): el enlace del correo (lleva un nombre
 // porque URL::signedRoute arma el enlace firmado a partir de él) y el pedido de otro enlace
 Route::get('/confirmar-correo/{id}', [ConfirmacionCorreoController::class, 'confirmar'])->name('correo.confirmar');
 Route::get('/confirmar-correo', [ConfirmacionCorreoController::class, 'create']);
-Route::post('/confirmar-correo', [ConfirmacionCorreoController::class, 'reenviar']);
+Route::post('/confirmar-correo', [ConfirmacionCorreoController::class, 'reenviar'])->middleware(['antibot', 'throttle:correo']);
 
 // Solicitud de registro de refugio (RF:0034)
 Route::get('/registro-refugio', [RegistroRefugioController::class, 'create']);
-Route::post('/registro-refugio', [RegistroRefugioController::class, 'store']);
+Route::post('/registro-refugio', [RegistroRefugioController::class, 'store'])->middleware(['antibot', 'throttle:registro']);
 
 // Inicio y cierre de sesión (RF:0022, RF:0023)
 Route::get('/ingresar', [SesionController::class, 'create']);
-Route::post('/ingresar', [SesionController::class, 'store']);
+Route::post('/ingresar', [SesionController::class, 'store'])->middleware('throttle:ingresar');   // freno a quien prueba contraseñas
 Route::post('/salir', [SesionController::class, 'destroy']);
 
 // Continuar con Google (RF:0066): ir a Google, volver de Google y completar CI y teléfono
 Route::get('/auth/google', [GoogleController::class, 'redirigir']);
 Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 Route::get('/auth/google/completar', [GoogleController::class, 'completar']);
-Route::post('/auth/google/completar', [GoogleController::class, 'guardar']);
+Route::post('/auth/google/completar', [GoogleController::class, 'guardar'])->middleware('throttle:registro');
 
 // ---------- Rutas privadas, protegidas por rol con el middleware VerificarRol ----------
 
@@ -86,7 +88,7 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) o encontrada (RF:0064):
     // un único formulario que muestra los campos del tipo elegido
     Route::get('/publicar', [PublicacionController::class, 'crear']);
-    Route::post('/publicar', [PublicacionController::class, 'guardar']);
+    Route::post('/publicar', [PublicacionController::class, 'guardar'])->middleware(['antibot', 'throttle:formularios']);
 
     // Perdidas y encontradas: renovar, marcar como resuelta y archivar (RF:0047)
     Route::put('/publicaciones/{id}/renovar', [VigenciaController::class, 'renovar']);
@@ -99,7 +101,7 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
 
     // Reportar una publicación, a un particular o a un refugio (RF:0059)
     Route::get('/reportar', [ReporteController::class, 'crear']);
-    Route::post('/reportar', [ReporteController::class, 'guardar']);
+    Route::post('/reportar', [ReporteController::class, 'guardar'])->middleware(['antibot', 'throttle:formularios']);
 
     // Solicitudes recibidas en todas mis publicaciones (RF:0050)
     Route::get('/solicitudes/recibidas', [SolicitudController::class, 'recibidas']);
@@ -119,7 +121,7 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
 Route::middleware('rol:Particular')->group(function ()
 {
     Route::get('/publicaciones/{id}/solicitar', [SolicitudController::class, 'crear']);
-    Route::post('/publicaciones/{id}/solicitar', [SolicitudController::class, 'guardar']);
+    Route::post('/publicaciones/{id}/solicitar', [SolicitudController::class, 'guardar'])->middleware(['antibot', 'throttle:formularios']);
 
     // Mis solicitudes enviadas (RF:0054)
     Route::get('/solicitudes', [SolicitudController::class, 'enviadas']);
@@ -160,12 +162,16 @@ Route::middleware('rol:Administrador')->group(function ()
 
     // Refugios: listado y consulta (RF:0008, RF:0009), suspensión y baja lógica (RF:0006)
     Route::get('/admin/refugios', [AdminRefugioController::class, 'index']);
+    Route::get('/admin/refugios/{id}/editar', [AdminRefugioController::class, 'editar']);   // RF:0007
+    Route::put('/admin/refugios/{id}', [AdminRefugioController::class, 'actualizar']);
     Route::put('/admin/refugios/{id}/suspender', [AdminRefugioController::class, 'suspender']);
     Route::put('/admin/refugios/{id}/levantar', [AdminRefugioController::class, 'levantarSuspension']);
     Route::put('/admin/refugios/{id}/baja', [AdminRefugioController::class, 'darDeBaja']);
 
     // Particulares: listado (RF:0014) y baja lógica (RF:0010)
     Route::get('/admin/particulares', [AdminParticularController::class, 'index']);
+    Route::get('/admin/particulares/{id}/editar', [AdminParticularController::class, 'editar']);   // RF:0013
+    Route::put('/admin/particulares/{id}', [AdminParticularController::class, 'actualizar']);
     Route::put('/admin/particulares/{id}/baja', [AdminParticularController::class, 'darDeBaja']);
     Route::put('/admin/particulares/{id}/restituir', [AdminParticularController::class, 'restituir']);
 

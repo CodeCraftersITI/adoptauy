@@ -71,6 +71,8 @@
                         <td class="celda-acciones">
                             {{-- Solo se ofrecen las transiciones válidas según el estado (13.2.1) --}}
                             <div class="acciones-fila">
+                                {{-- Editar nombre, contactos y ubicación (RF:0007) --}}
+                                <a class="btn btn-suave btn-chico" href="/admin/refugios/{{ $refugio->ID_Usuario }}/editar">Editar</a>
                                 @if ($refugio->Estado_Validacion == 'Validado')
                                     <a class="btn btn-suave btn-chico" href="/refugios/{{ $refugio->ID_Usuario }}">Ver perfil</a>
                                     <form action="/admin/refugios/{{ $refugio->ID_Usuario }}/suspender" method="POST">
