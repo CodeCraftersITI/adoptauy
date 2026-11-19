@@ -27,7 +27,9 @@ class PruebaDeHumoTest extends DuskTestCase
         $browser->visit('/ingresar')
             ->type('email', $email)
             ->type('password', UsuarioFactory::CONTRASEÑA)
-            ->press('Ingresar');
+            ->press('Ingresar')
+            // press() no espera la página nueva: sin esta espera la prueba compite con la navegación (DEF-11)
+            ->waitForLocation('/cuenta');
     }
 
     public function test_cp01_registro_de_particular()
@@ -41,10 +43,13 @@ class PruebaDeHumoTest extends DuskTestCase
                 ->type('apellido', 'Suárez')
                 ->type('email', 'ana@prueba.uy')
                 ->type('password', 'clave-segura')
+                ->screenshot('cp01-1-formulario-de-registro-completo')
                 ->pause(self::ESPERA_HUMANA)
                 ->press('Crear cuenta')
+                ->waitForLocation('/ingresar')
                 ->assertPathIs('/ingresar')
-                ->assertSee('Tu cuenta fue creada');
+                ->assertSee('Tu cuenta fue creada')
+                ->screenshot('cp01-2-cuenta-creada');
         });
 
         $this->assertDatabaseHas('Usuario', ['Email' => 'ana@prueba.uy', 'Tipo_Usuario' => 'Particular']);
@@ -56,7 +61,8 @@ class PruebaDeHumoTest extends DuskTestCase
         {
             $browser->visit('/registro')
                 ->type('ci', '1a2b3c4d5')
-                ->assertInputValue('ci', '12345');
+                ->assertInputValue('ci', '12345')
+                ->screenshot('cp02-cedula-sin-letras');
         });
     }
 
@@ -70,12 +76,16 @@ class PruebaDeHumoTest extends DuskTestCase
 
             $browser->assertPathIs('/cuenta')
                 ->assertSee('Mi cuenta')
+                ->screenshot('cp04-1-ingreso-a-mi-cuenta')
                 ->click('.nav-acciones button[aria-label="Cerrar sesión"]')
+                ->waitForText('Cerraste sesión')
                 ->assertPathIs('/')
-                ->assertSee('Cerraste sesión');
+                ->assertSee('Cerraste sesión')
+                ->screenshot('cp05-1-sesion-cerrada');
 
             // Sin sesión, Mi cuenta pide ingresar
-            $browser->visit('/cuenta')->assertPathIs('/ingresar');
+            $browser->visit('/cuenta')->assertPathIs('/ingresar')
+                ->screenshot('cp05-2-sin-sesion-pide-ingresar');
         });
     }
 
@@ -87,8 +97,10 @@ class PruebaDeHumoTest extends DuskTestCase
                 ->type('email', 'nadie@prueba.uy')
                 ->type('password', 'incorrecta')
                 ->press('Ingresar')
+                ->waitForText('El correo o la contraseña no son correctos.')
                 ->assertPathIs('/ingresar')
-                ->assertSee('El correo o la contraseña no son correctos.');
+                ->assertSee('El correo o la contraseña no son correctos.')
+                ->screenshot('cp04-2-mensaje-generico');
         });
     }
 
@@ -117,10 +129,13 @@ class PruebaDeHumoTest extends DuskTestCase
                 ->type('ubicacion', 'Pocitos')
                 ->type('salud', 'Vacunas al día')
                 ->attach('fotos[]', $foto)
+                ->screenshot('cp06-1-formulario-de-publicacion-completo')
                 ->pause(self::ESPERA_HUMANA)
                 ->press('Publicar')
+                ->waitForLocation('/cuenta')
                 ->assertPathIs('/cuenta')
-                ->assertSee('Tu publicación ya está en adopción');
+                ->assertSee('Tu publicación ya está en adopción')
+                ->screenshot('cp06-2-publicacion-en-adopcion');
         });
 
         $this->assertDatabaseHas('Publicacion_Animal', ['ID_Usuario' => $particular->ID_Usuario, 'Raza' => 'Mestizo']);

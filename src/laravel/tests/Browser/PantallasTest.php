@@ -32,20 +32,25 @@ class PantallasTest extends DuskTestCase
                 ->type('email', $particular->usuario->Email)
                 ->type('password', UsuarioFactory::CONTRASEÑA)
                 ->press('Ingresar')
+                // press() no espera la página nueva (DEF-11)
+                ->waitForLocation('/cuenta')
                 ->visit('/publicar')
                 // Al abrir: En adopción, con tamaño y edad, sin zona ni contacto
                 ->assertVisible('select[name="tamanio"]')
                 ->assertMissing('input[name="zona"]')
+                ->screenshot('cp06-3-publicar-en-adopcion')
                 // Mascota perdida: aparecen los datos del extravío y se van los de adopción
                 ->click('label.pestana:nth-child(2)')
                 ->assertVisible('input[name="zona"]')
                 ->assertVisible('input[name="contacto"]')
                 ->assertMissing('select[name="tamanio"]')
                 ->assertSee('Fecha del extravío')
+                ->screenshot('cp09-publicar-mascota-perdida')
                 // Mascota encontrada: el nombre pasa a ser opcional
                 ->click('label.pestana:nth-child(3)')
                 ->assertSee('Fecha en que la encontraste')
-                ->assertSee('(opcional)');
+                ->assertSee('(opcional)')
+                ->screenshot('cp47-publicar-mascota-encontrada');
         });
     }
 
@@ -61,18 +66,21 @@ class PantallasTest extends DuskTestCase
             {
                 $browser->visit($pagina);
                 $this->assertLessThanOrEqual(360, $this->anchoDeLaPagina($browser), 'Desplazamiento horizontal en ' . $pagina);
+                $browser->screenshot('cp39-360px' . ($pagina == '/' ? '-inicio' : str_replace('/', '-', $pagina)));
             }
 
             // Con sesión: Mi cuenta, Mi perfil y Publicar
             $browser->visit('/ingresar')
                 ->type('email', $particular->usuario->Email)
                 ->type('password', UsuarioFactory::CONTRASEÑA)
-                ->press('Ingresar');
+                ->press('Ingresar')
+                ->waitForLocation('/cuenta');
 
             foreach (['/cuenta', '/perfil', '/publicar'] as $pagina)
             {
                 $browser->visit($pagina);
                 $this->assertLessThanOrEqual(360, $this->anchoDeLaPagina($browser), 'Desplazamiento horizontal en ' . $pagina);
+                $browser->screenshot('cp39-360px' . str_replace('/', '-', $pagina));
             }
         });
     }
@@ -87,7 +95,8 @@ class PantallasTest extends DuskTestCase
                 ->click('.menu-movil summary')
                 ->assertVisible('.menu-movil-panel')
                 ->assertSeeIn('.menu-movil-panel', 'Refugios')
-                ->assertSeeIn('.menu-movil-panel', 'Ingresar');
+                ->assertSeeIn('.menu-movil-panel', 'Ingresar')
+                ->screenshot('cp39-menu-del-celular');
         });
     }
 }
