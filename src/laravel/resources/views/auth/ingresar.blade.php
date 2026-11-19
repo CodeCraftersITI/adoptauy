@@ -29,5 +29,8 @@
     @include('partials.boton-google')
 
     <p class="texto-centro">¿No tenés cuenta? <a href="/registro">Crear cuenta</a></p>
+
+    {{-- RF:0043: sin confirmar el correo no se puede ingresar --}}
+    <p class="texto-centro apagado">¿No te llegó el correo de confirmación? <a href="/confirmar-correo">Pedir otro</a></p>
 </div>
 @endsection

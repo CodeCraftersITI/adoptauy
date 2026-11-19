@@ -140,7 +140,8 @@ class GoogleTest extends TestCase
 
     public function test_cp49_el_correo_de_un_particular_activo_vincula_la_cuenta_y_confirma_el_correo()
     {
-        $particular = Particular::factory()->create();
+        // Un Particular que todavía no confirmó el correo (RF:0043)
+        $particular = Particular::factory()->create(['ID_Usuario' => Usuario::factory()->sinConfirmar()]);
         $usuario = $particular->usuario;
         $this->assertNull($usuario->Email_Verificado);
 

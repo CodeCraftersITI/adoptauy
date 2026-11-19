@@ -23,7 +23,7 @@ La fuente de verdad es el **Documento integrador (V3)**. En `docs/contexto/` hay
 ## Stack y comandos
 
 - Laravel 13 sobre PHP 8.4 (FPM), MySQL 8.4, Nginx 1.27, Docker Compose. Vistas Blade con HTML5 y CSS3, web adaptable desde 360 px. Sin app móvil ni PWA.
-- Colas y planificador de Laravel en contenedores propios (`queue`, `scheduler`). Correo: Mailpit en desarrollo; en producción, Laravel envía por SMTP directo a un proveedor externo (puerto 587, sin Postfix, D95).
+- Colas y planificador de Laravel en contenedores propios (`queue`, `scheduler`). Correo: Mailpit en desarrollo; en producción, Laravel envía por SMTP directo a Gmail con la cuenta noreply.adoptauy@gmail.com (puerto 587, sin Postfix, D95, D96). Las variables MAIL_ van en el `.env` de la raíz, no en `src/laravel/.env`: Docker pisa las de Laravel.
 - Mapas: OpenStreetMap con Leaflet.
 - **Laravel vive en `src/laravel/`** (en los contenedores: `/var/www/laravel`). La configuración de Docker está en la raíz: `docker-compose.yml` y `docker/`.
 - Primera vez en cualquier máquina: `docker compose up -d --build` (el contenedor `app` instala Composer, genera APP_KEY y migra; ver `docker compose logs -f app`). En la VM del servidor local: `bash infra/setup.sh`.
@@ -44,7 +44,7 @@ Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige
 
 - `docs/contexto/requisitos.md`: actores, RF:0001 a RF:0067 (61 vigentes, 6 dados de baja) y RNF:0001 a RNF:0014, con criterios de aceptación.
 - `docs/contexto/modelo-datos.md`: cambios del DER, restricciones RNE01 a RNE27 y pasaje a tablas (15.2.1). Usa la numeración de RNE del repositorio, que difiere de la V3 desde RNE23 (está explicado al principio del archivo).
-- `docs/base-de-datos/adoptauy.sql`: tablas en MySQL según el DER (supertipo Publicacion_Animal con los subtipos Publicacion_Adopcion y Publicacion_Perdida). Solo CREATE TABLE con claves, NOT NULL, UNIQUE, DEFAULT y ENUM; las RNE las valida Laravel y los triggers quedan para el Hito 3.
+- `docs/base-de-datos/adoptauy.sql`: tablas en MySQL según el DER (supertipo Publicacion_Animal con los subtipos Publicacion_Adopcion y Publicacion_Perdida). Es el modelo final (D97): todas las tablas tienen migración, sin triggers; las RNE que no se expresan con claves, UNIQUE o CHECK las valida Laravel.
 - `docs/contexto/diseno-ui.md`: pantallas por actor, sistema de diseño (colores, tipografía Outfit) y lo que falta prototipar (sección 14 de la V3).
 - `docs/contexto/plan-pruebas.md`: estrategia, herramientas y casos CP-01 a CP-50.
 - `docs/contexto/infraestructura.md`: stack, red, servidores, servicios y entorno local.
@@ -69,7 +69,6 @@ Las reglas de negocio (estados, plazos y umbrales) se cargan siempre:
 
 ## Temas pendientes (no decidir sin consultar)
 
-- Proveedor externo de SMTP (Gmail o Brevo).
 - Numeración de RNE entre el repositorio y la V3 del integrador.
 - Los tres puntos abiertos de Continuar con Google (`alcance.md`).
 - Correspondencia entre los servidores de la sección 16 y los contenedores del servidor local: en la DMZ queda solo SRV-WEB (Nginx, Laravel y MySQL en contenedores); falta reflejarlo en el documento y en la pestaña Red del draw.io, que todavía muestra SRV-DNS.

@@ -29,4 +29,10 @@ class SolicitudAdopcion extends Model
     {
         return $this->belongsTo(Particular::class, 'ID_Usuario');
     }
+
+    // La adopción que se concretó con esta solicitud, si fue la elegida (RF:0052)
+    public function adopcionConcretada()
+    {
+        return $this->hasOne(Adopcion::class, 'ID_Solicitud');
+    }
 }

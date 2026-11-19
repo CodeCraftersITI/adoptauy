@@ -81,7 +81,7 @@ class DetallePublicacionTest extends TestCase
             ->assertSee('8 meses')
             ->assertSee('Pocitos')
             ->assertSee('Vacunas al día')
-            ->assertSee('Esterilizado')
+            ->assertSee('Castrado')          // en pantalla dice castrado (pedido del docente)
             ->assertSee('fotos-animales/uno.jpg')
             ->assertSee('fotos-animales/dos.jpg');
     }

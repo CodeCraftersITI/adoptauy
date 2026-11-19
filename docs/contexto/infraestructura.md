@@ -192,7 +192,7 @@ El servidor final es una máquina virtual de VirtualBox con Ubuntu Server 24.04.
 
 - Planificador y colas de Laravel: contenedor o proceso adicional para las tareas programadas (aviso de seguimiento del día 15, restricción de la cuenta al día 22, vencimiento de publicaciones de mascotas perdidas a los 30 días) y los trabajos en cola (envío de correos, procesamiento de imágenes).
 
-- Correo (SMTP): envía las notificaciones de la tabla de 13.2.6. Laravel los envía desde la cola directamente a un servidor SMTP externo autenticado, por el puerto 587 con STARTTLS; no hay contenedor de Postfix (D95). El proveedor (Gmail o Brevo) queda a definir y su contraseña de aplicación va solo en el `.env`. En desarrollo, Mailpit captura los correos y no salen a Internet.
+- Correo (SMTP): envía las notificaciones de la tabla de 13.2.6. Laravel los envía desde la cola directamente a un servidor SMTP externo autenticado, por el puerto 587 con STARTTLS; no hay contenedor de Postfix (D95). El proveedor es Gmail, con la cuenta noreply.adoptauy@gmail.com (D96), y su contraseña de aplicación va solo en el `.env` de la raíz. En desarrollo, Mailpit captura los correos y no salen a Internet.
 
 - Almacenamiento de archivos: volumen local para fotografías de publicaciones, evidencia de seguimiento y documentación de refugios, con posibilidad de migrar a almacenamiento tipo S3 si el proyecto escala.
 

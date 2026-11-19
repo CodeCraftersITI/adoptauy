@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Hash;
 
 /**
  * Registro de Particular (RF:0039).
- * La confirmación del correo (RF:0043) se agrega en el Sprint 5 (D67).
+ * Al crear la cuenta se envía el correo para confirmar la dirección (RF:0043); sin
+ * confirmarla no se puede iniciar sesión (D67).
  */
 class RegistroController extends Controller
 {
@@ -34,39 +35,28 @@ class RegistroController extends Controller
 
         // Criterio de aceptación de RF:0039. Si algo falla, Laravel vuelve al
         // formulario con los errores y no se ejecuta nada de lo que sigue.
+        // Nombre, apellido, teléfono y contraseña usan las reglas compartidas de los modelos
         $request->validate([
             'ci' => ['required', new CedulaUruguaya, 'unique:Particular,CI'],
-            'nombre' => 'required|min:2|max:50',
-            'apellido' => 'required|min:2|max:50',
-            'telefono' => 'required|regex:/^[0-9]{8,9}$/',
             'email' => 'required|email|max:255|unique:Usuario,Email',
-            'password' => 'required|min:8|max:72',
-        ], [
+            'password' => Usuario::REGLA_CONTRASENA,
+        ] + Particular::REGLAS, [
             'ci.required' => 'Ingresá tu cédula.',
             'ci.unique' => 'Ya existe una cuenta con esa cédula.',
-            'nombre.required' => 'Ingresá tu nombre.',
-            'nombre.min' => 'El nombre debe tener al menos 2 letras.',
-            'nombre.max' => 'El nombre puede tener hasta 50 letras.',
-            'apellido.required' => 'Ingresá tu apellido.',
-            'apellido.min' => 'El apellido debe tener al menos 2 letras.',
-            'apellido.max' => 'El apellido puede tener hasta 50 letras.',
-            'telefono.required' => 'Ingresá tu teléfono.',
-            'telefono.regex' => 'El teléfono debe tener 8 o 9 números.',
             'email.required' => 'Ingresá tu correo electrónico.',
             'email.email' => 'Ingresá un correo electrónico válido.',
             'email.max' => 'El correo puede tener hasta 255 caracteres.',
             'email.unique' => 'Ya existe una cuenta con ese correo electrónico.',
-            'password.required' => 'Ingresá una contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.max' => 'La contraseña puede tener hasta 72 caracteres.',
-        ]);
+        ] + Particular::MENSAJES + Usuario::MENSAJES_CONTRASENA);
 
         // El Usuario y su fila de Particular se guardan juntos: si falla uno,
         // no se guarda ninguno (transacción, RNE11)
-        DB::transaction(function () use ($request)
+        $usuario = new Usuario();
+
+        DB::transaction(function () use ($request, $usuario)
         {
-            // Tipo_Usuario no está en $fillable, por eso se asigna a mano
-            $usuario = new Usuario();
+            // Tipo_Usuario no está en $fillable, por eso se asigna a mano.
+            // Email_Verificado queda vacío (NULL) hasta que confirme el correo (RF:0043)
             $usuario->Email = $request->input('email');
             $usuario->Contraseña = Hash::make($request->input('password'));   // RNF:0007: hash bcrypt
             $usuario->Tipo_Usuario = 'Particular';
@@ -81,6 +71,10 @@ class RegistroController extends Controller
             ]);
         });
 
-        return redirect('/ingresar')->with('exito', 'Tu cuenta fue creada. Ya podés ingresar con tu correo y contraseña.');
+        // Correo con el enlace para confirmar la dirección (RF:0043, RF:0063)
+        $this->enviarConfirmacion($usuario);
+
+        return redirect('/ingresar')->with('exito', 'Tu cuenta fue creada. Te enviamos un correo a ' . $usuario->Email
+            . ': abrí el enlace para confirmarlo y después ingresá.');
     }
 }

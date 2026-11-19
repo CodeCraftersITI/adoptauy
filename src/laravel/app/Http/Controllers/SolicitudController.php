@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Mail\SolicitudAdopcionRecibida;
+use App\Models\Adopcion;
 use App\Models\Particular;
 use App\Models\PublicacionAnimal;
+use App\Models\Seguimiento;
 use App\Models\SolicitudAdopcion;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -14,7 +18,11 @@ use Illuminate\Support\Facades\Mail;
  *  - Solicitar adopción (RF:0049, CP-22): solo un Particular (middleware rol:Particular).
  *  - Mis solicitudes enviadas (RF:0054, CP-26).
  *  - Solicitudes recibidas por el publicante (RF:0050, CP-23).
- * Rechazar y concretar la adopción (RF:0051, RF:0052) se agregan en el paso siguiente.
+ *  - Rechazar una solicitud (RF:0051, CP-24) y concretar la adopción eligiendo al adoptante
+ *    (RF:0052, CP-25): solo el publicante. Transiciones de 13.2.3:
+ *      Pendiente -> Rechazada   rechazo individual; la publicación no cambia
+ *      Pendiente -> Adoptada    el publicante la elige; las demás Pendientes pasan a Rechazada
+ *                               y la publicación a Adoptado. Es definitivo (RNE19, D25).
  */
 class SolicitudController extends Controller
 {
@@ -117,6 +125,86 @@ class SolicitudController extends Controller
         return view('solicitudes.recibidas', ['solicitudes' => $solicitudes, 'publicacion' => $publicacion]);
     }
 
+    // PUT /solicitudes/{id}/rechazar: rechazo individual (RF:0051)
+    public function rechazar(string $id)
+    {
+        $solicitud = $this->buscarSolicitudRecibida($id);
+
+        if ($solicitud->Estado_Solicitud != 'Pendiente')
+        {
+            return back()->with('error', 'Solo se puede rechazar una solicitud pendiente.');
+        }
+
+        // Estado_Solicitud no está en $fillable: se asigna a mano
+        $solicitud->Estado_Solicitud = 'Rechazada';
+        $solicitud->save();
+
+        return back()->with('exito', 'Rechazaste la solicitud de ' . $solicitud->particular->Nombre . '.');
+    }
+
+    // PUT /solicitudes/{id}/elegir: concreta la adopción con este solicitante (RF:0052)
+    public function elegir(string $id)
+    {
+        $solicitud = $this->buscarSolicitudRecibida($id);
+        $mascota = $solicitud->adopcion;
+
+        if ($solicitud->Estado_Solicitud != 'Pendiente' || $mascota->Estado_Adopcion != 'En adopción')
+        {
+            return back()->with('error', 'Solo se puede elegir una solicitud pendiente de una mascota En adopción.');
+        }
+
+        // Todo junto o nada: la solicitud, las demás, la publicación y la adopción
+        DB::transaction(function () use ($solicitud, $mascota)
+        {
+            $solicitud->Estado_Solicitud = 'Adoptada';
+            $solicitud->save();
+
+            // Las demás Pendientes de la misma mascota pasan a Rechazada (las rechaza el sistema)
+            SolicitudAdopcion::where('ID_Publicacion', $solicitud->ID_Publicacion)
+                ->where('ID_Solicitud', '!=', $solicitud->ID_Solicitud)
+                ->where('Estado_Solicitud', 'Pendiente')
+                ->update(['Estado_Solicitud' => 'Rechazada']);
+
+            // La publicación pasa a Adoptado: es definitivo, no vuelve a En adopción
+            $mascota->Estado_Adopcion = 'Adoptado';
+            $mascota->save();
+
+            // Se registra la fecha de adopción (de ahí se cuentan los días del seguimiento)
+            $adopcion = Adopcion::create([
+                'ID_Solicitud' => $solicitud->ID_Solicitud,
+                'Fecha_Adopcion' => now()->toDateString(),
+            ]);
+
+            // Y su seguimiento (RNE20): aviso el día 15 y límite el día 22, en días corridos
+            Seguimiento::create([
+                'ID_Adopcion' => $adopcion->ID_Adopcion,
+                'Fecha_Aviso' => now()->addDays(15)->toDateString(),
+                'Fecha_Limite' => now()->addDays(22)->toDateString(),
+            ]);
+        });
+
+        return back()->with('exito', '¡Felicitaciones! La mascota fue adoptada por '
+            . $solicitud->particular->Nombre . ' ' . $solicitud->particular->Apellido . '.');
+    }
+
+    // Busca una solicitud de una publicación del usuario que inició sesión; si es ajena, 403
+    private function buscarSolicitudRecibida($id)
+    {
+        $solicitud = SolicitudAdopcion::find($id);
+
+        if (!$solicitud)
+        {
+            abort(404);
+        }
+
+        if ($solicitud->adopcion->publicacion->ID_Usuario != session('id_usuario'))
+        {
+            abort(403, 'Solo quien publicó puede responder esta solicitud.');
+        }
+
+        return $solicitud;
+    }
+
     // Busca una mascota En adopción y visible; si no existe o es una perdida o encontrada, 404 (RNE18)
     private function buscarEnAdopcion($id)
     {
@@ -137,6 +225,12 @@ class SolicitudController extends Controller
         if ($publicacion->ID_Usuario == session('id_usuario'))
         {
             return 'No podés solicitar la adopción de tu propia publicación.';
+        }
+
+        // Cuenta restringida por seguimiento incumplido (RF:0058)
+        if (Usuario::estaRestringido(session('id_usuario')))
+        {
+            return Seguimiento::MENSAJE_RESTRINGIDA;
         }
 
         $yaPendiente = SolicitudAdopcion::where('ID_Publicacion', $publicacion->ID_Publicacion)

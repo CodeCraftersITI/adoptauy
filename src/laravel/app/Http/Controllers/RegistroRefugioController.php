@@ -32,22 +32,16 @@ class RegistroRefugioController extends Controller
         ]);
 
         // Documentos: PDF, JPG o PNG de hasta 8 MB (max se mide en kilobytes: 8 x 1024 = 8192)
+        // Nombre, ubicación y contraseña usan las reglas compartidas de los modelos
         $request->validate([
-            'nombre_refugio' => 'required|min:2|max:100',
             'contacto' => 'required|max:255',
-            'ubicacion' => 'required|max:255',
             'certificado' => 'required|file|mimes:pdf,jpg,jpeg,png|max:8192',
             'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:8192',
             'email' => 'required|email|max:255|unique:Usuario,Email',
-            'password' => 'required|min:8|max:72',
-        ], [
-            'nombre_refugio.required' => 'Ingresá el nombre del refugio.',
-            'nombre_refugio.min' => 'El nombre debe tener al menos 2 letras.',
-            'nombre_refugio.max' => 'El nombre puede tener hasta 100 caracteres.',
+            'password' => Usuario::REGLA_CONTRASENA,
+        ] + Refugio::REGLAS, [
             'contacto.required' => 'Ingresá un teléfono o una red social.',
             'contacto.max' => 'El contacto puede tener hasta 255 caracteres.',
-            'ubicacion.required' => 'Ingresá la ubicación del refugio.',
-            'ubicacion.max' => 'La ubicación puede tener hasta 255 caracteres.',
             'certificado.required' => 'Adjuntá el certificado de personería.',
             'certificado.mimes' => 'El certificado tiene que ser PDF, JPG o PNG.',
             'certificado.max' => 'El certificado puede pesar hasta 8 MB.',
@@ -57,10 +51,7 @@ class RegistroRefugioController extends Controller
             'email.required' => 'Ingresá el correo electrónico.',
             'email.email' => 'Ingresá un correo electrónico válido.',
             'email.unique' => 'Ya existe una cuenta con ese correo electrónico.',
-            'password.required' => 'Ingresá una contraseña.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.max' => 'La contraseña puede tener hasta 72 caracteres.',
-        ]);
+        ] + Refugio::MENSAJES + Usuario::MENSAJES_CONTRASENA);
 
         // Los documentos se guardan en storage/app/private: no se pueden abrir desde
         // el navegador, solo el Administrador los descarga desde su panel

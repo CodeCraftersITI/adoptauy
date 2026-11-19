@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ConfirmarCorreo;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 abstract class Controller
 {
@@ -28,5 +31,24 @@ abstract class Controller
         }
 
         return redirect('/cuenta');
+    }
+
+    // Envía el correo para confirmar la dirección (RF:0043). La usan el registro
+    // (RegistroController) y el reenvío (ConfirmacionCorreoController).
+    // URL::signedRoute arma el enlace con una firma: si alguien le cambia el número de usuario,
+    // la firma deja de coincidir y el enlace se rechaza (CP-03).
+    protected function enviarConfirmacion(Usuario $usuario)
+    {
+        $enlace = URL::signedRoute('correo.confirmar', ['id' => $usuario->ID_Usuario]);
+
+        // Si el correo falla, la cuenta igual queda creada y se puede pedir otro (RNF:0010)
+        try
+        {
+            Mail::to($usuario->Email)->send(new ConfirmarCorreo($usuario, $enlace));
+        }
+        catch (\Exception $e)
+        {
+            report($e);
+        }
     }
 }

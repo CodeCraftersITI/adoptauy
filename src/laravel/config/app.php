@@ -15,6 +15,14 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Freno contra bots en los formularios (middleware AntiBot). Las pruebas lo apagan con
+    // ANTIBOT_ACTIVO=false, salvo AntiBotTest, que lo prende para probarlo
+    'antibot' => env('ANTIBOT_ACTIVO', true),
+
+    // Límites de envíos por minuto (AppServiceProvider). Solo se apagan para la prueba de carga
+    // (CP-38): ahí los 15 usuarios simulados salen de la misma IP
+    'limites' => env('LIMITES_ACTIVOS', true),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

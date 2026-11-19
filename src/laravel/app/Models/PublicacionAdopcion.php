@@ -32,6 +32,13 @@ class PublicacionAdopcion extends Model
         return $this->hasMany(SolicitudAdopcion::class, 'ID_Publicacion');
     }
 
+    // Para mostrar se dice "castrado" (pedido del docente de Programación). En la base el
+    // atributo sigue siendo Estado_Esterilizacion, con los valores del DER
+    public function castracionTexto()
+    {
+        return $this->Estado_Esterilizacion == 'Esterilizado' ? 'Castrado' : 'No castrado';
+    }
+
     // Edad para mostrar: "8 meses", "1 año", "2 años y 3 meses"
     public function edadTexto()
     {

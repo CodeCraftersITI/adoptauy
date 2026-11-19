@@ -49,6 +49,20 @@ class SesionController extends Controller
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }
 
+        // Una cuenta suspendida, inhabilitada o dada de baja no entra (RF:0022, RF:0010, RF:0060),
+        // con el mismo mensaje. "En revisión" sí entra: es una marca para el Administrador
+        if (in_array($usuario->Estado_Usuario, ['Suspendido', 'Inhabilitado', 'Baja']))
+        {
+            return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
+        }
+
+        // Un Particular entra solo con el correo confirmado (RF:0043, D67), con el mismo mensaje.
+        // El Refugio no confirma el correo: sus datos los verifica el Administrador al validarlo.
+        if ($usuario->Tipo_Usuario == 'Particular' && !$usuario->Email_Verificado)
+        {
+            return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
+        }
+
         // Un refugio solo entra si el Administrador ya lo validó (13.2.1). Se usa el mismo
         // mensaje para no revelar que el correo existe ni en qué estado está la solicitud.
         if ($usuario->Tipo_Usuario == 'Refugio' && $usuario->refugio->Estado_Validacion != 'Validado')

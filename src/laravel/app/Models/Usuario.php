@@ -25,6 +25,16 @@ class Usuario extends Model
     // desde un formulario y volverse administrador (mass assignment, como en el teórico)
     protected $fillable = ['Email', 'Contraseña'];
 
+    // Contraseña: entre 8 y 72 caracteres (13.2.1; 72 es el máximo que admite bcrypt, RNF:0007).
+    // La usan el registro, el registro de refugio y el cambio de contraseña (RF:0067)
+    public const REGLA_CONTRASENA = 'required|min:8|max:72';
+
+    public const MENSAJES_CONTRASENA = [
+        'password.required' => 'Ingresá una contraseña.',
+        'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+        'password.max' => 'La contraseña puede tener hasta 72 caracteres.',
+    ];
+
     // Relaciones 1 a 1 con cada subtipo (la clave de las dos tablas es ID_Usuario)
     public function particular()
     {
@@ -39,6 +49,40 @@ class Usuario extends Model
     public function administrador()
     {
         return $this->hasOne(Administrador::class, 'ID_Usuario');
+    }
+
+    // Reportes recibidos por este particular o refugio (RF:0059)
+    public function reportesRecibidos()
+    {
+        return $this->hasMany(Reporte::class, 'ID_Usuario_Reportado');
+    }
+
+    // Sus publicaciones
+    public function publicaciones()
+    {
+        return $this->hasMany(PublicacionAnimal::class, 'ID_Usuario');
+    }
+
+    // ¿Tiene la cuenta restringida por un seguimiento incumplido? (RF:0058, RNE21)
+    // Desde el día 22 de una adopción suya sin foto presentada. Mientras tanto no puede
+    // solicitar adopciones ni publicar; solo enviar la foto, y al enviarla se levanta sola.
+    public function tieneCuentaRestringida()
+    {
+        return Seguimiento::where('Fecha_Limite', '<=', now()->toDateString())
+            ->whereIn('Estado_Evidencia', ['Pendiente', 'Rechazada'])
+            ->whereHas('adopcion.solicitud', function ($solicitud)
+            {
+                $solicitud->where('ID_Usuario', $this->ID_Usuario);
+            })
+            ->exists();
+    }
+
+    // Lo mismo, a partir del ID de la sesión. Si el usuario no existe, no está restringido
+    public static function estaRestringido($idUsuario)
+    {
+        $usuario = Usuario::find($idUsuario);
+
+        return $usuario && $usuario->tieneCuentaRestringida();
     }
 
     // Nombre que se muestra en el encabezado y en los paneles
