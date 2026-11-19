@@ -32,6 +32,8 @@ class PantallasTest extends DuskTestCase
                 ->type('email', $particular->usuario->Email)
                 ->type('password', UsuarioFactory::CONTRASEÑA)
                 ->press('Ingresar')
+                // press() no espera la página nueva (DEF-11)
+                ->waitForLocation('/cuenta')
                 ->visit('/publicar')
                 // Al abrir: En adopción, con tamaño y edad, sin zona ni contacto
                 ->assertVisible('select[name="tamanio"]')
@@ -71,7 +73,8 @@ class PantallasTest extends DuskTestCase
             $browser->visit('/ingresar')
                 ->type('email', $particular->usuario->Email)
                 ->type('password', UsuarioFactory::CONTRASEÑA)
-                ->press('Ingresar');
+                ->press('Ingresar')
+                ->waitForLocation('/cuenta');
 
             foreach (['/cuenta', '/perfil', '/publicar'] as $pagina)
             {
