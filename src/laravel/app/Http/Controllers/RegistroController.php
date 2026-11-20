@@ -37,8 +37,9 @@ class RegistroController extends Controller
         // formulario con los errores y no se ejecuta nada de lo que sigue.
         // Nombre, apellido, teléfono y contraseña usan las reglas compartidas de los modelos
         $request->validate([
-            'ci' => ['required', new CedulaUruguaya, 'unique:Particular,CI'],
-            'email' => 'required|email|max:255|unique:Usuario,Email',
+            // La cédula y el correo repetidos se buscan con adoptauy_publico (16.3.4)
+            'ci' => ['required', new CedulaUruguaya, 'unique:' . Usuario::CONEXION_REGISTRO . '.Particular,CI'],
+            'email' => 'required|email|max:255|unique:' . Usuario::CONEXION_REGISTRO . '.Usuario,Email',
             'password' => Usuario::REGLA_CONTRASENA,
         ] + Particular::REGLAS, [
             'ci.required' => 'Ingresá tu cédula.',
@@ -50,10 +51,12 @@ class RegistroController extends Controller
         ] + Particular::MENSAJES + Usuario::MENSAJES_CONTRASENA);
 
         // El Usuario y su fila de Particular se guardan juntos: si falla uno,
-        // no se guarda ninguno (transacción, RNE11)
+        // no se guarda ninguno (transacción, RNE11). Se guardan con el usuario de MySQL
+        // adoptauy_publico, que solo puede insertar cuentas nuevas (16.3.4, RNF:0007)
         $usuario = new Usuario();
+        $usuario->setConnection(Usuario::CONEXION_REGISTRO);
 
-        DB::transaction(function () use ($request, $usuario)
+        DB::connection(Usuario::CONEXION_REGISTRO)->transaction(function () use ($request, $usuario)
         {
             // Tipo_Usuario no está en $fillable, por eso se asigna a mano.
             // Email_Verificado queda vacío (NULL) hasta que confirme el correo (RF:0043)
@@ -62,7 +65,7 @@ class RegistroController extends Controller
             $usuario->Tipo_Usuario = 'Particular';
             $usuario->save();
 
-            Particular::create([
+            Particular::on(Usuario::CONEXION_REGISTRO)->create([
                 'ID_Usuario' => $usuario->ID_Usuario,
                 'CI' => $request->input('ci'),
                 'Nombre' => $request->input('nombre'),
@@ -71,7 +74,9 @@ class RegistroController extends Controller
             ]);
         });
 
-        // Correo con el enlace para confirmar la dirección (RF:0043, RF:0063)
+        // Correo con el enlace para confirmar la dirección (RF:0043, RF:0063). El correo usa el
+        // nombre de la persona, que adoptauy_publico no puede leer: se lee con la conexión de la aplicación
+        $usuario = Usuario::findOrFail($usuario->ID_Usuario);
         $this->enviarConfirmacion($usuario);
 
         return redirect('/ingresar')->with('exito', 'Tu cuenta fue creada. Te enviamos un correo a ' . $usuario->Email

@@ -58,10 +58,12 @@ class GoogleController extends Controller
         $email = strtolower($google->getEmail());
 
         // Se busca primero por el identificador de Google (no cambia nunca) y después por el correo
-        $usuario = Usuario::where('Google_ID', $google->getId())->first();
+        // Con adoptauy_login, que solo lee los datos de la cuenta y puede guardar Google_ID y la
+        // confirmación del correo al vincular (16.3.4, RNF:0007)
+        $usuario = Usuario::paraLogin('Google_ID', $google->getId());
         if (!$usuario)
         {
-            $usuario = Usuario::where('Email', $email)->first();
+            $usuario = Usuario::paraLogin('Email', $email);
         }
 
         // ---------- Ya existe una cuenta: login ----------
@@ -132,33 +134,35 @@ class GoogleController extends Controller
 
         // Nombre, apellido y teléfono usan las reglas compartidas del modelo Particular
         $request->validate([
-            'ci' => ['required', new CedulaUruguaya, 'unique:Particular,CI'],
+            'ci' => ['required', new CedulaUruguaya, 'unique:' . Usuario::CONEXION_REGISTRO . '.Particular,CI'],
         ] + Particular::REGLAS, [
             'ci.required' => 'Ingresá tu cédula.',
             'ci.unique' => 'Ya existe una cuenta con esa cédula.',
         ] + Particular::MENSAJES);
 
         // Por si mientras completaba alguien registró ese correo o esa cuenta de Google
-        if (Usuario::where('Email', $google['email'])->orWhere('Google_ID', $google['id'])->exists())
+        if (Usuario::on(Usuario::CONEXION_REGISTRO)->where('Email', $google['email'])->orWhere('Google_ID', $google['id'])->exists())
         {
             session()->forget('google_pendiente');
 
             return redirect('/ingresar')->with('error', self::MENSAJE_ERROR);
         }
 
-        // Usuario y Particular se guardan juntos o ninguno (transacción, RNE11)
-        $usuario = DB::transaction(function () use ($request, $google)
+        // Usuario y Particular se guardan juntos o ninguno (transacción, RNE11), con el usuario
+        // de MySQL adoptauy_publico, que solo puede insertar cuentas nuevas (16.3.4, RNF:0007)
+        $usuario = DB::connection(Usuario::CONEXION_REGISTRO)->transaction(function () use ($request, $google)
         {
             // Sin contraseña (NULL) y con el correo confirmado (RF:0066, RNE27).
             // Tipo_Usuario y Google_ID no están en $fillable: se asignan a mano.
             $usuario = new Usuario();
+            $usuario->setConnection(Usuario::CONEXION_REGISTRO);
             $usuario->Email = $google['email'];
             $usuario->Tipo_Usuario = 'Particular';
             $usuario->Google_ID = $google['id'];
             $usuario->Email_Verificado = now();
             $usuario->save();
 
-            Particular::create([
+            Particular::on(Usuario::CONEXION_REGISTRO)->create([
                 'ID_Usuario' => $usuario->ID_Usuario,
                 'CI' => $request->input('ci'),
                 'Nombre' => $request->input('nombre'),
