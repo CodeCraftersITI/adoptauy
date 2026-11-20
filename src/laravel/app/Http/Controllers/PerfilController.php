@@ -43,7 +43,8 @@ class PerfilController extends Controller
         }
 
         // El nombre que se muestra en "Mi cuenta" sale de la sesión: se actualiza
-        session(['nombre' => $usuario->fresh()->nombreVisible()]);
+        // (find y no fresh(): fresh() pide todas las columnas y el usuario de MySQL no las puede leer)
+        session(['nombre' => Usuario::find($usuario->ID_Usuario)->nombreVisible()]);
 
         return redirect('/perfil')->with('exito', 'Guardaste los cambios de tu perfil.');
     }

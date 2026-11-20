@@ -42,7 +42,8 @@ class SesionController extends Controller
         // Buscamos al usuario por su correo (where + first, como en el teórico).
         // Una cuenta creada con Google no tiene contraseña (NULL) y Hash::check() da false:
         // entra solo con Google hasta que defina una (D94, RF:0067).
-        $usuario = Usuario::where('Email', strtolower($request->input('email')))->first();
+        // Se consulta con adoptauy_login, que solo ve lo necesario para iniciar sesión (16.3.4.1)
+        $usuario = Usuario::paraLogin()->where('Email', strtolower($request->input('email')))->first();
 
         if (!$usuario || !Hash::check($request->input('password'), $usuario->Contraseña))
         {

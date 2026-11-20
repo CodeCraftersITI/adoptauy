@@ -41,6 +41,19 @@ x-php: &php
     APP_URL: ${APP_URL:-https://localhost:8443}
     ANTIBOT_ACTIVO: ${ANTIBOT_ACTIVO:-true}     # freno contra bots (D99); solo se apaga para la prueba de carga
     LIMITES_ACTIVOS: ${LIMITES_ACTIVOS:-true}
+    # Usuarios de MySQL con privilegio mínimo (16.3.4): los crea el servicio usuarios-bd.
+    # La conexión "mysql" (DB_USERNAME) queda solo para las migraciones y las pruebas.
+    CONEXIONES_POR_ROL: ${CONEXIONES_POR_ROL:-true}
+    DB_CLAVE_LOGIN: ${DB_CLAVE_LOGIN:-login_dev}
+    DB_CLAVE_PUBLICO: ${DB_CLAVE_PUBLICO:-publico_dev}
+    DB_CLAVE_PARTICULAR: ${DB_CLAVE_PARTICULAR:-particular_dev}
+    DB_CLAVE_REFUGIO: ${DB_CLAVE_REFUGIO:-refugio_dev}
+    DB_CLAVE_ADMIN: ${DB_CLAVE_ADMIN:-admin_dev}
+    DB_CLAVE_SISTEMA: ${DB_CLAVE_SISTEMA:-sistema_dev}
+    # La sesión y la caché van en archivos: los usuarios del documento no tienen permisos
+    # sobre las tablas internas de Laravel (sessions, cache)
+    SESSION_DRIVER: file
+    CACHE_STORE: file
   depends_on:
     db:
       condition: service_healthy
@@ -52,14 +65,47 @@ services:
     environment:
       <<: *php-env
       PREPARAR: "1"
+    healthcheck:                    # listo cuando terminó de migrar (lo espera usuarios-bd)
+      test: ["CMD", "test", "-f", "storage/.preparado"]
+      interval: 5s
+      timeout: 3s
+      retries: 120
 
   queue:                            # correos y trabajos en segundo plano (RF:0063)
     <<: *php
     command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=3"]
+    environment:
+      <<: *php-env
+      DB_CONNECTION: sistema        # adoptauy_sistema (16.3.4.6)
 
   scheduler:                        # tareas de los días 15, 22 y 30 a las 03:00 (RF:0047, RF:0055, RF:0058)
     <<: *php
     command: ["php", "artisan", "schedule:work"]
+    environment:
+      <<: *php-env
+      DB_CONNECTION: sistema        # adoptauy_sistema (16.3.4.6)
+
+  usuarios-bd:                      # crea los usuarios de MySQL del documento (16.3.4) y termina
+    image: mysql:8.4
+    command: ["sh", "/usuarios.sh"]
+    volumes:
+      - ./docker/mysql/usuarios.sh:/usuarios.sh:ro
+      - ./docs/base-de-datos/usuarios.sql:/usuarios.sql:ro
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PWD: ${DB_ROOT_PASSWORD:-root_dev}
+      DB_CLAVE_LOGIN: ${DB_CLAVE_LOGIN:-login_dev}
+      DB_CLAVE_PUBLICO: ${DB_CLAVE_PUBLICO:-publico_dev}
+      DB_CLAVE_PARTICULAR: ${DB_CLAVE_PARTICULAR:-particular_dev}
+      DB_CLAVE_REFUGIO: ${DB_CLAVE_REFUGIO:-refugio_dev}
+      DB_CLAVE_ADMIN: ${DB_CLAVE_ADMIN:-admin_dev}
+      DB_CLAVE_SISTEMA: ${DB_CLAVE_SISTEMA:-sistema_dev}
+      DB_CLAVE_MIGRACIONES: ${DB_CLAVE_MIGRACIONES:-migraciones_dev}
+      DB_CLAVE_RESPALDO: ${DB_CLAVE_RESPALDO:-respaldo_dev}
+    depends_on:
+      app:
+        condition: service_healthy  # las tablas tienen que existir (permisos por columna)
+    networks: [backend]
 
   web:                              # Nginx con HTTPS (RNF:0013, D73)
     build:
@@ -92,6 +138,7 @@ services:
       <<: *php-env
       PHP_CLI_SERVER_WORKERS: "4"
       DB_DATABASE: adoptauy_test
+      CACHE_STORE: array            # sin límite de envíos acumulado entre pruebas
       APP_URL: http://pruebas-web:8000
       MAIL_MAILER: log
 

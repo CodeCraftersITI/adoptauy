@@ -154,7 +154,8 @@ class PublicacionController extends Controller
             }
 
             // Si subió fotos nuevas, reemplazan a las anteriores; si no, quedan las que había
-            if ($request->hasFile('fotos'))
+            // El Administrador no reemplaza fotos: adoptauy_admin no tiene DELETE (16.3.4.5)
+            if ($request->hasFile('fotos') && session('tipo') != 'Administrador')
             {
                 foreach ($publicacion->fotos as $foto)
                 {

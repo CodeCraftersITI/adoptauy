@@ -34,6 +34,7 @@ docker compose exec app php artisan migrate       # migraciones
 docker compose exec app php artisan test          # PHPUnit
 docker compose exec app php artisan dusk          # funcionales (Dusk)
 docker compose exec app php artisan schedule:run  # correr las tareas programadas a mano
+docker compose run --rm usuarios-bd               # volver a crear los usuarios de MySQL por rol (16.3.4)
 docker compose logs -f web app queue
 docker compose run --rm node npm install && docker compose run --rm node npm run build   # CSS/JS con Vite
 ```

@@ -6,6 +6,7 @@ set -e
 cd /var/www/laravel
 
 if [ "${PREPARAR:-0}" = "1" ]; then
+  rm -f storage/.preparado          # la marca de "listo" se vuelve a crear al terminar de migrar
   if [ ! -f .env ]; then
     cp .env.example .env
     echo "[adoptauy] .env creado a partir de .env.example"
@@ -28,6 +29,8 @@ if [ "${PREPARAR:-0}" = "1" ]; then
   done
 
   php artisan migrate --force
+  # También la base de las pruebas: usuarios-bd le da los mismos permisos y necesita las tablas
+  DB_DATABASE=adoptauy_test php artisan migrate --force
   [ -L public/storage ] || php artisan storage:link >/dev/null 2>&1 || true
   touch storage/.preparado
   echo "[adoptauy] Laravel listo"

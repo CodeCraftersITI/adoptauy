@@ -3,7 +3,46 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+/*
+ * Usuarios de MySQL con privilegio mínimo (16.3.4 del documento integrador,
+ * docs/base-de-datos/usuarios.sql). Cada conexión es la misma base con otro usuario:
+ *   login       inicio de sesión y confirmación del correo
+ *   publico     Usuario Invitado (consulta pública y registro)
+ *   particular  Particular con sesión iniciada
+ *   refugio     Refugio con sesión iniciada
+ *   admin       Administrador
+ *   sistema     tareas programadas, cola de correos y umbrales de reportes
+ * El middleware ConexionPorRol elige en cada pedido la del rol de la sesión. La conexión
+ * "mysql" (la que tiene todos los permisos) queda para las migraciones y las pruebas.
+ */
+$conexionDelRol = function ($rol)
+{
+    return [
+        'driver' => 'mysql',
+        'host' => env('DB_HOST', '127.0.0.1'),
+        'port' => env('DB_PORT', '3306'),
+        'database' => env('DB_DATABASE', 'laravel'),
+        'username' => 'adoptauy_' . $rol,
+        'password' => env('DB_CLAVE_' . strtoupper($rol), $rol . '_dev'),
+        'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'timezone' => env('DB_TIMEZONE', '-03:00'),
+        'prefix' => '',
+        'prefix_indexes' => true,
+        'strict' => true,
+        'engine' => null,
+    ];
+};
+
 return [
+
+    /*
+    | Usar un usuario de MySQL por rol (true) o el de la conexión por defecto para todo (false).
+    | Las pruebas de PHPUnit lo apagan: corren dentro de una transacción de la conexión "mysql",
+    | y otra conexión no vería esos datos. Dusk lo deja prendido y prueba con los usuarios reales.
+    */
+    'conexiones_por_rol' => env('CONEXIONES_POR_ROL', true),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -43,6 +82,13 @@ return [
             'synchronous' => null,
             'transaction_mode' => 'DEFERRED',
         ],
+
+        'login' => $conexionDelRol('login'),
+        'publico' => $conexionDelRol('publico'),
+        'particular' => $conexionDelRol('particular'),
+        'refugio' => $conexionDelRol('refugio'),
+        'admin' => $conexionDelRol('admin'),
+        'sistema' => $conexionDelRol('sistema'),
 
         'mysql' => [
             'driver' => 'mysql',

@@ -7,7 +7,8 @@
 <body style="font-family: sans-serif; color: #3A2430;">
     <h1 style="color: #B03A69;">Confirmá tu correo</h1>
 
-    <p>Hola, {{ $usuario->particular->Nombre }}:</p>
+    {{-- Sin el nombre: lo envían adoptauy_publico y adoptauy_login, que no lo pueden leer (16.3.4) --}}
+    <p>Hola:</p>
 
     <p>Gracias por crear tu cuenta en AdoptaUY. Para poder ingresar, confirmá que este correo es tuyo:</p>
 

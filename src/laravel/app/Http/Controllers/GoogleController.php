@@ -58,10 +58,11 @@ class GoogleController extends Controller
         $email = strtolower($google->getEmail());
 
         // Se busca primero por el identificador de Google (no cambia nunca) y después por el correo
-        $usuario = Usuario::where('Google_ID', $google->getId())->first();
+        // Con adoptauy_login (16.3.4.1), que puede guardar Google_ID y la confirmación del correo
+        $usuario = Usuario::paraLogin()->where('Google_ID', $google->getId())->first();
         if (!$usuario)
         {
-            $usuario = Usuario::where('Email', $email)->first();
+            $usuario = Usuario::paraLogin()->where('Email', $email)->first();
         }
 
         // ---------- Ya existe una cuenta: login ----------

@@ -13,6 +13,16 @@ use Illuminate\Database\Eloquent\Model;
 class Usuario extends Model
 {
     use HasFactory;   // permite crear usuarios de prueba con Usuario::factory()
+    use ColumnasPermitidas;
+
+    // Columnas que puede leer cada usuario de MySQL (16.3.4); admin lee todas
+    public const COLUMNAS_POR_CONEXION = [
+        'login' => ['ID_Usuario', 'Email', 'Contraseña', 'Tipo_Usuario', 'Estado_Usuario', 'Email_Verificado', 'Google_ID'],
+        'publico' => ['ID_Usuario', 'Email', 'Google_ID'],
+        'particular' => ['ID_Usuario', 'Email', 'Contraseña', 'Tipo_Usuario', 'Estado_Usuario', 'Fecha_Alta', 'Google_ID'],
+        'refugio' => ['ID_Usuario', 'Email', 'Contraseña', 'Tipo_Usuario', 'Estado_Usuario', 'Fecha_Alta'],
+        'sistema' => ['ID_Usuario', 'Email', 'Tipo_Usuario', 'Estado_Usuario'],
+    ];
 
     // La tabla y la clave no siguen la convención de Laravel (usuarios, id): se indican a mano
     protected $table = 'Usuario';
@@ -49,6 +59,13 @@ class Usuario extends Model
     public function administrador()
     {
         return $this->hasOne(Administrador::class, 'ID_Usuario');
+    }
+
+    // Consulta con adoptauy_login (16.3.4.1): la usan el inicio de sesión, Continuar con Google
+    // y la confirmación del correo. Solo ve correo, contraseña, tipo, estado y Google_ID
+    public static function paraLogin()
+    {
+        return config('database.conexiones_por_rol') ? static::on('login') : static::query();
     }
 
     // Reportes recibidos por este particular o refugio (RF:0059)

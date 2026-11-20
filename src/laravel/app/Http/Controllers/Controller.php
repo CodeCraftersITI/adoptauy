@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\ConexionPorRol;
 use App\Mail\ConfirmarCorreo;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
@@ -16,6 +17,13 @@ abstract class Controller
     {
         // Nuevo identificador de sesión para evitar la fijación de sesión (session fixation)
         $request->session()->regenerate();
+
+        // El usuario se validó con adoptauy_login, que no ve nombres. Desde acá ya se usa
+        // el usuario de MySQL de su rol (adoptauy_particular, _refugio o _admin)
+        if (config('database.conexiones_por_rol'))
+        {
+            $usuario = Usuario::on(ConexionPorRol::conexionDe($usuario->Tipo_Usuario))->find($usuario->ID_Usuario);
+        }
 
         // Guardamos en la sesión quién es y su rol; el middleware VerificarRol lee 'tipo'
         session([

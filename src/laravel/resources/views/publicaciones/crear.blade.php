@@ -181,7 +181,9 @@
         </label>
 
         {{-- ---------- Fotos: de todos los tipos, cambia solo cuántas ---------- --}}
-        {{-- name="fotos[]" con multiple: llegan todas las fotos juntas como un array --}}
+        {{-- name="fotos[]" con multiple: llegan todas las fotos juntas como un array.
+             El Administrador no reemplaza fotos: adoptauy_admin no tiene DELETE (16.3.4.5) --}}
+        @php $puedeCambiarFotos = !$editando || session('tipo') != 'Administrador'; @endphp
         <label class="campo ocupa-todo">
             Fotos
             @if ($editando)
@@ -190,13 +192,19 @@
                         <img class="miniatura" src="/storage/{{ $foto->URL_Foto }}" alt="Foto actual">
                     @endforeach
                 </span>
-                <span class="campo-ayuda">Si no elegís fotos nuevas, quedan estas. Si elegís, reemplazan a todas.</span>
+                @if ($puedeCambiarFotos)
+                    <span class="campo-ayuda">Si no elegís fotos nuevas, quedan estas. Si elegís, reemplazan a todas.</span>
+                @else
+                    <span class="campo-ayuda">Las fotos las cambia solo quien publicó.</span>
+                @endif
             @endif
-            <input class="entrada" type="file" name="fotos[]" accept=".jpg,.jpeg,.png,.webp" multiple {{ $editando ? '' : 'required' }}>
-            <span class="campo-ayuda">
-                Entre 1 y <span data-tipos="Adopción">6</span><span data-tipos="Perdida Encontrada">3</span>
-                fotos JPG, PNG o WEBP, de hasta 8 MB cada una.
-            </span>
+            @if ($puedeCambiarFotos)
+                <input class="entrada" type="file" name="fotos[]" accept=".jpg,.jpeg,.png,.webp" multiple {{ $editando ? '' : 'required' }}>
+                <span class="campo-ayuda">
+                    Entre 1 y <span data-tipos="Adopción">6</span><span data-tipos="Perdida Encontrada">3</span>
+                    fotos JPG, PNG o WEBP, de hasta 8 MB cada una.
+                </span>
+            @endif
             @error('fotos') <span class="campo-error">{{ $message }}</span> @enderror
             @error('fotos.*') <span class="campo-error">{{ $message }}</span> @enderror
         </label>

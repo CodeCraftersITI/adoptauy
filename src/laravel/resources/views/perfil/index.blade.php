@@ -24,12 +24,10 @@
 
         <h2 class="detalle-subtitulo ocupa-todo">Mis datos</h2>
 
-        {{-- Datos que no se cambian desde acá --}}
+        {{-- El correo no se cambia desde acá. La cédula no se muestra: adoptauy_particular no la
+             puede leer (16.3.4.3, RNF:0013) --}}
         <dl class="datos ocupa-todo">
             <div><dt>Correo</dt><dd>{{ $usuario->Email }}</dd></div>
-            @if (!$esRefugio)
-                <div><dt>Cédula</dt><dd>{{ $usuario->particular->CI }}</dd></div>
-            @endif
         </dl>
 
         @if ($esRefugio)

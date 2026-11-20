@@ -25,7 +25,8 @@ class ConfirmacionCorreoController extends Controller
             return redirect('/ingresar')->with('error', 'El enlace de confirmación no es válido. Pedí uno nuevo.');
         }
 
-        $usuario = Usuario::find($id);
+        // adoptauy_login es el que puede marcar el correo como confirmado (16.3.4.1)
+        $usuario = Usuario::paraLogin()->find($id);
 
         if (!$usuario)
         {
@@ -58,7 +59,7 @@ class ConfirmacionCorreoController extends Controller
             'email.email' => 'Ingresá un correo electrónico válido.',
         ]);
 
-        $usuario = Usuario::where('Email', strtolower(trim($request->input('email'))))->first();
+        $usuario = Usuario::paraLogin()->where('Email', strtolower(trim($request->input('email'))))->first();
 
         if ($usuario && $usuario->Tipo_Usuario == 'Particular' && !$usuario->Email_Verificado)
         {

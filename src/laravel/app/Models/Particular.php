@@ -12,6 +12,16 @@ use Illuminate\Database\Eloquent\Model;
 class Particular extends Model
 {
     use HasFactory;
+    use ColumnasPermitidas;
+
+    // Columnas que puede leer cada usuario de MySQL (16.3.4): la cédula solo la lee el registro
+    // para no repetirla, y el Administrador (RNF:0013)
+    public const COLUMNAS_POR_CONEXION = [
+        'publico' => ['ID_Usuario', 'CI'],
+        'particular' => ['ID_Usuario', 'Nombre', 'Apellido', 'Telefono'],
+        'refugio' => ['ID_Usuario', 'Nombre', 'Apellido', 'Telefono'],
+        'sistema' => ['ID_Usuario', 'Nombre', 'Apellido'],
+    ];
 
     protected $table = 'Particular';
     protected $primaryKey = 'ID_Usuario';

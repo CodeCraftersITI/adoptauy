@@ -32,6 +32,13 @@
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <server name="ANTIBOT_ACTIVO" value="false" force="true"/>
+        <!-- Las pruebas corren en una transacción de la conexión "mysql": otra conexión no veía esos
+             datos, por eso acá no se cambia de usuario de MySQL por rol (ConexionesTest lo prueba aparte) -->
+        <server name="CONEXIONES_POR_ROL" value="false" force="true"/>
+        <!-- Docker define sesión y caché en archivos; las pruebas usan memoria para que no se
+             compartan entre una prueba y otra (por ejemplo, el límite de envíos por minuto) -->
+        <server name="SESSION_DRIVER" value="array" force="true"/>
+        <server name="CACHE_STORE" value="array" force="true"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

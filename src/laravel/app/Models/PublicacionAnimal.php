@@ -100,9 +100,12 @@ class PublicacionAnimal extends Model
     // muestra su nombre; de un particular, solo que es un particular
     public function publicanteVisible()
     {
-        if ($this->usuario->Tipo_Usuario == 'Refugio')
+        // Se busca el refugio directamente: el invitado (adoptauy_publico) no puede leer
+        // el tipo de usuario, pero sí el nombre de los refugios (16.3.4.2)
+        $refugio = Refugio::find($this->ID_Usuario);
+        if ($refugio)
         {
-            return 'Refugio ' . $this->usuario->refugio->Nombre_Refugio;
+            return 'Refugio ' . $refugio->Nombre_Refugio;
         }
 
         return 'Un particular';

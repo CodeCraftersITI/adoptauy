@@ -47,6 +47,14 @@ jobs:
           php artisan key:generate
       - name: Migraciones
         run: php artisan migrate --force
+      - name: Usuarios de MySQL del documento (16.3.4)
+        # Los mismos que en Docker, con las claves de desarrollo, solo sobre adoptauy_test
+        env:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PWD: root
+          SQL: ../../docs/base-de-datos/usuarios.sql
+          BASES: adoptauy_test
+        run: sh ../../docker/mysql/usuarios.sh
       - name: PHPUnit
         # Reportes para el informe de pruebas: JUnit, testdox y cobertura (texto y HTML)
         run: |
@@ -91,6 +99,7 @@ jobs:
       APP_ENV: testing
       APP_URL: http://127.0.0.1:8000
       MAIL_MAILER: log
+      CACHE_STORE: array            # sin límite de envíos acumulado entre pruebas
       DUSK_URL: http://127.0.0.1:8000
       DUSK_DRIVER_URL: http://localhost:9515
     steps:
@@ -107,6 +116,14 @@ jobs:
           php artisan key:generate
           php artisan migrate --force
           php artisan storage:link
+      - name: Usuarios de MySQL del documento (16.3.4)
+        # Los mismos que en Docker, con las claves de desarrollo, solo sobre adoptauy_test
+        env:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PWD: root
+          SQL: ../../docs/base-de-datos/usuarios.sql
+          BASES: adoptauy_test
+        run: sh ../../docker/mysql/usuarios.sh
       - name: ChromeDriver igual a la versión de Chrome del runner
         run: php artisan dusk:chrome-driver --detect
       - name: Levantar ChromeDriver y el sitio
@@ -161,6 +178,8 @@ jobs:
             sleep 5
           done
           docker compose logs app; exit 1
+      - name: Usuarios de MySQL creados (servicio usuarios-bd)
+        run: docker compose wait usuarios-bd
       - name: El sitio responde por HTTPS y HTTP redirige
         run: |
           curl -skf -o /dev/null -w "HTTPS %{http_code}\n" https://localhost:8443/

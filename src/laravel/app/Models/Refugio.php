@@ -14,6 +14,15 @@ use Illuminate\Support\Facades\DB;
 class Refugio extends Model
 {
     use HasFactory;
+    use ColumnasPermitidas;
+
+    // Columnas que puede leer cada usuario de MySQL (16.3.4): sin los documentos ni el motivo
+    // de rechazo. El propio Refugio, el sistema y el Administrador leen todas
+    public const COLUMNAS_POR_CONEXION = [
+        'login' => ['ID_Usuario', 'Estado_Validacion'],
+        'publico' => ['ID_Usuario', 'Nombre_Refugio', 'Ubicacion', 'Latitud', 'Longitud', 'Estado_Validacion', 'URL_Foto'],
+        'particular' => ['ID_Usuario', 'Nombre_Refugio', 'Ubicacion', 'Latitud', 'Longitud', 'Estado_Validacion', 'URL_Foto'],
+    ];
 
     protected $table = 'Refugio';
     protected $primaryKey = 'ID_Usuario';

@@ -10,7 +10,16 @@
 --  Las contraseñas de este archivo son marcadores: reemplazarlas antes de
 --  ejecutarlo y guardarlas solo en el .env del servidor (nunca en GitHub).
 --
---  Uso, como root, después de adoptauy.sql:  mysql -u root -p < usuarios.sql
+--  Uso, como root, después de crear las tablas (adoptauy.sql o las migraciones):
+--    mysql -u root -p < usuarios.sql
+--  En Docker lo hace el servicio usuarios-bd (docker/mysql/usuarios.sh), que reemplaza las claves.
+--
+--  Cómo los usa Laravel (config/database.php y middleware ConexionPorRol): en cada pedido
+--  se conecta con el usuario del rol de la sesión (publico, particular, refugio o admin);
+--  el inicio de sesión y la confirmación del correo usan adoptauy_login; las tareas
+--  programadas, la cola y los umbrales de reportes, adoptauy_sistema.
+--  La sesión y la caché de Laravel se guardan en archivos, no en la base.
+--  Lo marcado "(agregado)" no figura en la sección 16.3.4 del documento integrador.
 -- =============================================================================
 
 SET NAMES utf8mb4;
@@ -77,7 +86,8 @@ GRANT SELECT ON adoptauy.Refugio_Datos_Contacto TO 'adoptauy_particular'@'%';
 GRANT SELECT (ID_Usuario, Nombre_Refugio, Ubicacion, Latitud, Longitud, Estado_Validacion, URL_Foto)
       ON adoptauy.Refugio TO 'adoptauy_particular'@'%';
 -- Sus datos y los de sus solicitantes (RF:0050): la aplicación filtra qué filas ve
-GRANT SELECT (ID_Usuario, Email, Tipo_Usuario, Estado_Usuario, Fecha_Alta), UPDATE (`Contraseña`)
+-- Contraseña: la lee para pedir la actual antes de cambiarla, o ver que no tiene y dejar definirla (RF:0067)
+GRANT SELECT (ID_Usuario, Email, `Contraseña`, Tipo_Usuario, Estado_Usuario, Fecha_Alta, Google_ID), UPDATE (`Contraseña`)
       ON adoptauy.Usuario TO 'adoptauy_particular'@'%';
 GRANT SELECT (ID_Usuario, Nombre, Apellido, Telefono), UPDATE (Nombre, Apellido, Telefono)
       ON adoptauy.Particular TO 'adoptauy_particular'@'%';
@@ -101,8 +111,8 @@ GRANT SELECT, INSERT, DELETE ON adoptauy.Cuenta_Bancaria        TO 'adoptauy_ref
 GRANT SELECT, INSERT, DELETE ON adoptauy.Refugio_Datos_Contacto TO 'adoptauy_refugio'@'%';
 -- Su perfil (RF:0029): puede cambiar nombre, ubicación y foto, no su estado de validación
 GRANT SELECT, UPDATE (Nombre_Refugio, Ubicacion, Latitud, Longitud, URL_Foto) ON adoptauy.Refugio TO 'adoptauy_refugio'@'%';
-GRANT SELECT (ID_Usuario, Email, Tipo_Usuario, Estado_Usuario, Fecha_Alta), UPDATE (`Contraseña`)
-      ON adoptauy.Usuario TO 'adoptauy_refugio'@'%';
+GRANT SELECT (ID_Usuario, Email, `Contraseña`, Tipo_Usuario, Estado_Usuario, Fecha_Alta), UPDATE (`Contraseña`)
+      ON adoptauy.Usuario TO 'adoptauy_refugio'@'%';   -- cambio de contraseña con la actual (RF:0067)
 -- Datos de contacto de sus solicitantes (RF:0050)
 GRANT SELECT (ID_Usuario, Nombre, Apellido, Telefono) ON adoptauy.Particular TO 'adoptauy_refugio'@'%';
 
@@ -128,6 +138,12 @@ GRANT SELECT, UPDATE (Estado_Validacion) ON adoptauy.Refugio             TO 'ado
 GRANT SELECT (ID_Usuario, Email, Tipo_Usuario, Estado_Usuario), UPDATE (Estado_Usuario)
       ON adoptauy.Usuario TO 'adoptauy_sistema'@'%';
 GRANT SELECT (ID_Usuario, Nombre, Apellido) ON adoptauy.Particular TO 'adoptauy_sistema'@'%';
+-- (agregado) El correo del día 15 dice qué mascota se adoptó (especie y raza)
+GRANT SELECT ON adoptauy.Publicacion_Adopcion TO 'adoptauy_sistema'@'%';
+-- (agregado) Tablas de la cola de Laravel: el contenedor queue toma de ahí los trabajos pendientes
+GRANT SELECT, INSERT, UPDATE, DELETE ON adoptauy.jobs        TO 'adoptauy_sistema'@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE ON adoptauy.job_batches TO 'adoptauy_sistema'@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE ON adoptauy.failed_jobs TO 'adoptauy_sistema'@'%';
 
 -- -----------------------------------------------------------------------------
 -- 7. adoptauy_migraciones · solo para `php artisan migrate`

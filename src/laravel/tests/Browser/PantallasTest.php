@@ -2,7 +2,15 @@
 
 namespace Tests\Browser;
 
+use App\Models\Administrador;
+use App\Models\FotoAnimal;
 use App\Models\Particular;
+use App\Models\PublicacionAdopcion;
+use App\Models\PublicacionAnimal;
+use App\Models\Refugio;
+use App\Models\RefugioDatoContacto;
+use App\Models\Reporte;
+use App\Models\SolicitudAdopcion;
 use Database\Factories\UsuarioFactory;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
@@ -49,31 +57,110 @@ class PantallasTest extends DuskTestCase
         });
     }
 
+    // Crea una mascota en adopción con una foto (los datos de la tarjeta y del detalle)
+    private function crearAdopcion($idUsuario)
+    {
+        $publicacion = new PublicacionAnimal(['Especie' => 'Perro', 'Raza' => 'Mestizo', 'Sexo' => 'Hembra']);
+        $publicacion->ID_Usuario = $idUsuario;
+        $publicacion->Tipo_Publicacion = 'Adopción';
+        $publicacion->save();
+
+        PublicacionAdopcion::create([
+            'ID_Publicacion' => $publicacion->ID_Publicacion,
+            'Edad_Meses' => 30,
+            'Tamaño' => 'Mediano',
+            'Estado_Salud' => 'Sana, con las vacunas al día',
+            'Estado_Esterilizacion' => 'Esterilizado',
+            'Ubicacion_Aproximada' => 'Pocitos',
+        ]);
+        FotoAnimal::create(['ID_Publicacion' => $publicacion->ID_Publicacion, 'URL_Foto' => 'fotos-animales/prueba.jpg']);
+
+        return $publicacion;
+    }
+
+    private function ingresar(Browser $browser, $email)
+    {
+        $browser->driver->manage()->deleteAllCookies();
+        $browser->visit('/ingresar')
+            ->type('email', $email)
+            ->type('password', UsuarioFactory::CONTRASEÑA)
+            ->press('Ingresar');
+    }
+
+    // Visita cada página y anota las que son más anchas que la pantalla
+    private function revisarPaginas(Browser $browser, array $paginas, array &$desbordadas)
+    {
+        foreach ($paginas as $pagina)
+        {
+            $browser->visit($pagina);
+
+            // Si redirigió (por ejemplo, al ingreso) no se revisó la página pedida
+            $this->assertEquals(parse_url($pagina, PHP_URL_PATH), parse_url($browser->driver->getCurrentURL(), PHP_URL_PATH), 'No se pudo abrir ' . $pagina);
+            $browser->assertDontSee('Server Error');
+
+            $ancho = $this->anchoDeLaPagina($browser);
+            if ($ancho > 360)
+            {
+                $desbordadas[] = $pagina . ' (' . $ancho . ' px)';
+            }
+        }
+    }
+
+    // CP-39, RNF:0003: todas las pantallas de cada rol, con datos, a 360 px
     public function test_cp39_a_360_px_no_hay_desplazamiento_horizontal()
     {
-        $particular = Particular::factory()->create();
+        $publicante = Particular::factory()->create();
+        $solicitante = Particular::factory()->create();
+        $refugio = Refugio::factory()->validado()->create(['Nombre_Refugio' => 'Refugio de prueba del Prado']);
+        RefugioDatoContacto::create(['ID_Usuario' => $refugio->ID_Usuario, 'Dato_Contacto' => '099000000']);
+        $pendiente = Refugio::factory()->create(['Nombre_Refugio' => 'Refugio de prueba pendiente']);
+        $admin = Administrador::factory()->create();
 
-        $this->browse(function (Browser $browser) use ($particular)
+        $publicacion = $this->crearAdopcion($publicante->ID_Usuario);
+        $otra = $this->crearAdopcion($refugio->ID_Usuario);
+
+        $solicitud = new SolicitudAdopcion(['ID_Publicacion' => $publicacion->ID_Publicacion]);
+        $solicitud->ID_Usuario = $solicitante->ID_Usuario;
+        $solicitud->save();
+
+        $reporte = new Reporte(['ID_Publicacion_Reportada' => $otra->ID_Publicacion, 'Motivo' => 'Publicación duplicada o spam']);
+        $reporte->ID_Usuario_Reportante = $solicitante->ID_Usuario;
+        $reporte->save();
+
+        $this->browse(function (Browser $browser) use ($publicante, $solicitante, $refugio, $pendiente, $admin, $publicacion, $otra)
         {
             $browser->resize(360, 780);
+            $desbordadas = [];
+            $p = $publicacion->ID_Publicacion;
 
-            foreach (['/', '/nosotros', '/adopcion', '/perdidas', '/encontradas', '/refugios', '/ingresar', '/registro'] as $pagina)
-            {
-                $browser->visit($pagina);
-                $this->assertLessThanOrEqual(360, $this->anchoDeLaPagina($browser), 'Desplazamiento horizontal en ' . $pagina);
-            }
+            // Invitado
+            $browser->visit('/');
+            $browser->driver->manage()->deleteAllCookies();
+            $this->revisarPaginas($browser, ['/', '/nosotros', '/adopcion', '/perdidas', '/encontradas', '/refugios',
+                '/refugios/' . $refugio->ID_Usuario, '/publicaciones/' . $p, '/ingresar', '/registro',
+                '/registro-refugio', '/confirmar-correo'], $desbordadas);
 
-            // Con sesión: Mi cuenta, Mi perfil y Publicar
-            $browser->visit('/ingresar')
-                ->type('email', $particular->usuario->Email)
-                ->type('password', UsuarioFactory::CONTRASEÑA)
-                ->press('Ingresar');
+            // Particular que publicó: sus publicaciones y las solicitudes que recibió
+            $this->ingresar($browser, $publicante->usuario->Email);
+            $this->revisarPaginas($browser, ['/cuenta', '/perfil', '/publicar', '/publicaciones/' . $p . '/editar',
+                '/publicaciones/' . $p . '/solicitudes', '/solicitudes/recibidas', '/seguimientos'], $desbordadas);
 
-            foreach (['/cuenta', '/perfil', '/publicar'] as $pagina)
-            {
-                $browser->visit($pagina);
-                $this->assertLessThanOrEqual(360, $this->anchoDeLaPagina($browser), 'Desplazamiento horizontal en ' . $pagina);
-            }
+            // Particular que solicita y reporta
+            $this->ingresar($browser, $solicitante->usuario->Email);
+            $this->revisarPaginas($browser, ['/solicitudes', '/publicaciones/' . $otra->ID_Publicacion . '/solicitar',
+                '/reportar?publicacion=' . $p], $desbordadas);
+
+            // Refugio
+            $this->ingresar($browser, $refugio->usuario->Email);
+            $this->revisarPaginas($browser, ['/cuenta', '/mi-refugio', '/perfil'], $desbordadas);
+
+            // Administrador
+            $this->ingresar($browser, $admin->usuario->Email);
+            $this->revisarPaginas($browser, ['/admin', '/admin/refugios', '/admin/refugios/' . $pendiente->ID_Usuario . '/editar',
+                '/admin/particulares', '/admin/particulares/' . $publicante->ID_Usuario . '/editar',
+                '/admin/publicaciones', '/admin/reportes'], $desbordadas);
+
+            $this->assertEmpty($desbordadas, 'Desplazamiento horizontal en: ' . implode(', ', $desbordadas));
         });
     }
 
@@ -81,6 +168,10 @@ class PantallasTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser)
         {
+            // Sin sesión: la sesión está en archivos y podía quedar abierta de la prueba anterior
+            $browser->visit('/');
+            $browser->driver->manage()->deleteAllCookies();
+
             $browser->resize(360, 780)
                 ->visit('/')
                 ->assertMissing('.menu-movil-panel')

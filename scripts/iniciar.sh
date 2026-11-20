@@ -11,6 +11,10 @@ if [[ ! -f .env ]]; then
   azar() { LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24; }
   cp .env.example .env
   sed -i.bak "s/^DB_PASSWORD=.*/DB_PASSWORD=$(azar)/; s/^DB_ROOT_PASSWORD=.*/DB_ROOT_PASSWORD=$(azar)/" .env
+  # Una clave distinta para cada usuario de MySQL del documento (16.3.4)
+  for rol in LOGIN PUBLICO PARTICULAR REFUGIO ADMIN SISTEMA MIGRACIONES RESPALDO; do
+    sed -i.bak "s/^DB_CLAVE_$rol=.*/DB_CLAVE_$rol=$(azar)/" .env
+  done
   [[ "$(uname -s)" == Linux* ]] && sed -i.bak "s/^UID=.*/UID=$(id -u)/; s/^GID=.*/GID=$(id -g)/" .env
   rm -f .env.bak
   echo "✔ .env creado con contraseñas aleatorias"
@@ -28,6 +32,7 @@ docker compose up -d --build
 echo "Preparando Laravel (la primera vez tarda unos minutos)..."
 until docker compose exec -T app test -f storage/.preparado 2>/dev/null; do sleep 5; printf '.'; done
 echo
+docker compose wait usuarios-bd >/dev/null   # usuarios de MySQL del documento (16.3.4)
 docker compose ps
 PUERTO=$(grep -E '^HTTPS_PORT=' .env 2>/dev/null | cut -d= -f2); PUERTO=${PUERTO:-8443}
 [[ "$PUERTO" == 443 ]] && SUFIJO="" || SUFIJO=":$PUERTO"

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Middleware\ConexionPorRol;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -71,12 +72,22 @@ class Reporte extends Model
     }
 
     // Medida automática al registrarse el reporte que alcanza un umbral (RF:0061).
-    // Solo se aplica sobre el estado normal; si el Administrador ya tomó otra medida, no se pisa
+    // Solo se aplica sobre el estado normal; si el Administrador ya tomó otra medida, no se pisa.
+    // La aplica adoptauy_sistema (16.3.4.6): el usuario que reporta no puede cambiar el estado
+    // de otro usuario ni de un refugio
     public function aplicarUmbrales()
+    {
+        ConexionPorRol::usar('sistema', function ()
+        {
+            $this->aplicarUmbralesComoSistema();
+        });
+    }
+
+    private function aplicarUmbralesComoSistema()
     {
         if ($this->ID_Publicacion_Reportada)
         {
-            $publicacion = $this->publicacion;
+            $publicacion = PublicacionAnimal::find($this->ID_Publicacion_Reportada);
 
             if ($publicacion->Estado_Moderacion == 'Visible'
                 && Reporte::cantidadSobrePublicacion($publicacion->ID_Publicacion) >= self::UMBRAL_PUBLICACION)
@@ -88,15 +99,17 @@ class Reporte extends Model
             return;
         }
 
-        $usuario = $this->reportado;
+        $usuario = Usuario::find($this->ID_Usuario_Reportado);
 
         if ($usuario->Tipo_Usuario == 'Refugio')
         {
-            if ($usuario->refugio->Estado_Validacion == 'Validado'
+            $refugio = Refugio::find($usuario->ID_Usuario);
+
+            if ($refugio->Estado_Validacion == 'Validado'
                 && Reporte::cantidadSobreUsuario($usuario->ID_Usuario) >= self::UMBRAL_REFUGIO)
             {
-                $usuario->refugio->Estado_Validacion = 'Suspendido';
-                $usuario->refugio->save();
+                $refugio->Estado_Validacion = 'Suspendido';
+                $refugio->save();
             }
 
             return;
