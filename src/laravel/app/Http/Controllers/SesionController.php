@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Refugio;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -39,10 +40,11 @@ class SesionController extends Controller
             'password.required' => 'Ingresá tu contraseña.',
         ]);
 
-        // Buscamos al usuario por su correo (where + first, como en el teórico).
+        // Buscamos al usuario por su correo con el usuario de MySQL adoptauy_login, que solo
+        // puede leer correo, hash, tipo y estado de la cuenta (16.3.4, RNF:0007).
         // Una cuenta creada con Google no tiene contraseña (NULL) y Hash::check() da false:
         // entra solo con Google hasta que defina una (D94, RF:0067).
-        $usuario = Usuario::where('Email', strtolower($request->input('email')))->first();
+        $usuario = Usuario::paraLogin('Email', strtolower($request->input('email')));
 
         if (!$usuario || !Hash::check($request->input('password'), $usuario->Contraseña))
         {
@@ -65,7 +67,9 @@ class SesionController extends Controller
 
         // Un refugio solo entra si el Administrador ya lo validó (13.2.1). Se usa el mismo
         // mensaje para no revelar que el correo existe ni en qué estado está la solicitud.
-        if ($usuario->Tipo_Usuario == 'Refugio' && $usuario->refugio->Estado_Validacion != 'Validado')
+        // adoptauy_login solo puede leer Estado_Validacion de la tabla Refugio.
+        if ($usuario->Tipo_Usuario == 'Refugio'
+            && Refugio::on(Usuario::CONEXION_LOGIN)->where('ID_Usuario', $usuario->ID_Usuario)->value('Estado_Validacion') != 'Validado')
         {
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }

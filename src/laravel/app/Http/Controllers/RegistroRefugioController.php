@@ -37,7 +37,7 @@ class RegistroRefugioController extends Controller
             'contacto' => 'required|max:255',
             'certificado' => 'required|file|mimes:pdf,jpg,jpeg,png|max:8192',
             'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:8192',
-            'email' => 'required|email|max:255|unique:Usuario,Email',
+            'email' => 'required|email|max:255|unique:' . Usuario::CONEXION_REGISTRO . '.Usuario,Email',
             'password' => Usuario::REGLA_CONTRASENA,
         ] + Refugio::REGLAS, [
             'contacto.required' => 'Ingresá un teléfono o una red social.',
@@ -58,17 +58,19 @@ class RegistroRefugioController extends Controller
         $rutaCertificado = $request->file('certificado')->store('documentos-refugios');
         $rutaComprobante = $request->file('comprobante')->store('documentos-refugios');
 
-        // Usuario, Refugio y su contacto se guardan juntos (transacción, RNE11)
-        $refugio = DB::transaction(function () use ($request, $rutaCertificado, $rutaComprobante)
+        // Usuario, Refugio y su contacto se guardan juntos (transacción, RNE11), con el usuario
+        // de MySQL adoptauy_publico, que solo puede insertar cuentas nuevas (16.3.4, RNF:0007)
+        $refugio = DB::connection(Usuario::CONEXION_REGISTRO)->transaction(function () use ($request, $rutaCertificado, $rutaComprobante)
         {
             $usuario = new Usuario();
+            $usuario->setConnection(Usuario::CONEXION_REGISTRO);
             $usuario->Email = $request->input('email');
             $usuario->Contraseña = Hash::make($request->input('password'));
             $usuario->Tipo_Usuario = 'Refugio';
             $usuario->save();
 
             // Estado_Validacion queda en 'Pendiente de validación' (valor por defecto de la tabla)
-            $refugio = Refugio::create([
+            $refugio = Refugio::on(Usuario::CONEXION_REGISTRO)->create([
                 'ID_Usuario' => $usuario->ID_Usuario,
                 'Nombre_Refugio' => $request->input('nombre_refugio'),
                 'Ubicacion' => $request->input('ubicacion'),
@@ -76,13 +78,17 @@ class RegistroRefugioController extends Controller
                 'Comprobante_Domicilio' => $rutaComprobante,
             ]);
 
-            RefugioDatoContacto::create([
+            RefugioDatoContacto::on(Usuario::CONEXION_REGISTRO)->create([
                 'ID_Usuario' => $usuario->ID_Usuario,
                 'Dato_Contacto' => $request->input('contacto'),
             ]);
 
             return $refugio;
         });
+
+        // El correo se arma con la solicitud leída por la conexión de la aplicación:
+        // adoptauy_publico no puede leer la fila completa del refugio
+        $refugio = Refugio::findOrFail($refugio->ID_Usuario);
 
         // Correo de recepción (RF:0063). Si el servicio de correo falla, la solicitud
         // igual queda guardada y el error se registra en el log (RNF:0010)

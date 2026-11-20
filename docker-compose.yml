@@ -31,6 +31,12 @@ x-php: &php
     DB_DATABASE: ${DB_DATABASE:-adoptauy}
     DB_USERNAME: ${DB_USERNAME:-adoptauy}
     DB_PASSWORD: ${DB_PASSWORD:-adoptauy_dev}
+    # Inicio de sesión y registro con usuarios de MySQL de privilegio mínimo (16.3.4).
+    # Vacíos: usan DB_USERNAME (desarrollo). Ver .env.example
+    DB_LOGIN_USERNAME: ${DB_LOGIN_USERNAME:-}
+    DB_LOGIN_PASSWORD: ${DB_LOGIN_PASSWORD:-}
+    DB_PUBLICO_USERNAME: ${DB_PUBLICO_USERNAME:-}
+    DB_PUBLICO_PASSWORD: ${DB_PUBLICO_PASSWORD:-}
     MAIL_MAILER: smtp               # desarrollo: Mailpit; producción: el SMTP del proveedor externo
     MAIL_HOST: ${MAIL_HOST:-mailpit}
     MAIL_PORT: ${MAIL_PORT:-1025}
