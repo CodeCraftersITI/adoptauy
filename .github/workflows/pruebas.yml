@@ -32,6 +32,11 @@ jobs:
       APP_ENV: testing
       MAIL_MAILER: array
       QUEUE_CONNECTION: sync
+      # Inicio de sesión y registro con los usuarios de MySQL de privilegio mínimo (16.3.4)
+      DB_LOGIN_USERNAME: adoptauy_login
+      DB_LOGIN_PASSWORD: CAMBIAR_clave_login
+      DB_PUBLICO_USERNAME: adoptauy_publico
+      DB_PUBLICO_PASSWORD: CAMBIAR_clave_publico
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -47,6 +52,12 @@ jobs:
           php artisan key:generate
       - name: Migraciones
         run: php artisan migrate --force
+      - name: Usuarios de MySQL por rol
+        # usuarios.sql da los privilegios sobre la base adoptauy; acá se aplican a adoptauy_test.
+        # Va después de migrar: MySQL no acepta GRANT por columna sobre una tabla que no existe.
+        # Los privilegios quedan aunque las pruebas borren y vuelvan a crear las tablas
+        working-directory: .
+        run: sed 's/adoptauy\./adoptauy_test./g' docs/base-de-datos/usuarios.sql | mysql -h 127.0.0.1 -uroot -proot --default-character-set=utf8mb4
       - name: PHPUnit
         # Reportes para el informe de pruebas: JUnit, testdox y cobertura (texto y HTML)
         run: |
@@ -93,6 +104,11 @@ jobs:
       MAIL_MAILER: log
       DUSK_URL: http://127.0.0.1:8000
       DUSK_DRIVER_URL: http://localhost:9515
+      # Inicio de sesión y registro con los usuarios de MySQL de privilegio mínimo (16.3.4)
+      DB_LOGIN_USERNAME: adoptauy_login
+      DB_LOGIN_PASSWORD: CAMBIAR_clave_login
+      DB_PUBLICO_USERNAME: adoptauy_publico
+      DB_PUBLICO_PASSWORD: CAMBIAR_clave_publico
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -107,6 +123,12 @@ jobs:
           php artisan key:generate
           php artisan migrate --force
           php artisan storage:link
+      - name: Usuarios de MySQL por rol
+        # usuarios.sql da los privilegios sobre la base adoptauy; acá se aplican a adoptauy_test.
+        # Va después de migrar: MySQL no acepta GRANT por columna sobre una tabla que no existe.
+        # Los privilegios quedan aunque las pruebas borren y vuelvan a crear las tablas
+        working-directory: .
+        run: sed 's/adoptauy\./adoptauy_test./g' docs/base-de-datos/usuarios.sql | mysql -h 127.0.0.1 -uroot -proot --default-character-set=utf8mb4
       - name: ChromeDriver igual a la versión de Chrome del runner
         run: php artisan dusk:chrome-driver --detect
       - name: Levantar ChromeDriver y el sitio

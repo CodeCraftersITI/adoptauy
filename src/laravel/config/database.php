@@ -3,6 +3,53 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+/*
+ * Conexión a MySQL de la aplicación (usuario DB_USERNAME).
+ *
+ * El inicio de sesión y el registro usan además dos usuarios de MySQL de privilegio
+ * mínimo (16.3.4, RNF:0007, RNF:0013), con la misma base y otro usuario:
+ *  - mysql_login (adoptauy_login): solo lee correo, hash, tipo y estado de la cuenta, y
+ *    al continuar con Google guarda Google_ID y la confirmación del correo (RF:0022, RF:0066).
+ *  - mysql_publico (adoptauy_publico): solo inserta el Particular o la solicitud de refugio
+ *    y lee correo y cédula para no repetirlos (RF:0034, RF:0039, RF:0066).
+ * Los usuarios los crea docs/base-de-datos/usuarios.sql. Si DB_LOGIN_USERNAME o
+ * DB_PUBLICO_USERNAME no están en el .env, esa conexión usa el usuario de la aplicación,
+ * así el entorno de desarrollo funciona sin crearlos.
+ */
+$mysql = [
+    'driver' => 'mysql',
+    'url' => env('DB_URL'),
+    'host' => env('DB_HOST', '127.0.0.1'),
+    'port' => env('DB_PORT', '3306'),
+    'database' => env('DB_DATABASE', 'laravel'),
+    'username' => env('DB_USERNAME', 'root'),
+    'password' => env('DB_PASSWORD', ''),
+    'unix_socket' => env('DB_SOCKET', ''),
+    'charset' => env('DB_CHARSET', 'utf8mb4'),
+    'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+    // Hora de Uruguay (UTC-3, sin horario de verano) para que las fechas que pone
+    // MySQL (CURRENT_TIMESTAMP) coincidan con las de Laravel aunque el servidor de
+    // la base esté en UTC, como en GitHub Actions
+    'timezone' => env('DB_TIMEZONE', '-03:00'),
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'strict' => true,
+    'engine' => null,
+    'options' => extension_loaded('pdo_mysql') ? array_filter([
+        Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+    ]) : [],
+];
+
+$conRol = function (string $prefijo) use ($mysql)
+{
+    $usuario = env($prefijo . '_USERNAME');
+
+    return array_merge($mysql, $usuario ? [
+        'username' => $usuario,
+        'password' => env($prefijo . '_PASSWORD', ''),
+    ] : []);
+};
+
 return [
 
     /*
@@ -44,29 +91,11 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
-        'mysql' => [
-            'driver' => 'mysql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            // Hora de Uruguay (UTC-3, sin horario de verano) para que las fechas que pone
-            // MySQL (CURRENT_TIMESTAMP) coincidan con las de Laravel aunque el servidor de
-            // la base esté en UTC, como en GitHub Actions
-            'timezone' => env('DB_TIMEZONE', '-03:00'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
-        ],
+        'mysql' => $mysql,
+
+        'mysql_login' => $conRol('DB_LOGIN'),
+
+        'mysql_publico' => $conRol('DB_PUBLICO'),
 
         'mariadb' => [
             'driver' => 'mariadb',

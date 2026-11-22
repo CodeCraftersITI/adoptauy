@@ -14,6 +14,11 @@ abstract class Controller
     // correo y contraseña (SesionController) y el de Google (GoogleController).
     protected function iniciarSesion(Request $request, Usuario $usuario)
     {
+        // La cuenta llega leída con adoptauy_login o creada con adoptauy_publico, que no pueden
+        // leer el nombre de la persona ni del refugio. La sesión se abre con la cuenta leída
+        // por la conexión de la aplicación (16.3.4)
+        $usuario = Usuario::findOrFail($usuario->ID_Usuario);
+
         // Nuevo identificador de sesión para evitar la fijación de sesión (session fixation)
         $request->session()->regenerate();
 
