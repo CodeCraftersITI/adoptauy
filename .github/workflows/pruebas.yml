@@ -112,17 +112,34 @@ jobs:
       - name: Levantar ChromeDriver y el sitio
         run: |
           vendor/laravel/dusk/bin/chromedriver-linux --port=9515 &
-          php -S 127.0.0.1:8000 -t public tests/Browser/servidor.php > /dev/null 2>&1 &
+          php -S 127.0.0.1:8000 -t public tests/Browser/servidor.php > storage/logs/servidor-dusk.log 2>&1 &
           sleep 3
       - name: Dusk
         run: php artisan dusk
-      - name: Capturas si algo falló
-        if: failure()
+      # Evidencia del Hito 3: las capturas de cada paso se suben siempre, no solo si algo falla
+      - name: Capturas de pantalla de las pruebas
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: capturas-dusk
           path: src/laravel/tests/Browser/screenshots
-          retention-days: 7
+          retention-days: 30
+      # Si algo falla, el diagnóstico queda en el log del trabajo (no hace falta bajar artefactos)
+      - name: Diagnóstico si algo falló
+        if: failure()
+        run: |
+          echo "::group::Configuración efectiva"
+          php artisan about --only=environment,cache,drivers || true
+          echo "::endgroup::"
+          echo "::group::Log del servidor de Dusk"
+          tail -n 200 storage/logs/servidor-dusk.log || true
+          echo "::endgroup::"
+          echo "::group::Log de Laravel"
+          tail -n 200 storage/logs/laravel.log || true
+          echo "::endgroup::"
+          echo "::group::Texto de las páginas donde falló"
+          for f in tests/Browser/source/*.txt; do [ -f "$f" ] && { echo "== $f"; sed -e 's/<[^>]*>/ /g' "$f" | tr -s ' \n' | head -c 3000; echo; }; done
+          echo "::endgroup::"
 
   base-de-datos:
     # Crea la base con docs/base-de-datos/adoptauy.sql en MySQL 8.4 y prueba
