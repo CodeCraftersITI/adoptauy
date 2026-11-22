@@ -40,20 +40,25 @@ class PantallasTest extends DuskTestCase
                 ->type('email', $particular->usuario->Email)
                 ->type('password', UsuarioFactory::CONTRASEÑA)
                 ->press('Ingresar')
+                // press() no espera la página nueva (DEF-11)
+                ->waitForLocation('/cuenta')
                 ->visit('/publicar')
                 // Al abrir: En adopción, con tamaño y edad, sin zona ni contacto
                 ->assertVisible('select[name="tamanio"]')
                 ->assertMissing('input[name="zona"]')
+                ->screenshot('cp06-3-publicar-en-adopcion')
                 // Mascota perdida: aparecen los datos del extravío y se van los de adopción
                 ->click('label.pestana:nth-child(2)')
                 ->assertVisible('input[name="zona"]')
                 ->assertVisible('input[name="contacto"]')
                 ->assertMissing('select[name="tamanio"]')
                 ->assertSee('Fecha del extravío')
+                ->screenshot('cp09-publicar-mascota-perdida')
                 // Mascota encontrada: el nombre pasa a ser opcional
                 ->click('label.pestana:nth-child(3)')
                 ->assertSee('Fecha en que la encontraste')
-                ->assertSee('(opcional)');
+                ->assertSee('(opcional)')
+                ->screenshot('cp47-publicar-mascota-encontrada');
         });
     }
 
@@ -78,13 +83,14 @@ class PantallasTest extends DuskTestCase
         return $publicacion;
     }
 
-    private function ingresar(Browser $browser, $email)
+    private function ingresar(Browser $browser, $email, $destino = '/cuenta')
     {
         $browser->driver->manage()->deleteAllCookies();
         $browser->visit('/ingresar')
             ->type('email', $email)
             ->type('password', UsuarioFactory::CONTRASEÑA)
-            ->press('Ingresar');
+            ->press('Ingresar')
+            ->waitForLocation($destino);
     }
 
     // Visita cada página y anota las que son más anchas que la pantalla
@@ -97,6 +103,8 @@ class PantallasTest extends DuskTestCase
             // Si redirigió (por ejemplo, al ingreso) no se revisó la página pedida
             $this->assertEquals(parse_url($pagina, PHP_URL_PATH), parse_url($browser->driver->getCurrentURL(), PHP_URL_PATH), 'No se pudo abrir ' . $pagina);
             $browser->assertDontSee('Server Error');
+
+            $browser->screenshot('cp39-360px' . ($pagina == '/' ? '-inicio' : preg_replace('/[^a-z0-9]+/', '-', $pagina)));
 
             $ancho = $this->anchoDeLaPagina($browser);
             if ($ancho > 360)
@@ -155,7 +163,7 @@ class PantallasTest extends DuskTestCase
             $this->revisarPaginas($browser, ['/cuenta', '/mi-refugio', '/perfil'], $desbordadas);
 
             // Administrador
-            $this->ingresar($browser, $admin->usuario->Email);
+            $this->ingresar($browser, $admin->usuario->Email, '/admin');
             $this->revisarPaginas($browser, ['/admin', '/admin/refugios', '/admin/refugios/' . $pendiente->ID_Usuario . '/editar',
                 '/admin/particulares', '/admin/particulares/' . $publicante->ID_Usuario . '/editar',
                 '/admin/publicaciones', '/admin/reportes'], $desbordadas);
@@ -178,7 +186,8 @@ class PantallasTest extends DuskTestCase
                 ->click('.menu-movil summary')
                 ->assertVisible('.menu-movil-panel')
                 ->assertSeeIn('.menu-movil-panel', 'Refugios')
-                ->assertSeeIn('.menu-movil-panel', 'Ingresar');
+                ->assertSeeIn('.menu-movil-panel', 'Ingresar')
+                ->screenshot('cp39-menu-del-celular');
         });
     }
 }
