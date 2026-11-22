@@ -9,3 +9,6 @@ respaldos/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Zip de la entrega (scripts/empaquetar-entrega.sh)
+/AdoptaUY-*.zip

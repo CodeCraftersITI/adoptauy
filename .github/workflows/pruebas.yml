@@ -155,8 +155,7 @@ jobs:
           tail -n 200 storage/logs/laravel.log || true
           echo "::endgroup::"
           echo "::group::Texto de las páginas donde falló"
-          for f in tests/Browser/source/*.txt; do [ -f "$f" ] && { echo "== $f"; sed -e 's/<[^>]*>/ /g' "$f" | tr -s ' 
-' | head -c 3000; echo; }; done
+          for f in tests/Browser/source/*.txt; do [ -f "$f" ] && { echo "== $f"; sed -e 's/<[^>]*>/ /g' "$f" | tr -s ' \n' | head -c 3000; echo; }; done
           echo "::endgroup::"
 
   base-de-datos:
