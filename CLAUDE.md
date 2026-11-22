@@ -22,7 +22,7 @@ La fuente de verdad es el **Documento integrador (V3)**. En `docs/contexto/` hay
 
 ## Stack y comandos
 
-- Laravel 13 sobre PHP 8.4 (FPM), MySQL 8.4, Nginx 1.27, Docker Compose. Vistas Blade con HTML5 y CSS3, web adaptable desde 360 px. Sin app móvil ni PWA.
+- Laravel 13 sobre PHP 8.4 (FPM), MySQL 8.4, Nginx 1.27, Docker Compose. Vistas Blade con HTML5 y CSS3 propio (public/css/adoptauy.css, sin Tailwind ni Vite), web adaptable desde 360 px. Sin app móvil ni PWA.
 - Colas y planificador de Laravel en contenedores propios (`queue`, `scheduler`). Correo: Mailpit en desarrollo; en producción, Laravel envía por SMTP directo a Gmail con la cuenta noreply.adoptauy@gmail.com (puerto 587, sin Postfix, D95, D96). Las variables MAIL_ van en el `.env` de la raíz, no en `src/laravel/.env`: Docker pisa las de Laravel.
 - Mapas: OpenStreetMap con Leaflet.
 - **Laravel vive en `src/laravel/`** (en los contenedores: `/var/www/laravel`). La configuración de Docker está en la raíz: `docker-compose.yml` y `docker/`.
@@ -36,7 +36,6 @@ docker compose exec app php artisan dusk          # funcionales (Dusk)
 docker compose exec app php artisan schedule:run  # correr las tareas programadas a mano
 docker compose run --rm usuarios-bd               # volver a crear los usuarios de MySQL por rol (16.3.4)
 docker compose logs -f web app queue
-docker compose run --rm node npm install && docker compose run --rm node npm run build   # CSS/JS con Vite
 ```
 
 Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige a HTTPS). Los puertos 8080/8443 evitan chocar con XAMPP u otros servidores locales. Correos de desarrollo: http://localhost:8025. MySQL: 127.0.0.1:3307 (adoptauy / adoptauy_dev).

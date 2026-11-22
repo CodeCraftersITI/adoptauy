@@ -181,14 +181,6 @@ services:
       - "${MAILPIT_PORT:-8025}:8025"
     networks: [backend]
 
-  node:                             # compilar CSS/JS con Vite:  docker compose run --rm node npm run build
-    image: node:22-alpine
-    profiles: ["herramientas"]
-    working_dir: /var/www/laravel
-    volumes:
-      - ./src:/var/www
-    networks: [backend]
-
 volumes:
   dbdata:
 

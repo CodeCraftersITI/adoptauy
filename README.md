@@ -137,8 +137,6 @@ docker compose ps                                     # estado de los contenedor
 docker compose exec app php artisan migrate           # migraciones
 docker compose exec app php artisan test              # pruebas (base adoptauy_test)
 docker compose exec app composer require paquete      # agregar una dependencia
-docker compose run --rm node npm install              # dependencias de CSS/JS
-docker compose run --rm node npm run build            # compilar CSS/JS con Vite
 docker compose logs -f web app queue                  # logs
 docker compose down                                   # apagar (los datos quedan)
 ```
@@ -180,7 +178,7 @@ adoptauy/
 │   ├── php/              # Dockerfile, php.ini y entrypoint (prepara Laravel la primera vez)
 │   ├── nginx/            # Dockerfile, default.conf (HTTPS) y certificado autofirmado (no se sube)
 │   └── mysql/init/       # crea la base de pruebas adoptauy_test
-├── docker-compose.yml    # app, queue, scheduler, web, db, mailpit (+ node y mail por perfil)
+├── docker-compose.yml    # app, queue, scheduler, web, db, mailpit (+ pruebas por perfil)
 ├── scripts/              # iniciar.sh (con contraseñas propias) y respaldo.sh
 ├── infra/setup.sh        # Preparación de la VM del servidor local
 ├── docs/
