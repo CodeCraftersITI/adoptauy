@@ -66,9 +66,12 @@ no sale a internet: llega a **http://localhost:8025** (Mailpit), donde está el 
 - **Administrador:** validar o rechazar solicitudes de refugios, administrar refugios,
   particulares y publicaciones, y resolver reportes.
 
-«Continuar con Google» necesita credenciales de Google que no van en la entrega
-(GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en `src/laravel/.env`). Sin ellas, el resto
-funciona igual. En las pruebas automáticas Google se simula.
+**Continuar con Google:** las claves de Google están en el archivo `.env` de la carpeta
+`adoptauy` (solo en este zip, no en GitHub), así que el botón lleva a la pantalla de Google
+entrando por https://localhost:8443. La app de Google está en modo de prueba: solo pueden
+entrar las cuentas del equipo registradas en Google Cloud, y con otra cuenta Google muestra
+«Acceso bloqueado». El flujo completo (cuenta nueva, vinculación y rechazos) está cubierto
+por las pruebas automáticas de `tests/Feature/GoogleTest.php`, donde Google se simula.
 
 ## Base de datos
 

@@ -38,6 +38,10 @@ x-php: &php
     MAIL_USERNAME: ${MAIL_USERNAME:-}
     MAIL_PASSWORD: ${MAIL_PASSWORD:-}
     MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-responder@adoptauy.local}
+    # Continuar con Google (RF:0066): las claves van solo en el .env de la raíz
+    GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-https://localhost:8443/auth/google/callback}
     APP_URL: ${APP_URL:-https://localhost:8443}
     ANTIBOT_ACTIVO: ${ANTIBOT_ACTIVO:-true}     # freno contra bots (D99); solo se apaga para la prueba de carga
     LIMITES_ACTIVOS: ${LIMITES_ACTIVOS:-true}
