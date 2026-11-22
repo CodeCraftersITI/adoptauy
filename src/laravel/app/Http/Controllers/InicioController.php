@@ -5,12 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PublicacionAdopcion;
 use App\Models\PublicacionPerdida;
 
-/**
- * Página de inicio pública (RF:0040, RF:0048, RF:0065, CP-08, CP-48).
- * Muestra por separado las últimas mascotas En adopción, las perdidas vigentes y las encontradas vigentes.
- * Solo se listan publicaciones visibles: una publicación En revisión o Suspendida
- * por reportes no aparece (13.2.5).
- */
+// Página de inicio pública (RF:0040, RF:0048, RF:0065)
 class InicioController extends Controller
 {
     // GET /

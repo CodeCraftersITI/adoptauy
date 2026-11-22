@@ -12,10 +12,7 @@ use App\Models\Refugio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Detalle de una publicación: consulta pública de una mascota en adopción, perdida o
- * encontrada (RF:0040, RF:0048, RF:0065), sin datos personales del particular (RNF:0013).
- */
+// Detalle de una publicación (RF:0040, RF:0048, RF:0065)
 class DetallePublicacionTest extends TestCase
 {
     use RefreshDatabase;

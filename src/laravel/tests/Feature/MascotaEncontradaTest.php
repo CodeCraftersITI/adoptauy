@@ -11,12 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Alta de mascota encontrada (RF:0064). Caso CP-47.
- * Una mascota encontrada es la de otra persona: se guarda en Publicacion_Perdida con
- * Tipo_Aviso = 'Encontrada', con las mismas reglas que una perdida (13.2.2) salvo el
- * nombre, que es opcional (RNE26).
- */
+// Alta de mascota encontrada (RF:0064)
 class MascotaEncontradaTest extends TestCase
 {
     use RefreshDatabase;

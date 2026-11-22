@@ -197,7 +197,10 @@ jobs:
           done
           docker compose logs app; exit 1
       - name: Usuarios de MySQL creados (servicio usuarios-bd)
-        run: docker compose wait usuarios-bd
+        run: |
+          until [ "$(docker compose ps -a --format '{{.State}}' usuarios-bd)" = "exited" ]; do sleep 2; done
+          docker compose logs usuarios-bd
+          test "$(docker compose ps -a --format '{{.ExitCode}}' usuarios-bd)" = 0
       - name: El sitio responde por HTTPS y HTTP redirige
         run: |
           curl -skf -o /dev/null -w "HTTPS %{http_code}\n" https://localhost:8443/

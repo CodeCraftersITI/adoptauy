@@ -8,10 +8,7 @@ use App\Models\Refugio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Sección de refugios: mapa y listado (RF:0038, RF:0042), perfil público (RF:0062)
- * y cuentas bancarias para donaciones (RF:0035 a RF:0037). Casos CP-20 y CP-21.
- */
+// Sección de refugios (RF:0038, RF:0042, RF:0062, RF:0035 a RF:0037)
 class RefugioTest extends TestCase
 {
     use RefreshDatabase;

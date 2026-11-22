@@ -7,16 +7,7 @@ use App\Models\Reporte;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 
-/**
- * Resolución de reportes por el Administrador (RF:0060, CP-32), rutas con rol:Administrador.
- * Se resuelve por objeto reportado: todos los reportes Pendientes sobre la misma publicación
- * o el mismo usuario se resuelven juntos, y queda registrada la medida y la fecha.
- *  - Publicación: desestimar (vuelve a ser visible) o suspender (Estado_Moderacion Suspendida).
- *  - Particular: desestimar, aviso, suspensión (Estado_Usuario Suspendido) o baja lógica (Baja).
- *  - Refugio: desestimar, aviso, suspensión (Suspendido) o baja lógica (Dado de baja, RF:0006).
- * Desestimar a un particular o a un refugio no cambia su estado: para restituirlo el
- * Administrador usa las pestañas Particulares y Refugios.
- */
+// Resolución de reportes por el Administrador (RF:0060, RF:0006)
 class AdminReporteController extends Controller
 {
     // GET /admin/reportes: publicaciones y usuarios con reportes pendientes

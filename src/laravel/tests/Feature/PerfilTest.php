@@ -13,10 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Mi perfil: datos del Particular (RF:0016) y del Refugio (RF:0029), caso CP-16;
- * definir o cambiar la contraseña (RF:0067, D98, RNF:0007), caso CP-50.
- */
+// Mi perfil (RF:0016, RF:0029, RF:0067)
 class PerfilTest extends TestCase
 {
     use RefreshDatabase;

@@ -5,11 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PublicacionAnimal;
 use App\Models\Usuario;
 
-/**
- * Panel "Mi cuenta" del Particular y del Refugio.
- * Muestra sus publicaciones de los dos tipos con su estado (RF:0020, RF:0027).
- * Las solicitudes y el seguimiento se agregan en los próximos sprints.
- */
+// Panel "Mi cuenta" del Particular y del Refugio (RF:0020, RF:0027)
 class CuentaController extends Controller
 {
     // GET /cuenta (protegida con el middleware rol:Particular,Refugio)

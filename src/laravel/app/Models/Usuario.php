@@ -5,11 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Cuenta de cualquier usuario registrado (tabla Usuario del DER, 15.2.1).
- * Tipo_Usuario vale 'Particular', 'Refugio' o 'Administrador', y cada usuario
- * tiene su fila en la tabla de ese tipo (RNE10, RNE11).
- */
+// Cuenta de cualquier usuario registrado (tabla Usuario)
 class Usuario extends Model
 {
     use HasFactory;   // permite crear usuarios de prueba con Usuario::factory()
@@ -31,12 +27,10 @@ class Usuario extends Model
     // El DER usa Fecha_Alta en lugar de created_at y updated_at
     public $timestamps = false;
 
-    // Tipo_Usuario NO está en $fillable: así nadie puede mandar tipo=Administrador
-    // desde un formulario y volverse administrador (mass assignment, como en el teórico)
+    // Tipo_Usuario no está en $fillable
     protected $fillable = ['Email', 'Contraseña'];
 
-    // Contraseña: entre 8 y 72 caracteres (13.2.1; 72 es el máximo que admite bcrypt, RNF:0007).
-    // La usan el registro, el registro de refugio y el cambio de contraseña (RF:0067)
+    // Contraseña (RF:0067)
     public const REGLA_CONTRASENA = 'required|min:8|max:72';
 
     public const MENSAJES_CONTRASENA = [
@@ -61,8 +55,7 @@ class Usuario extends Model
         return $this->hasOne(Administrador::class, 'ID_Usuario');
     }
 
-    // Consulta con adoptauy_login (16.3.4.1): la usan el inicio de sesión, Continuar con Google
-    // y la confirmación del correo. Solo ve correo, contraseña, tipo, estado y Google_ID
+    // Consulta con adoptauy_login
     public static function paraLogin()
     {
         return config('database.conexiones_por_rol') ? static::on('login') : static::query();
@@ -80,9 +73,7 @@ class Usuario extends Model
         return $this->hasMany(PublicacionAnimal::class, 'ID_Usuario');
     }
 
-    // ¿Tiene la cuenta restringida por un seguimiento incumplido? (RF:0058, RNE21)
-    // Desde el día 22 de una adopción suya sin foto presentada. Mientras tanto no puede
-    // solicitar adopciones ni publicar; solo enviar la foto, y al enviarla se levanta sola.
+    // Cuenta restringida desde el día 22 de una adopción sin foto presentada (RF:0058)
     public function tieneCuentaRestringida()
     {
         return Seguimiento::where('Fecha_Limite', '<=', now()->toDateString())

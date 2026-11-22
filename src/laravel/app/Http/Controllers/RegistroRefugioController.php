@@ -11,11 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
-/**
- * Solicitud de registro de un refugio (RF:0034).
- * La solicitud queda "Pendiente de validación" hasta que el Administrador la
- * valida o la rechaza (AdminController). Mientras tanto no puede iniciar sesión.
- */
+// Solicitud de registro de un refugio (RF:0034)
 class RegistroRefugioController extends Controller
 {
     // GET /registro-refugio: muestra el formulario
@@ -31,8 +27,6 @@ class RegistroRefugioController extends Controller
             'email' => strtolower(trim($request->input('email') ?? '')),
         ]);
 
-        // Documentos: PDF, JPG o PNG de hasta 8 MB (max se mide en kilobytes: 8 x 1024 = 8192)
-        // Nombre, ubicación y contraseña usan las reglas compartidas de los modelos
         $request->validate([
             'contacto' => 'required|max:255',
             'certificado' => 'required|file|mimes:pdf,jpg,jpeg,png|max:8192',
@@ -53,8 +47,7 @@ class RegistroRefugioController extends Controller
             'email.unique' => 'Ya existe una cuenta con ese correo electrónico.',
         ] + Refugio::MENSAJES + Usuario::MENSAJES_CONTRASENA);
 
-        // Los documentos se guardan en storage/app/private: no se pueden abrir desde
-        // el navegador, solo el Administrador los descarga desde su panel
+        // Los documentos se guardan en storage/app/private
         $rutaCertificado = $request->file('certificado')->store('documentos-refugios');
         $rutaComprobante = $request->file('comprobante')->store('documentos-refugios');
 
@@ -84,8 +77,7 @@ class RegistroRefugioController extends Controller
             return $refugio;
         });
 
-        // Correo de recepción (RF:0063). Si el servicio de correo falla, la solicitud
-        // igual queda guardada y el error se registra en el log (RNF:0010)
+        // Correo de recepción (RF:0063)
         try
         {
             Mail::to($request->input('email'))->send(new SolicitudRefugioRecibida($refugio));

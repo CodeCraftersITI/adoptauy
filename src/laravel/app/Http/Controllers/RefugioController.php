@@ -6,18 +6,7 @@ use App\Models\PublicacionAdopcion;
 use App\Models\PublicacionPerdida;
 use App\Models\Refugio;
 
-/**
- * Sección pública de refugios, sin necesidad de sesión:
- *  - /refugios: mapa de Montevideo (RF:0038, D55, D56) y listado de refugios validados (RF:0042).
- *  - /refugios/{id}: perfil público del refugio con su contacto, sus cuentas bancarias para
- *    donaciones y sus mascotas publicadas (RF:0062).
- * Solo aparecen los refugios Validados: uno Pendiente, Rechazado, Suspendido o Dado de baja no (CP-20).
- *
- * Refugios no registrados (D56): se leen de resources/data/refugios-no-registrados.json, que
- * mantiene el equipo con datos públicos. Formato: una lista de objetos así:
- *   [{"nombre": "...", "direccion": "...", "latitud": -34.90, "longitud": -56.16}]
- * En el mapa se ven con la leyenda «No registrado en AdoptaUY», sin perfil ni cuentas.
- */
+// Sección pública de refugios (RF:0038, RF:0042, RF:0062)
 class RefugioController extends Controller
 {
     // GET /refugios
@@ -27,9 +16,7 @@ class RefugioController extends Controller
             ->orderBy('Nombre_Refugio')
             ->get();
 
-        // Marcadores del mapa, que se le pasan al JavaScript como una lista:
-        // 1) primero los no registrados, fijos en el archivo JSON;
-        // 2) después los registrados, que se traen de la base (validados con ubicación).
+        // Marcadores del mapa, que se le pasan al JavaScript como una lista
         $marcadores = [];
 
         foreach ($this->noRegistrados() as $refugio)

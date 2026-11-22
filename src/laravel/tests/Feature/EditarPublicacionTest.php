@@ -13,10 +13,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Editar una publicación: su publicante (RF:0019 Particular, RF:0026 Refugio) o el
- * Administrador (RF:0003). Mismo formulario y mismas validaciones que al publicar (13.2.2).
- */
+// Editar una publicación (RF:0019, RF:0026, RF:0003)
 class EditarPublicacionTest extends TestCase
 {
     use RefreshDatabase;

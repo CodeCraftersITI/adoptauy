@@ -4,13 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Seguimiento posterior a la adopción (tabla Seguimiento, 15.2.1): uno por adopción (RNE20).
- * Plazos en días corridos desde la fecha de adopción (D71):
- *   día 15 (Fecha_Aviso): se avisa por correo al adoptante y puede enviar la foto (RF:0055, RF:0056)
- *   día 22 (Fecha_Limite): si no hay foto, su cuenta queda restringida (RF:0058)
- * Estado_Evidencia: 'Pendiente', 'Enviada', 'Aprobada' o 'Rechazada'.
- */
+// Seguimiento posterior a la adopción (tabla Seguimiento) (RF:0055, RF:0056, RF:0058)
 class Seguimiento extends Model
 {
     protected $table = 'Seguimiento';
@@ -36,9 +30,7 @@ class Seguimiento extends Model
             && in_array($this->Estado_Evidencia, ['Pendiente', 'Rechazada']);
     }
 
-    // ¿Este seguimiento restringe la cuenta del adoptante? Desde el día 22, si no hay una foto
-    // presentada: nunca la envió (Pendiente) o el publicante la rechazó (Rechazada) (RNE21, D71).
-    // Una foto Enviada cuenta como presentada aunque nadie la revise (D72).
+    // ¿Este seguimiento restringe la cuenta del adoptante? Desde el día 22, si no hay una foto presentada
     public function restringe()
     {
         return $this->Fecha_Limite <= now()->toDateString()

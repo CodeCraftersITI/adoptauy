@@ -5,17 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Refugio;
 use Illuminate\Http\Request;
 
-/**
- * Refugios en el panel del Administrador (rutas protegidas con rol:Administrador):
- *  - Listado de refugios (RF:0009) y consulta por nombre, ubicación y estado (RF:0008).
- *  - Transiciones de la tabla de 13.2.1 que hace el Administrador:
- *      Validado -> Suspendido                 suspender
- *      Suspendido -> Validado                 levantar la suspensión
- *      Validado o Suspendido -> Dado de baja  baja lógica (RF:0006, D69): no puede iniciar sesión,
- *                                             sale del mapa y del listado, y sus publicaciones
- *                                             pasan a Archivado o Archivada. Es definitiva.
- * Las solicitudes Pendientes se validan o rechazan desde AdminController (RF:0005, RF:0044).
- */
+// Refugios en el panel del Administrador (RF:0009, RF:0008, RF:0006, RF:0005, RF:0044)
 class AdminRefugioController extends Controller
 {
     private const POR_PAGINA = 20;
@@ -53,9 +43,7 @@ class AdminRefugioController extends Controller
         return view('admin.editar-refugio', ['refugio' => $this->buscar($id)]);
     }
 
-    // PUT /admin/refugios/{id}: nombre, datos de contacto y ubicación (RF:0007), con las mismas
-    // reglas y el mismo método del modelo que "Mi perfil". El estado de validación se cambia con
-    // los botones de las transiciones válidas (13.2.1), para que no se salte ninguna regla
+    // PUT /admin/refugios/{id} (RF:0007)
     public function actualizar(Request $request, string $id)
     {
         $refugio = $this->buscar($id);
@@ -112,8 +100,7 @@ class AdminRefugioController extends Controller
             return back()->with('error', 'Solo se puede dar de baja un refugio Validado o Suspendido.');
         }
 
-        // El refugio, su cuenta y sus publicaciones cambian juntos (método del modelo Refugio,
-        // que también usa la resolución de reportes, RF:0060)
+        // El refugio, su cuenta y sus publicaciones cambian juntos (RF:0060)
         $refugio->darDeBaja();
 
         return back()->with('exito', $refugio->Nombre_Refugio . ' quedó dado de baja y sus publicaciones se archivaron.');

@@ -7,9 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Registro de Particular (RF:0039). Casos CP-01 y CP-02.
- */
+// Registro de Particular (RF:0039)
 class RegistroTest extends TestCase
 {
     use RefreshDatabase;

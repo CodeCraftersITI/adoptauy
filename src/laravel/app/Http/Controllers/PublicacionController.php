@@ -12,17 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Alta de publicaciones con un único formulario (corrección del docente: código DRY).
- * El usuario elige qué publica y el formulario muestra los campos de ese tipo:
- *  - Adopción: mascota en adopción (RF:0017, RF:0024), entre 1 y 6 fotos.
- *  - Perdida: mascota perdida (RF:0046), entre 1 y 3 fotos.
- *  - Encontrada: mascota ajena encontrada (RF:0064), entre 1 y 3 fotos.
- * Editar (RF:0019 Particular, RF:0026 Refugio, RF:0003 Administrador) usa el mismo formulario
- * y las mismas validaciones; el tipo no se cambia y las fotos solo se reemplazan si se suben nuevas.
- * Las rutas están protegidas con rol:Particular,Refugio: solo publican los usuarios con
- * sesión iniciada, y un refugio solo puede iniciar sesión si está Validado (RNE04, RNE16).
- */
+// Publicar y editar mascotas con un único formulario (RF:0017, RF:0024, RF:0046, RF:0064, RF:0019, RF:0026, RF:0003)
 class PublicacionController extends Controller
 {
     private const TIPOS = ['Adopción', 'Perdida', 'Encontrada'];
@@ -46,8 +36,7 @@ class PublicacionController extends Controller
         'fotos.*.file' => 'No se pudo subir una de las fotos.',
     ];
 
-    // GET /publicar?tipo=Perdida
-    // El tipo de la URL solo elige cuál aparece marcado al abrir (por ejemplo, desde "Publicar perdida")
+    // GET /publicar?tipo=Perdida: el tipo de la URL solo elige cuál aparece marcado al abrir
     public function crear(Request $request)
     {
         if ($this->cuentaRestringida())
@@ -153,8 +142,7 @@ class PublicacionController extends Controller
                 $publicacion->perdida->update($this->datosAviso($request));
             }
 
-            // Si subió fotos nuevas, reemplazan a las anteriores; si no, quedan las que había
-            // El Administrador no reemplaza fotos: adoptauy_admin no tiene DELETE (16.3.4.5)
+            // Si subió fotos nuevas, reemplazan a las anteriores
             if ($request->hasFile('fotos') && session('tipo') != 'Administrador')
             {
                 foreach ($publicacion->fotos as $foto)
@@ -194,8 +182,7 @@ class PublicacionController extends Controller
         return Usuario::estaRestringido(session('id_usuario'));
     }
 
-    // Reglas de validación: las comunes más las del tipo elegido (13.2.2, RNE01).
-    // Al editar ($editando), las fotos son opcionales: si no se suben, quedan las que había
+    // Reglas de validación
     private function reglas($tipo, $editando = false)
     {
         $fotos = $editando ? 'nullable|array|min:1' : 'required|array|min:1';
@@ -211,8 +198,7 @@ class PublicacionController extends Controller
         if ($tipo == 'Adopción')
         {
             return $reglas + [
-                // RNE12: la edad no tiene máximo de negocio; 5460 es el tope técnico de Edad_Meses
-                // (smallint sin signo: 5460 años), para que un valor absurdo dé un error y no un error 500 (RNF:0010)
+                // 5460 es el tope de la columna Edad_Meses, para que un valor absurdo dé un error y no falle
                 'edad' => 'required|integer|min:0|max:5460',
                 'edad_unidad' => 'required|in:meses,años',
                 'tamanio' => 'required|in:Pequeño,Mediano,Grande',
@@ -291,8 +277,7 @@ class PublicacionController extends Controller
         return $publicacion;
     }
 
-    // Datos propios de la adopción, para crear y para editar.
-    // La edad se guarda en meses (RNE12): 2 años = 24, 4 meses = 4
+    // Datos propios de la adopción, para crear y para editar
     private function datosAdopcion(Request $request)
     {
         $edadEnMeses = $request->input('edad');

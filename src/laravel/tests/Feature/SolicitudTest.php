@@ -15,10 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
-/**
- * Solicitudes de adopción: solicitar (RF:0049, RF:0063, CP-22), solicitudes recibidas
- * (RF:0050, RNF:0013, CP-23) y enviadas (RF:0054, CP-26).
- */
+// Solicitudes de adopción (RF:0049, RF:0063, RF:0050, RF:0054)
 class SolicitudTest extends TestCase
 {
     use RefreshDatabase;

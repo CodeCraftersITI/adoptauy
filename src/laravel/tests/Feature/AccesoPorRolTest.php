@@ -5,11 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Acceso por rol a los paneles (RF:0022, middleware VerificarRol).
- * Roles: Invitado, Particular, Refugio y Administrador.
- * withSession() simula la sesión que guarda SesionController al iniciar sesión.
- */
+// Acceso por rol a los paneles (RF:0022, middleware VerificarRol)
 class AccesoPorRolTest extends TestCase
 {
     use RefreshDatabase;

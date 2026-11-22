@@ -7,11 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-/**
- * Correo al refugio cuando se recibe su solicitud de registro (RF:0034, RF:0063, 13.2.6).
- * Se envía con: Mail::to($correo)->send(new SolicitudRefugioRecibida($refugio));
- * En desarrollo se ve en Mailpit: http://localhost:8025
- */
+// Correo al refugio cuando se recibe su solicitud de registro (RF:0034, RF:0063)
 class SolicitudRefugioRecibida extends Mailable
 {
     public $refugio;

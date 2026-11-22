@@ -4,10 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Datos propios de una publicación en adopción (tabla Publicacion_Adopcion). RF:0017, RF:0024.
- * Estado_Adopcion: 'En adopción', 'Adoptado' o 'Archivado' (13.2.2).
- */
+// Datos propios de una publicación en adopción (tabla Publicacion_Adopcion) (RF:0017, RF:0024)
 class PublicacionAdopcion extends Model
 {
     protected $table = 'Publicacion_Adopcion';
@@ -32,8 +29,7 @@ class PublicacionAdopcion extends Model
         return $this->hasMany(SolicitudAdopcion::class, 'ID_Publicacion');
     }
 
-    // Para mostrar se dice "castrado" (pedido del docente de Programación). En la base el
-    // atributo sigue siendo Estado_Esterilizacion, con los valores del DER
+    // Para mostrar se dice "castrado"
     public function castracionTexto()
     {
         return $this->Estado_Esterilizacion == 'Esterilizado' ? 'Castrado' : 'No castrado';

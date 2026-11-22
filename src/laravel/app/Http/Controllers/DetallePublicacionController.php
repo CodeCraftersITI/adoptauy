@@ -5,11 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PublicacionAnimal;
 use App\Models\SolicitudAdopcion;
 
-/**
- * Detalle de una publicación (pantalla «Detalle de mascota» del prototipo).
- * Consulta pública de una mascota en adopción, perdida o encontrada (RF:0040, RF:0048, RF:0065):
- * todas las fotos y todos los datos. Es el ejemplo show($id) con find() del teórico.
- */
+// Detalle de una publicación (RF:0040, RF:0048, RF:0065)
 class DetallePublicacionController extends Controller
 {
     // GET /publicaciones/{id}
@@ -22,8 +18,7 @@ class DetallePublicacionController extends Controller
             abort(404);
         }
 
-        // Si no es pública (adoptada, archivada, resuelta, vencida u oculta por reportes),
-        // solo la ven su publicante y el Administrador; para el resto no existe
+        // Si no es pública, solo la ven su publicante y el Administrador
         $esPublicante = session('id_usuario') == $publicacion->ID_Usuario;
         $esAdministrador = session('tipo') == 'Administrador';
 
@@ -32,7 +27,7 @@ class DetallePublicacionController extends Controller
             abort(404);
         }
 
-        // Para el botón Solicitar adopción (RF:0049): ¿ya tiene una solicitud Pendiente sobre esta mascota?
+        // Para el botón Solicitar adopción (RF:0049)
         $solicitudPendiente = false;
         if ($publicacion->Tipo_Publicacion == 'Adopción' && session('tipo') == 'Particular')
         {

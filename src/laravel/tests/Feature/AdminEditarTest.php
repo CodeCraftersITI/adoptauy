@@ -9,10 +9,7 @@ use App\Models\RefugioDatoContacto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * El Administrador modifica un refugio (RF:0007, CP-18) o un particular (RF:0013, CP-34),
- * con las mismas reglas que el perfil y el registro.
- */
+// El Administrador modifica un refugio (RF:0007) o un particular (RF:0013), con las mismas reglas que el perfil y el registro
 class AdminEditarTest extends TestCase
 {
     use RefreshDatabase;

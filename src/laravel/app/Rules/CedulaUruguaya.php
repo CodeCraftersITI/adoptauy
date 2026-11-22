@@ -5,13 +5,7 @@ namespace App\Rules;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/**
- * Regla de validación para la cédula uruguaya (RF:0039, RNE23, D64).
- * Se usa en $request->validate() así: 'ci' => ['required', new CedulaUruguaya]
- *
- * La cédula tiene 7 u 8 dígitos y el último es el dígito verificador.
- * Ejemplo válido: 1.234.567-2
- */
+// Regla de validación para la cédula uruguaya (RF:0039)
 class CedulaUruguaya implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void

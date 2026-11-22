@@ -15,12 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Seguimiento posterior a la adopción: aviso del día 15 (RF:0055, CP-27), envío y revisión
- * de la foto (RF:0056, RF:0057, CP-28) y restricción del día 22 (RF:0058, CP-29).
- * travelTo() simula la fecha: la adopción se concreta el 01/11/2026, así que
- * el día 15 es el 16/11 y el día 22 es el 23/11.
- */
+// Seguimiento posterior a la adopción (RF:0055, RF:0056, RF:0057, RF:0058)
 class SeguimientoTest extends TestCase
 {
     use RefreshDatabase;

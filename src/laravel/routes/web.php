@@ -27,13 +27,12 @@ use App\Http\Controllers\VigenciaController;
 use Illuminate\Support\Facades\Route;
 
 // ---------- Rutas públicas ----------
-// Contra bots (pedido del docente): los formularios que crean datos llevan 'antibot' (tiempo mínimo
-// de 3 segundos y campo trampa) y 'throttle:...' (límite de envíos por minuto, definido en AppServiceProvider)
+// Contra bots
 
 // Página de inicio (RF:0040, RF:0048)
 Route::get('/', [InicioController::class, 'index']);
 
-// Listados públicos completos: adopción con filtros (RF:0041), perdidas (RF:0048) y encontradas (RF:0065)
+// Listados públicos completos (RF:0041, RF:0048, RF:0065)
 Route::get('/adopcion', [ListadoController::class, 'adopcion']);
 Route::get('/perdidas', [ListadoController::class, 'perdidas']);
 Route::get('/encontradas', [ListadoController::class, 'encontradas']);
@@ -41,7 +40,7 @@ Route::get('/encontradas', [ListadoController::class, 'encontradas']);
 // Detalle de una publicación: pública, sin necesidad de sesión
 Route::get('/publicaciones/{id}', [DetallePublicacionController::class, 'show']);
 
-// Refugios: mapa y listado (RF:0038, RF:0042) y perfil público con cuentas para donaciones (RF:0062)
+// Refugios (RF:0038, RF:0042, RF:0062)
 Route::get('/refugios', [RefugioController::class, 'index']);
 Route::get('/refugios/{id}', [RefugioController::class, 'show']);
 
@@ -52,8 +51,7 @@ Route::get('/nosotros', [NosotrosController::class, 'index']);
 Route::get('/registro', [RegistroController::class, 'create']);
 Route::post('/registro', [RegistroController::class, 'store'])->middleware(['antibot', 'throttle:registro']);
 
-// Confirmación del correo del Particular (RF:0043): el enlace del correo (lleva un nombre
-// porque URL::signedRoute arma el enlace firmado a partir de él) y el pedido de otro enlace
+// Confirmación del correo del Particular (RF:0043)
 Route::get('/confirmar-correo/{id}', [ConfirmacionCorreoController::class, 'confirmar'])->name('correo.confirmar');
 Route::get('/confirmar-correo', [ConfirmacionCorreoController::class, 'create']);
 Route::post('/confirmar-correo', [ConfirmacionCorreoController::class, 'reenviar'])->middleware(['antibot', 'throttle:correo']);
@@ -85,8 +83,7 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     Route::put('/perfil/datos', [PerfilController::class, 'guardarDatos']);
     Route::put('/perfil/contrasena', [PerfilController::class, 'guardarContrasena']);
 
-    // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) o encontrada (RF:0064):
-    // un único formulario que muestra los campos del tipo elegido
+    // Publicar mascota en adopción (RF:0017, RF:0024), perdida (RF:0046) o encontrada (RF:0064)
     Route::get('/publicar', [PublicacionController::class, 'crear']);
     Route::post('/publicar', [PublicacionController::class, 'guardar'])->middleware(['antibot', 'throttle:formularios']);
 
@@ -110,7 +107,7 @@ Route::middleware('rol:Particular,Refugio')->group(function ()
     Route::put('/solicitudes/{id}/rechazar', [SolicitudController::class, 'rechazar']);
     Route::put('/solicitudes/{id}/elegir', [SolicitudController::class, 'elegir']);
 
-    // Seguimiento de la adopción: el adoptante envía la foto (RF:0056) y el publicante la revisa (RF:0057)
+    // Seguimiento de la adopción (RF:0056, RF:0057)
     Route::get('/seguimientos', [SeguimientoController::class, 'index']);
     Route::post('/seguimientos/{id}/foto', [SeguimientoController::class, 'enviarFoto']);
     Route::put('/seguimientos/{id}/aprobar', [SeguimientoController::class, 'aprobar']);
@@ -156,7 +153,7 @@ Route::middleware('rol:Administrador')->group(function ()
     Route::put('/admin/refugios/{id}/validar', [AdminController::class, 'validar']);
     Route::put('/admin/refugios/{id}/rechazar', [AdminController::class, 'rechazar']);
 
-    // Publicaciones: listado y consulta con filtros (RF:0002, RF:0004, RF:0011, RF:0012) y baja (RF:0001)
+    // Publicaciones (RF:0002, RF:0004, RF:0011, RF:0012, RF:0001)
     Route::get('/admin/publicaciones', [AdminPublicacionController::class, 'index']);
     Route::put('/admin/publicaciones/{id}/archivar', [AdminPublicacionController::class, 'archivar']);
 

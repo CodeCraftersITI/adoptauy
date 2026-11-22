@@ -13,10 +13,7 @@ use App\Models\SolicitudAdopcion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Archivar y reactivar una mascota en adopción desde "Mi cuenta" (RF:0018, RF:0025, RF:0045).
- * Transiciones de 13.2.2: En adopción -> Archivado y Archivado -> En adopción.
- */
+// Archivar y reactivar una mascota en adopción desde "Mi cuenta" (RF:0018, RF:0025, RF:0045)
 class EstadoAdopcionTest extends TestCase
 {
     use RefreshDatabase;

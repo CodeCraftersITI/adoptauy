@@ -16,10 +16,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
-/**
- * Lo que solo se puede probar en un navegador: el JavaScript del formulario único de publicar
- * y la vista en el celular a 360 px sin desplazamiento horizontal (CP-39, RNF:0003).
- */
+// Lo que solo se puede probar en un navegador
 class PantallasTest extends DuskTestCase
 {
     use DatabaseMigrations;

@@ -7,10 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-/**
- * Correo al publicante cuando recibe una solicitud de adopción (RF:0049, RF:0063, 13.2.6).
- * Lleva el nombre, el teléfono y el correo del solicitante, que aceptó compartirlos.
- */
+// Correo al publicante cuando recibe una solicitud de adopción (RF:0049, RF:0063)
 class SolicitudAdopcionRecibida extends Mailable
 {
     public $solicitud;

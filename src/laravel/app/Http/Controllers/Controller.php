@@ -11,18 +11,16 @@ use Illuminate\Support\Facades\URL;
 
 abstract class Controller
 {
-    // Abre la sesión de un usuario y lo manda a su panel (RF:0022). La usan el login con
-    // correo y contraseña (SesionController) y el de Google (GoogleController).
+    // Abre la sesión de un usuario y lo manda a su panel (RF:0022)
     protected function iniciarSesion(Request $request, Usuario $usuario)
     {
         // Nuevo identificador de sesión para evitar la fijación de sesión (session fixation)
         $request->session()->regenerate();
 
-        // El usuario se validó con adoptauy_login, que no ve nombres. Desde acá ya se usa
-        // el usuario de MySQL de su rol (adoptauy_particular, _refugio o _admin)
+        // El usuario se validó con adoptauy_login, que no ve nombres
         if (config('database.conexiones_por_rol'))
         {
-            $usuario = Usuario::on(ConexionPorRol::conexionDe($usuario->Tipo_Usuario))->find($usuario->ID_Usuario);
+            $usuario = Usuario::on(ConexionPorRol::CONEXIONES[$usuario->Tipo_Usuario])->find($usuario->ID_Usuario);
         }
 
         // Guardamos en la sesión quién es y su rol; el middleware VerificarRol lee 'tipo'
@@ -41,10 +39,7 @@ abstract class Controller
         return redirect('/cuenta');
     }
 
-    // Envía el correo para confirmar la dirección (RF:0043). La usan el registro
-    // (RegistroController) y el reenvío (ConfirmacionCorreoController).
-    // URL::signedRoute arma el enlace con una firma: si alguien le cambia el número de usuario,
-    // la firma deja de coincidir y el enlace se rechaza (CP-03).
+    // Envía el correo para confirmar la dirección (RF:0043)
     protected function enviarConfirmacion(Usuario $usuario)
     {
         $enlace = URL::signedRoute('correo.confirmar', ['id' => $usuario->ID_Usuario]);

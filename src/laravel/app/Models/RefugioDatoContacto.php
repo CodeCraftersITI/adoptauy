@@ -4,10 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Un dato de contacto de un refugio (tabla Refugio_Datos_Contacto, 15.2.1).
- * La clave de la tabla es ID_Usuario + Dato_Contacto; acá solo se crean y se leen.
- */
+// Un dato de contacto de un refugio (tabla Refugio_Datos_Contacto)
 class RefugioDatoContacto extends Model
 {
     protected $table = 'Refugio_Datos_Contacto';

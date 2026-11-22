@@ -5,16 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Seguimiento;
 use Illuminate\Http\Request;
 
-/**
- * Seguimiento posterior a la adopción (13.2.3), rutas protegidas con rol:Particular,Refugio:
- *  - El adoptante envía la foto del animal desde el día 15 (RF:0056), también con la cuenta
- *    restringida; al enviarla la restricción se levanta sola (RF:0058).
- *  - El publicante la aprueba o la rechaza (RF:0057). Si la rechaza, el adoptante envía otra.
- *    Si no la revisa, cuenta como presentada desde su envío (D72).
- * Transiciones de Estado_Evidencia:
- *   Pendiente o Rechazada -> Enviada   el adoptante envía la foto
- *   Enviada -> Aprobada o Rechazada     el publicante la revisa
- */
+// Seguimiento posterior a la adopción (RF:0056, RF:0058, RF:0057)
 class SeguimientoController extends Controller
 {
     // GET /seguimientos: mis adopciones (como adoptante) y las de mis publicaciones (como publicante)
@@ -91,7 +82,7 @@ class SeguimientoController extends Controller
         return $this->revisar($id, 'Rechazada', 'Rechazaste la foto: el adoptante tiene que enviar otra.');
     }
 
-    // Aprobar y rechazar son iguales salvo el estado al que pasa: solo el publicante y solo una foto Enviada
+    // Aprobar y rechazar son iguales salvo el estado al que pasa
     private function revisar($id, $estado, $mensaje)
     {
         $seguimiento = Seguimiento::find($id);

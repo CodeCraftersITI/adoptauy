@@ -7,9 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-/**
- * Correo al refugio cuando el Administrador lo valida (RF:0005, RF:0063, 13.2.6).
- */
+// Correo al refugio cuando el Administrador lo valida (RF:0005, RF:0063)
 class RefugioDadoDeAlta extends Mailable
 {
     public $refugio;

@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Solicitud de registro de refugio (RF:0034, RF:0063). Caso CP-17.
- * Storage::fake() y Mail::fake() evitan guardar archivos y mandar correos de verdad.
- */
+// Solicitud de registro de refugio (RF:0034, RF:0063)
 class RegistroRefugioTest extends TestCase
 {
     use RefreshDatabase;

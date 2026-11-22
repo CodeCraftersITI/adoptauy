@@ -6,13 +6,7 @@ use App\Models\PublicacionAdopcion;
 use App\Models\PublicacionPerdida;
 use Illuminate\Http\Request;
 
-/**
- * Listados públicos completos, sin necesidad de sesión:
- *  - /adopcion: mascotas En adopción con filtros por fecha, edad, especie, raza y sexo
- *    (RF:0040, RF:0041, RF:0021, CP-12). "Cachorros" es el filtro de edad: menos de 12 meses (D63).
- *  - /perdidas y /encontradas: avisos vigentes de cada tipo (RF:0048, RF:0065).
- * Muestran 12 por página (paginate) y conservan los filtros al cambiar de página.
- */
+// Listados públicos, sin sesión (RF:0040, RF:0041, RF:0021, RF:0048, RF:0065)
 class ListadoController extends Controller
 {
     private const POR_PAGINA = 12;
@@ -20,8 +14,7 @@ class ListadoController extends Controller
     // GET /adopcion?especie=&sexo=&raza=&edad=&fecha=
     public function adopcion(Request $request)
     {
-        // Solo las En adopción (RF:0040). Los filtros que son datos de Publicacion_Animal
-        // (especie, sexo, raza, fecha) van dentro de whereHas; cada filtro se aplica solo si se eligió
+        // Solo las En adopción (RF:0040)
         $consulta = PublicacionAdopcion::where('Estado_Adopcion', 'En adopción')
             ->whereHas('publicacion', function ($publicacion) use ($request)
             {

@@ -12,11 +12,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Alta de publicaciones (RF:0017, RF:0024, RF:0046). Casos CP-06, CP-07, CP-09, CP-10 y CP-11.
- * Las mascotas encontradas (RF:0064) se prueban en MascotaEncontradaTest.
- * Storage::fake('public') evita guardar fotos de verdad.
- */
+// Alta de publicaciones (RF:0017, RF:0024, RF:0046, RF:0064)
 class PublicacionTest extends TestCase
 {
     use RefreshDatabase;

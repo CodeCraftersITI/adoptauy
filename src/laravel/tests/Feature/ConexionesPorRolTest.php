@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Http\Middleware\ConexionPorRol;
 use App\Models\Administrador;
 use App\Models\CuentaBancaria;
 use App\Models\FotoAnimal;
@@ -24,15 +23,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Usuarios de MySQL con privilegio mínimo (16.3.4 del integrador, docs/base-de-datos/usuarios.sql).
- * Esta prueba prende CONEXIONES_POR_ROL y recorre lo que hace cada rol: si a un usuario de MySQL
- * le falta un permiso, la consulta falla y la prueba lo muestra. También comprueba que lo prohibido
- * siga prohibido (borrar usuarios, leer cédulas, cambiar tablas).
- * Necesita los usuarios creados con scripts/usuarios-bd.sh (también sobre adoptauy_test).
- * Usa DatabaseTruncation en lugar de RefreshDatabase: las otras conexiones no ven los datos de
- * una transacción sin confirmar.
- */
+// Usuarios de MySQL con privilegio mínimo (docs/base-de-datos/usuarios.sql)
 class ConexionesPorRolTest extends TestCase
 {
     use DatabaseTruncation;
@@ -47,8 +38,7 @@ class ConexionesPorRolTest extends TestCase
         Storage::fake('public');
     }
 
-    // DatabaseTruncation vacía las tablas antes de cada prueba, no después: se vacían también al
-    // terminar para que las pruebas siguientes (con RefreshDatabase) empiecen con la base vacía
+    // DatabaseTruncation vacía las tablas antes de cada prueba, no después
     protected function tearDown(): void
     {
         DB::setDefaultConnection('mysql');
@@ -159,8 +149,7 @@ class ConexionesPorRolTest extends TestCase
         $this->get('/cuenta')->assertOk()->assertSee('Mi cuenta');
     }
 
-    // Continuar con Google (RF:0066): busca y vincula con adoptauy_login, registra con adoptauy_publico.
-    // Google se simula: ninguna prueba llama a Google (CP-49)
+    // Continuar con Google (RF:0066)
     private function simularGoogle($sub, $email)
     {
         $google = new \Laravel\Socialite\Two\User();
@@ -314,11 +303,10 @@ class ConexionesPorRolTest extends TestCase
 
         // Día 15: la tarea programada corre con adoptauy_sistema
         $this->travelTo(now()->setDate(2026, 11, 16)->setTime(3, 0));
-        ConexionPorRol::usar('sistema', function ()
-        {
-            Artisan::call('seguimientos:avisar');
-            Artisan::call('publicaciones:archivar-vencidas');
-        });
+        DB::setDefaultConnection('sistema');
+        Artisan::call('seguimientos:avisar');
+        Artisan::call('publicaciones:archivar-vencidas');
+        DB::setDefaultConnection('mysql');
         Mail::assertSent(\App\Mail\AvisoSeguimiento::class, 1);
 
         $this->withSession($this->sesion($adoptante->ID_Usuario, 'Particular'))->get('/seguimientos')->assertOk();

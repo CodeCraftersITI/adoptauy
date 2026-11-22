@@ -13,10 +13,7 @@ use Database\Factories\UsuarioFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Reportes y moderación: reportar (RF:0059, CP-30), umbrales automáticos (RF:0061, CP-31)
- * y resolución del Administrador (RF:0060, CP-32). RNE22.
- */
+// Reportes y moderación (RF:0059, RF:0061, RF:0060)
 class ReporteTest extends TestCase
 {
     use RefreshDatabase;

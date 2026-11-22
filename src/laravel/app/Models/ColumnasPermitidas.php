@@ -4,17 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * Para las tablas donde los usuarios de MySQL tienen permiso solo sobre algunas columnas
- * (Usuario, Particular y Refugio; 16.3.4 del integrador, docs/base-de-datos/usuarios.sql).
- *
- * Eloquent pide siempre "SELECT *", y MySQL lo rechaza si el usuario no puede leer todas las
- * columnas. Con este trait, el modelo pide solo las columnas que puede leer el usuario de la
- * conexión que se está usando. Cada modelo lo declara en COLUMNAS_POR_CONEXION; una conexión
- * que no figura (admin, mysql) lee todas.
- *
- * Uso en el modelo:  use ColumnasPermitidas;  y la constante COLUMNAS_POR_CONEXION.
- */
+// Pide solo las columnas que el usuario de MySQL puede leer (Usuario, Particular y Refugio)
 trait ColumnasPermitidas
 {
     // Laravel llama a este método solo al usar el trait (boot + nombre del trait)

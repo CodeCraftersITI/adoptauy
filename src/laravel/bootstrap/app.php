@@ -15,8 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Nombre corto para usar en las rutas: ->middleware('rol:Administrador')
-        // Usuario de MySQL según el rol de la sesión (privilegio mínimo, 16.3.4)
+        // Nombre corto para usar en las rutas
         $middleware->web(append: [ConexionPorRol::class]);
 
         $middleware->alias([

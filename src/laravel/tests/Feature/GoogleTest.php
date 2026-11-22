@@ -14,10 +14,7 @@ use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as UsuarioGoogle;
 use Tests\TestCase;
 
-/**
- * Continuar con Google (RF:0066, RNE27). Caso CP-49.
- * Google se simula con un mock de Socialite: ninguna prueba llama a Google.
- */
+// Continuar con Google (RF:0066)
 class GoogleTest extends TestCase
 {
     use RefreshDatabase;

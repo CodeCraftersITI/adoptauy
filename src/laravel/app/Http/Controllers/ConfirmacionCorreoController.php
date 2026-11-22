@@ -5,12 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 
-/**
- * Confirmación del correo del Particular (RF:0043, CP-03). Desde el Sprint 5 no se puede
- * iniciar sesión sin confirmar (D67). La cuenta creada con Google ya viene confirmada (RF:0066).
- *  - GET /confirmar-correo/{id}: el enlace del correo. Si la firma es válida, confirma.
- *  - GET y POST /confirmar-correo: pedir que se reenvíe el correo, por si no llegó.
- */
+// Confirmación del correo del Particular (RF:0043, RF:0066)
 class ConfirmacionCorreoController extends Controller
 {
     // Mismo mensaje haya o no una cuenta con ese correo: así no se revela qué correos existen

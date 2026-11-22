@@ -6,13 +6,7 @@ use App\Models\Particular;
 use App\Rules\CedulaUruguaya;
 use Illuminate\Http\Request;
 
-/**
- * Particulares en el panel del Administrador (rutas protegidas con rol:Administrador):
- *  - Listado con búsqueda por nombre, apellido o correo y por estado (RF:0014).
- *  - Baja lógica: Estado_Usuario pasa a Baja y no puede volver a iniciar sesión (RF:0010, D23).
- *    Nunca se borra la fila (regla 7 del equipo).
- * La CI no se muestra en el panel: nunca se muestra a otros usuarios (RNF:0013).
- */
+// Particulares en el panel del Administrador (RF:0014, RF:0010)
 class AdminParticularController extends Controller
 {
     private const POR_PAGINA = 20;
@@ -59,8 +53,7 @@ class AdminParticularController extends Controller
         return view('admin.editar-particular', ['particular' => $this->buscar($id)]);
     }
 
-    // PUT /admin/particulares/{id}: modifica los atributos del Particular (RF:0013):
-    // cédula, nombre, apellido y teléfono, con las mismas reglas que el registro
+    // PUT /admin/particulares/{id} (RF:0013)
     public function actualizar(Request $request, string $id)
     {
         $particular = $this->buscar($id);
@@ -70,8 +63,7 @@ class AdminParticularController extends Controller
             'telefono' => str_replace(' ', '', $request->input('telefono') ?? ''),
         ]);
 
-        // La cédula es opcional: el Administrador no la ve (RNF:0013) y solo la escribe para
-        // corregirla. Si la escribe, tiene que ser válida y única (RNE23), sin contar la de este particular
+        // La cédula es opcional
         $request->validate([
             'ci' => ['nullable', new CedulaUruguaya, 'unique:Particular,CI,' . $particular->ID_Usuario . ',ID_Usuario'],
         ] + Particular::REGLAS, [
@@ -102,8 +94,7 @@ class AdminParticularController extends Controller
         return $particular;
     }
 
-    // PUT /admin/particulares/{id}/restituir: la cuenta vuelve a Activo después de una revisión,
-    // una suspensión o una inhabilitación por reportes (13.2.5, RF:0060). La Baja es definitiva
+    // PUT /admin/particulares/{id}/restituir (RF:0060)
     public function restituir(string $id)
     {
         $particular = Particular::find($id);

@@ -6,15 +6,7 @@ use App\Models\PublicacionAdopcion;
 use App\Models\Seguimiento;
 use App\Models\Usuario;
 
-/**
- * Estados de una mascota en adopción que cambia su publicante desde "Mi cuenta"
- * (RF:0018 Particular y RF:0025 Refugio: baja de la publicación; RF:0045: cambio de estado).
- * Transiciones de 13.2.2 que hace el publicante:
- *   En adopción -> Archivado   retiro de la publicación (baja lógica: no se borra)
- *   Archivado -> En adopción   reactivación
- * El paso a Adoptado se hace eligiendo al adoptante (RF:0052) y es definitivo.
- * El Administrador archiva desde su panel (RF:0001).
- */
+// Estados de una mascota en adopción que cambia su publicante (RF:0018, RF:0025, RF:0045, RF:0052, RF:0001)
 class EstadoAdopcionController extends Controller
 {
     // PUT /adopciones/{id}/archivar
@@ -56,8 +48,7 @@ class EstadoAdopcionController extends Controller
         return back()->with('exito', 'Reactivaste la publicación: vuelve a estar En adopción.');
     }
 
-    // Busca la mascota en adopción y comprueba que sea del usuario que inició sesión:
-    // solo el publicante puede cambiar el estado de su publicación (RNE03)
+    // Busca la mascota en adopción y comprueba que sea del usuario que inició sesión
     private function buscarPropia($id)
     {
         $adopcion = PublicacionAdopcion::find($id);

@@ -12,10 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
-/**
- * Confirmación del correo del Particular (RF:0043, RF:0063). Caso CP-03, y el caso d)
- * de CP-04: sin confirmar el correo no se puede iniciar sesión (D67).
- */
+// Confirmación del correo del Particular (RF:0043, RF:0063)
 class ConfirmacionCorreoTest extends TestCase
 {
     use RefreshDatabase;

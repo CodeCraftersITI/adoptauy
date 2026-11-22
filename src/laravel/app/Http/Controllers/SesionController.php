@@ -6,19 +6,10 @@ use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * Inicio de sesión (RF:0022) y cierre de sesión (RF:0023), como en el teórico:
- * Hash::check() para la contraseña y los datos del usuario guardados en la sesión.
- *
- * Hito 2: se controla el correo, la contraseña y que el refugio esté Validado
- * (adelantado porque el registro de refugios entra en este hito). Desde el Sprint 5
- * también se rechaza el correo sin confirmar y la cuenta inhabilitada o dada de baja,
- * con el mismo mensaje (D67).
- */
+// Inicio de sesión (RF:0022) y cierre de sesión (RF:0023)
 class SesionController extends Controller
 {
-    // Mismo mensaje si el correo no existe o si la contraseña está mal:
-    // así no se revela qué correos están registrados (regla de seguridad del equipo)
+    // Mismo mensaje si el correo no existe o si la contraseña está mal
     public const MENSAJE_ERROR = 'El correo o la contraseña no son correctos.';
 
     // GET /ingresar: muestra el formulario
@@ -39,10 +30,7 @@ class SesionController extends Controller
             'password.required' => 'Ingresá tu contraseña.',
         ]);
 
-        // Buscamos al usuario por su correo (where + first, como en el teórico).
-        // Una cuenta creada con Google no tiene contraseña (NULL) y Hash::check() da false:
-        // entra solo con Google hasta que defina una (D94, RF:0067).
-        // Se consulta con adoptauy_login, que solo ve lo necesario para iniciar sesión (16.3.4.1)
+        // Buscamos al usuario por su correo
         $usuario = Usuario::paraLogin()->where('Email', strtolower($request->input('email')))->first();
 
         if (!$usuario || !Hash::check($request->input('password'), $usuario->Contraseña))
@@ -50,22 +38,19 @@ class SesionController extends Controller
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }
 
-        // Una cuenta suspendida, inhabilitada o dada de baja no entra (RF:0022, RF:0010, RF:0060),
-        // con el mismo mensaje. "En revisión" sí entra: es una marca para el Administrador
+        // Una cuenta suspendida, inhabilitada o dada de baja no entra, con el mismo mensaje
         if (in_array($usuario->Estado_Usuario, ['Suspendido', 'Inhabilitado', 'Baja']))
         {
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }
 
-        // Un Particular entra solo con el correo confirmado (RF:0043, D67), con el mismo mensaje.
-        // El Refugio no confirma el correo: sus datos los verifica el Administrador al validarlo.
+        // Un Particular entra solo con el correo confirmado (RF:0043), con el mismo mensaje
         if ($usuario->Tipo_Usuario == 'Particular' && !$usuario->Email_Verificado)
         {
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));
         }
 
-        // Un refugio solo entra si el Administrador ya lo validó (13.2.1). Se usa el mismo
-        // mensaje para no revelar que el correo existe ni en qué estado está la solicitud.
+        // Un refugio solo entra si el Administrador ya lo validó
         if ($usuario->Tipo_Usuario == 'Refugio' && $usuario->refugio->Estado_Validacion != 'Validado')
         {
             return back()->with('error', self::MENSAJE_ERROR)->withInput($request->only('email'));

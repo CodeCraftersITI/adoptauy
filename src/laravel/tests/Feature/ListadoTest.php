@@ -10,10 +10,7 @@ use App\Models\PublicacionPerdida;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Listados públicos: adopción con filtros (RF:0040, RF:0041, CP-12), perdidas (RF:0048)
- * y encontradas (RF:0065), con paginación de 12 por página.
- */
+// Listados públicos (RF:0040, RF:0041, RF:0048, RF:0065)
 class ListadoTest extends TestCase
 {
     use RefreshDatabase;

@@ -5,10 +5,7 @@ namespace Tests\Unit;
 use App\Models\PublicacionPerdida;
 use Tests\TestCase;
 
-/**
- * Formato del contacto de una mascota perdida en el listado público (RF:0048).
- * Se guarda solo con números (RF:0046) y se muestra agrupado para leerlo mejor.
- */
+// Formato del contacto de una mascota perdida en el listado público (RF:0048, RF:0046)
 class ContactoFormateadoTest extends TestCase
 {
     private function formatear($contacto)

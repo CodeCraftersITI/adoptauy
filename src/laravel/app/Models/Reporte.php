@@ -2,14 +2,10 @@
 
 namespace App\Models;
 
-use App\Http\Middleware\ConexionPorRol;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
-/**
- * Reporte de una publicación, de un particular o de un refugio (tabla Reporte, 15.2.1).
- * RF:0059 a RF:0061. Se completa ID_Usuario_Reportado o ID_Publicacion_Reportada, nunca los dos (RNE22).
- * Estado_Reporte: 'Pendiente', 'Desestimado' o 'Confirmado'. Medida: 'Aviso', 'Suspensión' o 'Baja lógica'.
- */
+// Reporte de una publicación, de un particular o de un refugio (tabla Reporte) (RF:0059 a RF:0061)
 class Reporte extends Model
 {
     protected $table = 'Reporte';
@@ -48,8 +44,7 @@ class Reporte extends Model
         ],
     ];
 
-    // Umbrales de 13.2.5 (RF:0061). Solo cuentan los reportes no desestimados; como un usuario
-    // no puede reportar dos veces lo mismo (UNIQUE), cada reporte es de un usuario distinto
+    // Umbrales de los reportes (RF:0061)
     public const UMBRAL_PUBLICACION = 3;        // publicación: pasa a En revisión y se oculta
     public const UMBRAL_REFUGIO = 3;            // refugio: pasa a Suspendido
     public const UMBRAL_REVISION = 5;           // particular: revisión de cuenta
@@ -71,16 +66,18 @@ class Reporte extends Model
             ->count();
     }
 
-    // Medida automática al registrarse el reporte que alcanza un umbral (RF:0061).
-    // Solo se aplica sobre el estado normal; si el Administrador ya tomó otra medida, no se pisa.
-    // La aplica adoptauy_sistema (16.3.4.6): el usuario que reporta no puede cambiar el estado
-    // de otro usuario ni de un refugio
+    // Medida automática al registrarse el reporte que alcanza un umbral (RF:0061)
     public function aplicarUmbrales()
     {
-        ConexionPorRol::usar('sistema', function ()
+        $anterior = DB::getDefaultConnection();
+        if (config('database.conexiones_por_rol'))
         {
-            $this->aplicarUmbralesComoSistema();
-        });
+            DB::setDefaultConnection('sistema');
+        }
+
+        $this->aplicarUmbralesComoSistema();
+
+        DB::setDefaultConnection($anterior);
     }
 
     private function aplicarUmbralesComoSistema()
@@ -118,8 +115,7 @@ class Reporte extends Model
         Reporte::revisarParticular($usuario);
     }
 
-    // Particular: 10 reportes -> Inhabilitado; 5 reportes o 3 publicaciones suspendidas -> En revisión.
-    // También se llama cuando el Administrador suspende una publicación (RF:0060)
+    // Revisión o inhabilitación automática del Particular (RF:0060)
     public static function revisarParticular($usuario)
     {
         if ($usuario->Tipo_Usuario != 'Particular' || !in_array($usuario->Estado_Usuario, ['Activo', 'En revisión']))

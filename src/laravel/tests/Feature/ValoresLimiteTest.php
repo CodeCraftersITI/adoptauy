@@ -8,16 +8,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Valores límite de los campos del Hito 2 (técnica de valores límite del plan de pruebas).
- * Amplía CP-02 (RF:0039), CP-07 (RF:0017) y CP-10 (RF:0046) con los largos y formatos
- * fijados en el integrador 2.1 (13.2.1, 13.2.2 y RNE12):
- *   - Nombre y apellido de 2 a 50 caracteres; teléfono de 8 o 9 dígitos; contraseña de 8 a 72.
- *   - Raza de 2 a 50 caracteres; ubicación aproximada y zona del extravío de 3 a 100.
- *   - La edad estimada no tiene máximo.
- *   - El contacto de una mascota perdida es un teléfono de 8 o 9 dígitos.
- * Cada prueba envía primero los valores que deben rechazarse y después el que debe aceptarse.
- */
+// Valores límite de los campos del Hito 2 (RF:0039, RF:0017, RF:0046)
 class ValoresLimiteTest extends TestCase
 {
     use RefreshDatabase;
@@ -188,8 +179,7 @@ class ValoresLimiteTest extends TestCase
 
     public function test_rnf0010_una_edad_imposible_da_error_de_validacion_y_no_error_500()
     {
-        // Edad_Meses es smallint sin signo (hasta 65535 meses): sin un tope técnico,
-        // 6000 años desbordaría la columna y la base devolvería un error 500
+        // Edad_Meses es smallint sin signo (hasta 65535 meses)
         $sesion = $this->sesionParticular();
 
         $this->withSession($sesion)->post('/publicar', $this->adopcion(['edad' => 6000, 'edad_unidad' => 'años']))

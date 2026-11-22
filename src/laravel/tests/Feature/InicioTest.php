@@ -10,9 +10,7 @@ use App\Models\PublicacionPerdida;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Página de inicio pública (RF:0040, RF:0048, RF:0065). Casos CP-08 y CP-48.
- */
+// Página de inicio pública (RF:0040, RF:0048, RF:0065)
 class InicioTest extends TestCase
 {
     use RefreshDatabase;
@@ -120,7 +118,7 @@ class InicioTest extends TestCase
 
         $respuesta = $this->get('/')->assertOk();
 
-        // Cada una aparece en su sección: las perdidas antes del título «Mascotas encontradas», las encontradas después
+        // Cada una aparece en su sección
         $respuesta->assertSeeInOrder(['Mascotas perdidas', 'NombrePerdida', 'Mascotas encontradas', 'NombreEncontrada']);
         $respuesta->assertDontSee('NombreEncontradaResuelta')
             ->assertDontSee('NombreEncontradaVencida')

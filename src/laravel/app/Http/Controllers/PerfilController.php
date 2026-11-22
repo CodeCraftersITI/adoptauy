@@ -9,15 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * "Mi perfil" del Particular y del Refugio (rutas con rol:Particular,Refugio). Caso CP-16 y CP-50.
- *  - Particular: modifica nombre, apellido y teléfono (RF:0016). La cédula y el correo no se cambian.
- *  - Refugio: modifica nombre, ubicación, datos de contacto y foto (RF:0029). La ubicación en el
- *    mapa y las cuentas bancarias están en "Mi refugio".
- *  - Contraseña (RF:0067, D98): quien no tiene la define sin pedir la actual (cuentas creadas con
- *    Google); quien tiene una la cambia ingresando la actual. Vale para el Particular y el Refugio.
- * Las reglas de los datos están en los modelos y son las mismas que en el registro.
- */
+// "Mi perfil" del Particular y del Refugio (RF:0016, RF:0029, RF:0067)
 class PerfilController extends Controller
 {
     // GET /perfil
@@ -42,15 +34,13 @@ class PerfilController extends Controller
             $this->guardarDatosParticular($request, $usuario->particular);
         }
 
-        // El nombre que se muestra en "Mi cuenta" sale de la sesión: se actualiza
-        // (find y no fresh(): fresh() pide todas las columnas y el usuario de MySQL no las puede leer)
+        // El nombre que se muestra en "Mi cuenta" sale de la sesión
         session(['nombre' => Usuario::find($usuario->ID_Usuario)->nombreVisible()]);
 
         return redirect('/perfil')->with('exito', 'Guardaste los cambios de tu perfil.');
     }
 
-    // Particular (RF:0016): solo nombre, apellido y teléfono. Aunque la petición traiga CI o
-    // correo, no se usan: se asigna campo por campo (CP-16)
+    // Datos del Particular: nombre, apellido y teléfono (RF:0016)
     private function guardarDatosParticular(Request $request, $particular)
     {
         $request->merge(['telefono' => str_replace(' ', '', $request->input('telefono') ?? '')]);

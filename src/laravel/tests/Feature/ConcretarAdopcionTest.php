@@ -11,10 +11,7 @@ use App\Models\SolicitudAdopcion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Responder solicitudes: rechazar una (RF:0051, CP-24) y concretar la adopción eligiendo
- * al adoptante (RF:0052, RNE19, CP-25). Transiciones de 13.2.3.
- */
+// Responder solicitudes (RF:0051, RF:0052)
 class ConcretarAdopcionTest extends TestCase
 {
     use RefreshDatabase;

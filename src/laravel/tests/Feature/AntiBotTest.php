@@ -7,11 +7,7 @@ use App\Models\Particular;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Freno contra bots en los formularios (pedido del docente): tiempo mínimo y campo trampa
- * (middleware AntiBot) y límite de envíos por minuto (throttle). El resto de las pruebas lo
- * tiene apagado (ANTIBOT_ACTIVO=false en phpunit.xml); acá se prende.
- */
+// Freno contra bots en los formularios
 class AntiBotTest extends TestCase
 {
     use RefreshDatabase;

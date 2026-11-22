@@ -9,12 +9,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
-/**
- * Prueba de humo en Chrome (plan de pruebas, sección 7): CP-01 registro, CP-04 inicio de sesión
- * y CP-06 alta de publicación, más CP-05 cierre de sesión. Corre contra adoptauy_test.
- * Los formularios con freno contra bots (D99) esperan unos segundos antes de enviar,
- * como lo haría una persona.
- */
+// Prueba de humo en Chrome
 class PruebaDeHumoTest extends DuskTestCase
 {
     use DatabaseMigrations;
@@ -107,8 +102,7 @@ class PruebaDeHumoTest extends DuskTestCase
     public function test_cp06_alta_de_publicacion_en_adopcion()
     {
         $particular = Particular::factory()->create();
-        // Foto de prueba: una imagen de un color, creada con GD y guardada como .jpg común
-        // (la de UploadedFile::fake() es temporal y se borra antes de que Chrome la suba)
+        // Foto de prueba
         $foto = sys_get_temp_dir() . '/perro-dusk.jpg';
         $imagen = imagecreatetruecolor(800, 600);
         imagefill($imagen, 0, 0, imagecolorallocate($imagen, 176, 58, 105));

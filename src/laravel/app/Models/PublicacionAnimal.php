@@ -4,11 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Publicación de un animal (tabla Publicacion_Animal): lo común a los dos tipos.
- * Tipo_Publicacion vale 'Adopción' o 'Perdida', y los datos propios de cada tipo
- * están en Publicacion_Adopcion o en Publicacion_Perdida (especialización).
- */
+// Publicación de un animal (tabla Publicacion_Animal)
 class PublicacionAnimal extends Model
 {
     protected $table = 'Publicacion_Animal';
@@ -78,8 +74,7 @@ class PublicacionAnimal extends Model
         return '/storage/' . $this->fotos->first()->URL_Foto;
     }
 
-    // ¿La puede ver cualquier visitante? Mismas condiciones que los listados del inicio:
-    // visible por moderación (13.2.5) y en estado público (En adopción, o Vigente sin vencer)
+    // ¿La puede ver cualquier visitante? Mismas condiciones que los listados del inicio
     public function esPublica()
     {
         if ($this->Estado_Moderacion != 'Visible')
@@ -96,12 +91,10 @@ class PublicacionAnimal extends Model
             && $this->perdida->Fecha_Vencimiento >= now()->toDateString();
     }
 
-    // Quién publica, sin datos personales del particular (RNF:0013): de un refugio se
-    // muestra su nombre; de un particular, solo que es un particular
+    // Quién publica, sin datos personales del particular
     public function publicanteVisible()
     {
-        // Se busca el refugio directamente: el invitado (adoptauy_publico) no puede leer
-        // el tipo de usuario, pero sí el nombre de los refugios (16.3.4.2)
+        // Se busca el refugio directamente
         $refugio = Refugio::find($this->ID_Usuario);
         if ($refugio)
         {

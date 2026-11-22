@@ -5,12 +5,7 @@ namespace App\Console\Commands;
 use App\Models\PublicacionPerdida;
 use Illuminate\Console\Command;
 
-/**
- * Tarea diaria de las 03:00 (RF:0047, D71, CP-14): pasa a Archivada cada mascota
- * perdida o encontrada Vigente que llegó a su fecha de vencimiento sin renovarse.
- * Se programa en routes/console.php y la corre el contenedor scheduler.
- * A mano: docker compose exec app php artisan publicaciones:archivar-vencidas
- */
+// Tarea diaria de las 03:00 (RF:0047)
 class ArchivarPerdidasVencidas extends Command
 {
     protected $signature = 'publicaciones:archivar-vencidas';

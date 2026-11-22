@@ -9,11 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * Registro de Particular (RF:0039).
- * Al crear la cuenta se envía el correo para confirmar la dirección (RF:0043); sin
- * confirmarla no se puede iniciar sesión (D67).
- */
+// Registro de Particular (RF:0039, RF:0043)
 class RegistroController extends Controller
 {
     // GET /registro: muestra el formulario
@@ -25,17 +21,14 @@ class RegistroController extends Controller
     // POST /registro: valida los datos y crea la cuenta
     public function store(Request $request)
     {
-        // La cédula y el teléfono se guardan solo con números, y el correo en minúsculas.
-        // El ?? '' evita errores cuando un campo llega vacío.
+        // La cédula y el teléfono se guardan solo con números, y el correo en minúsculas
         $request->merge([
             'ci' => str_replace(['.', '-', ' '], '', $request->input('ci') ?? ''),
             'telefono' => str_replace(' ', '', $request->input('telefono') ?? ''),
             'email' => strtolower(trim($request->input('email') ?? '')),
         ]);
 
-        // Criterio de aceptación de RF:0039. Si algo falla, Laravel vuelve al
-        // formulario con los errores y no se ejecuta nada de lo que sigue.
-        // Nombre, apellido, teléfono y contraseña usan las reglas compartidas de los modelos
+        // Criterio de aceptación de RF:0039
         $request->validate([
             'ci' => ['required', new CedulaUruguaya, 'unique:Particular,CI'],
             'email' => 'required|email|max:255|unique:Usuario,Email',
@@ -49,14 +42,12 @@ class RegistroController extends Controller
             'email.unique' => 'Ya existe una cuenta con ese correo electrónico.',
         ] + Particular::MENSAJES + Usuario::MENSAJES_CONTRASENA);
 
-        // El Usuario y su fila de Particular se guardan juntos: si falla uno,
-        // no se guarda ninguno (transacción, RNE11)
+        // El Usuario y su fila de Particular se guardan juntos
         $usuario = new Usuario();
 
         DB::transaction(function () use ($request, $usuario)
         {
-            // Tipo_Usuario no está en $fillable, por eso se asigna a mano.
-            // Email_Verificado queda vacío (NULL) hasta que confirme el correo (RF:0043)
+            // Tipo_Usuario no está en $fillable, por eso se asigna a mano
             $usuario->Email = $request->input('email');
             $usuario->Contraseña = Hash::make($request->input('password'));   // RNF:0007: hash bcrypt
             $usuario->Tipo_Usuario = 'Particular';

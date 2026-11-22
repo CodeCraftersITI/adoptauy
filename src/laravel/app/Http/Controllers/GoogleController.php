@@ -10,24 +10,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 
-/**
- * Continuar con Google (RF:0066, D93, RNE27), con Laravel Socialite como en el teórico.
- * Solo para el Particular: el Refugio y el Administrador ingresan con correo y contraseña.
- *
- * Registro y login son el mismo botón; la app decide según lo que encuentre en Usuario:
- *  - Google_ID o correo de un Particular activo: vincula la cuenta y abre la sesión.
- *  - No hay cuenta: pide la CI y el teléfono (pantalla Completar datos) y crea el Particular
- *    sin contraseña y con el correo confirmado.
- *  - Correo de un Refugio o del Administrador, o cuenta inhabilitada o dada de baja:
- *    mensaje genérico que no revela si el correo existe.
- */
+// Continuar con Google con Laravel Socialite (RF:0066)
 class GoogleController extends Controller
 {
     // Mismo mensaje para todo rechazo: no revela si el correo existe ni por qué falló
     public const MENSAJE_ERROR = 'No se pudo iniciar sesión con esa cuenta de Google.';
 
-    // GET /auth/google: manda al usuario a la pantalla de Google (pasos 1 y 2 de OAuth).
-    // Socialite arma la URL con el client_id, la redirect_uri, los scopes y el state.
+    // GET /auth/google
     public function redirigir()
     {
         return Socialite::driver('google')->redirect();
@@ -36,9 +25,7 @@ class GoogleController extends Controller
     // GET /auth/google/callback: Google vuelve acá con el code (pasos 3 a 6)
     public function callback(Request $request)
     {
-        // Socialite comprueba el state, canjea el code por el token y pide el perfil.
-        // Falla si la persona tocó "Cancelar" o si la respuesta no es válida:
-        // en ese caso no se crea ni se modifica ninguna cuenta.
+        // Socialite comprueba el state, canjea el code por el token y pide el perfil
         try
         {
             $google = Socialite::driver('google')->user();
@@ -57,8 +44,7 @@ class GoogleController extends Controller
 
         $email = strtolower($google->getEmail());
 
-        // Se busca primero por el identificador de Google (no cambia nunca) y después por el correo
-        // Con adoptauy_login (16.3.4.1), que puede guardar Google_ID y la confirmación del correo
+        // Se busca primero por el identificador de Google y después por el correo
         $usuario = Usuario::paraLogin()->where('Google_ID', $google->getId())->first();
         if (!$usuario)
         {
@@ -68,15 +54,13 @@ class GoogleController extends Controller
         // ---------- Ya existe una cuenta: login ----------
         if ($usuario)
         {
-            // El Refugio y el Administrador nunca se vinculan con Google (D93), y una cuenta
-            // inhabilitada o dada de baja no entra. Mismo mensaje en todos los casos.
+            // El Refugio y el Administrador no se vinculan con Google, y una cuenta inhabilitada o dada de baja no entra
             if ($usuario->Tipo_Usuario != 'Particular' || in_array($usuario->Estado_Usuario, ['Suspendido', 'Inhabilitado', 'Baja']))
             {
                 return redirect('/ingresar')->with('error', self::MENSAJE_ERROR);
             }
 
-            // Vincula la cuenta: guarda el Google_ID si no lo tenía y da el correo por
-            // confirmado, porque Google ya lo verificó (decisión del equipo, RF:0066)
+            // Vincula la cuenta (RF:0066)
             if (!$usuario->Google_ID)
             {
                 $usuario->Google_ID = $google->getId();
@@ -91,9 +75,7 @@ class GoogleController extends Controller
         }
 
         // ---------- No hay cuenta: registro ----------
-        // Faltan la CI y el teléfono, que Google no tiene. Guardamos lo que mandó Google en
-        // la sesión (no en el formulario, así nadie puede cambiar el correo ni el Google_ID)
-        // y pasamos a la pantalla Completar datos.
+        // Faltan la CI y el teléfono, que Google no tiene
         session(['google_pendiente' => [
             'id' => $google->getId(),
             'email' => $email,
@@ -150,8 +132,7 @@ class GoogleController extends Controller
         // Usuario y Particular se guardan juntos o ninguno (transacción, RNE11)
         $usuario = DB::transaction(function () use ($request, $google)
         {
-            // Sin contraseña (NULL) y con el correo confirmado (RF:0066, RNE27).
-            // Tipo_Usuario y Google_ID no están en $fillable: se asignan a mano.
+            // Sin contraseña (NULL) y con el correo confirmado (RF:0066)
             $usuario = new Usuario();
             $usuario->Email = $google['email'];
             $usuario->Tipo_Usuario = 'Particular';

@@ -9,10 +9,7 @@ use App\Models\PublicacionPerdida;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Vigencia y cierre de mascotas perdidas y encontradas (RF:0047, RNE17). Caso CP-14.
- * travelTo() simula la fecha para probar los días 29 y 30 sin esperar.
- */
+// Vigencia y cierre de mascotas perdidas y encontradas (RF:0047)
 class VigenciaTest extends TestCase
 {
     use RefreshDatabase;

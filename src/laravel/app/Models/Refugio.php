@@ -6,18 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Refugio u organización (tabla Refugio, 15.2.1). RF:0034.
- * Estado_Validacion: 'Pendiente de validación', 'Validado', 'Rechazado',
- * 'Suspendido' o 'Dado de baja' (13.2.1, RNE24).
- */
+// Refugio u organización (tabla Refugio) (RF:0034)
 class Refugio extends Model
 {
     use HasFactory;
     use ColumnasPermitidas;
 
-    // Columnas que puede leer cada usuario de MySQL (16.3.4): sin los documentos ni el motivo
-    // de rechazo. El propio Refugio, el sistema y el Administrador leen todas
+    // Columnas que puede leer cada usuario de MySQL
     public const COLUMNAS_POR_CONEXION = [
         'login' => ['ID_Usuario', 'Estado_Validacion'],
         'publico' => ['ID_Usuario', 'Nombre_Refugio', 'Ubicacion', 'Latitud', 'Longitud', 'Estado_Validacion', 'URL_Foto'],
@@ -35,8 +30,7 @@ class Refugio extends Model
         'Ubicacion', 'Latitud', 'Longitud', 'URL_Foto',
     ];
 
-    // Reglas y mensajes del nombre y la ubicación del refugio. Las usan la solicitud de
-    // registro (RF:0034) y el perfil (RF:0029)
+    // Reglas y mensajes del nombre y la ubicación del refugio (RF:0034, RF:0029)
     public const REGLAS = [
         'nombre_refugio' => 'required|min:2|max:100',
         'ubicacion' => 'required|max:255',
@@ -50,8 +44,7 @@ class Refugio extends Model
         'ubicacion.max' => 'La ubicación puede tener hasta 255 caracteres.',
     ];
 
-    // Los contactos se cargan en un cuadro de texto, uno por línea: se separan, se limpian
-    // y se sacan las líneas vacías y repetidas
+    // Los contactos se cargan en un cuadro de texto, uno por línea
     public static function contactosDesdeTexto($texto)
     {
         return array_values(array_unique(array_filter(array_map('trim', explode("\n", $texto ?? '')))));
@@ -69,8 +62,7 @@ class Refugio extends Model
         'lista_contactos.*.max' => 'Cada dato de contacto puede tener hasta 255 caracteres.',
     ];
 
-    // Guarda nombre, ubicación y contactos. La usan "Mi perfil" (RF:0029) y el Administrador
-    // (RF:0007). Los contactos se reemplazan por la lista nueva (atributo multivaluado)
+    // Guarda nombre, ubicación y contactos (RF:0029, RF:0007)
     public function actualizarDatos($nombre, $ubicacion, $contactos)
     {
         DB::transaction(function () use ($nombre, $ubicacion, $contactos)
@@ -110,9 +102,7 @@ class Refugio extends Model
         return $this->Latitud !== null && $this->Longitud !== null;
     }
 
-    // Baja lógica (RF:0006, 13.2.1): no puede iniciar sesión, sale del mapa y del listado, y sus
-    // publicaciones activas pasan a Archivado o Archivada. Es definitiva. La usan el panel de
-    // refugios (AdminRefugioController) y la resolución de reportes (AdminReporteController).
+    // Baja lógica (RF:0006)
     public function darDeBaja()
     {
         // El refugio, su cuenta y sus publicaciones cambian juntos: o todo o nada

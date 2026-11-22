@@ -4,10 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Adopción concretada (tabla Adopcion, 15.2.1): la genera la solicitud elegida (RF:0052).
- * Fecha_Adopcion es el día en que el publicante eligió al adoptante.
- */
+// Adopción concretada (tabla Adopcion) (RF:0052)
 class Adopcion extends Model
 {
     protected $table = 'Adopcion';

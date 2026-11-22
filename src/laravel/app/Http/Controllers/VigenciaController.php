@@ -4,15 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PublicacionPerdida;
 
-/**
- * Vigencia y cierre de mascotas perdidas y encontradas (RF:0047, RNE17, CP-14).
- * Transiciones de 13.2.2 que hace el publicante desde "Mi cuenta":
- *   Vigente o Archivada -> Vigente   renovar: vence 30 días después de la renovación
- *   Vigente -> Resuelta              la mascota volvió con su dueño (es definitivo)
- *   Vigente -> Archivada             retiro de la publicación
- * El paso Vigente -> Archivada por vencimiento lo hace la tarea diaria
- * (comando publicaciones:archivar-vencidas, a las 03:00).
- */
+// Vigencia y cierre de mascotas perdidas y encontradas (RF:0047)
 class VigenciaController extends Controller
 {
     // PUT /publicaciones/{id}/renovar
@@ -66,8 +58,7 @@ class VigenciaController extends Controller
         return back()->with('exito', 'Archivaste la publicación de ' . $perdida->nombreVisible() . '. La podés renovar cuando quieras.');
     }
 
-    // Busca la perdida o encontrada y comprueba que sea del usuario que inició sesión:
-    // solo el publicante puede cambiar el estado de su publicación (RNE03)
+    // Busca la perdida o encontrada y comprueba que sea del usuario que inició sesión
     private function buscarPropia($id)
     {
         $perdida = PublicacionPerdida::find($id);

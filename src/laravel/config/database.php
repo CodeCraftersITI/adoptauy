@@ -3,18 +3,8 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
-/*
- * Usuarios de MySQL con privilegio mínimo (16.3.4 del documento integrador,
- * docs/base-de-datos/usuarios.sql). Cada conexión es la misma base con otro usuario:
- *   login       inicio de sesión y confirmación del correo
- *   publico     Usuario Invitado (consulta pública y registro)
- *   particular  Particular con sesión iniciada
- *   refugio     Refugio con sesión iniciada
- *   admin       Administrador
- *   sistema     tareas programadas, cola de correos y umbrales de reportes
- * El middleware ConexionPorRol elige en cada pedido la del rol de la sesión. La conexión
- * "mysql" (la que tiene todos los permisos) queda para las migraciones y las pruebas.
- */
+// Un usuario de MySQL por rol (docs/base-de-datos/usuarios.sql); ConexionPorRol elige cuál usar.
+// "mysql" tiene todos los permisos y queda para las migraciones y las pruebas.
 $conexionDelRol = function ($rol)
 {
     return [
@@ -101,9 +91,7 @@ return [
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            // Hora de Uruguay (UTC-3, sin horario de verano) para que las fechas que pone
-            // MySQL (CURRENT_TIMESTAMP) coincidan con las de Laravel aunque el servidor de
-            // la base esté en UTC, como en GitHub Actions
+            // Hora de Uruguay, para que CURRENT_TIMESTAMP de MySQL coincida con la de Laravel
             'timezone' => env('DB_TIMEZONE', '-03:00'),
             'prefix' => '',
             'prefix_indexes' => true,

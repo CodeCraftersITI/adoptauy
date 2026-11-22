@@ -10,10 +10,7 @@ use Database\Factories\UsuarioFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Inicio de sesión (RF:0022) y cierre de sesión (RF:0023). Casos CP-04 y CP-05.
- * Los casos d) y e) de CP-04 (correo sin confirmar, cuenta inhabilitada) son del Sprint 5.
- */
+// Inicio de sesión (RF:0022) y cierre de sesión (RF:0023)
 class SesionTest extends TestCase
 {
     use RefreshDatabase;

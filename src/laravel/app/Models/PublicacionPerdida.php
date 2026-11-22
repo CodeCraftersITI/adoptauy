@@ -4,13 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Datos propios de una publicación de mascota perdida o encontrada (tabla Publicacion_Perdida).
- * RF:0046 (perdida) y RF:0064 (encontrada): comparten los datos, y Tipo_Aviso los distingue.
- * Fecha_Suceso y Zona_Suceso son las del extravío en una perdida y las del hallazgo en una encontrada.
- * Estado_Perdida: 'Vigente', 'Resuelta' o 'Archivada' (13.2.2).
- * Vence 30 días después de la creación o de la última renovación (RNE17).
- */
+// Datos propios de una publicación de mascota perdida o encontrada (tabla Publicacion_Perdida) (RF:0046, RF:0064)
 class PublicacionPerdida extends Model
 {
     public const PERDIDA = 'Perdida';
@@ -27,9 +21,7 @@ class PublicacionPerdida extends Model
         'Fecha_Suceso', 'Zona_Suceso', 'Contacto',
     ];
 
-    // Publicaciones vigentes de un tipo para la consulta pública (RF:0048, RF:0065):
-    // no vencidas (RF:0047) y no ocultas por moderación (13.2.5).
-    // El día del vencimiento ya no se muestra: ese día la tarea de las 03:00 la archiva (CP-14).
+    // Publicaciones vigentes de un tipo para la consulta pública (RF:0048, RF:0065, RF:0047)
     public function scopeVigentes($consulta, $tipo)
     {
         return $consulta->where('Tipo_Aviso', $tipo)
@@ -52,8 +44,7 @@ class PublicacionPerdida extends Model
         return $this->Nombre_Mascota ?: 'Sin nombre';
     }
 
-    // Contacto para mostrar: se guarda solo con números y se agrupa para leerlo mejor
-    // (celular 098 765 432, fijo 2901 2345). Si no son 8 o 9 dígitos, se muestra tal cual.
+    // Contacto para mostrar
     public function contactoFormateado()
     {
         $numero = $this->Contacto;

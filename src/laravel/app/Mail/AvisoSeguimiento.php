@@ -7,11 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-/**
- * Aviso de seguimiento del día 15 al adoptante (RF:0055, RF:0063, 13.2.6): le pide una foto
- * del animal y le avisa que tiene 7 días para enviarla. Es el único aviso (D47).
- * Lo envía la tarea diaria seguimientos:avisar (comando EnviarAvisosSeguimiento).
- */
+// Aviso de seguimiento del día 15 al adoptante (RF:0055, RF:0063)
 class AvisoSeguimiento extends Mailable
 {
     public $seguimiento;

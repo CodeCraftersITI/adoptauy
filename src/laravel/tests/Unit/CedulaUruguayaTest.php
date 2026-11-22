@@ -5,9 +5,7 @@ namespace Tests\Unit;
 use App\Rules\CedulaUruguaya;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Dígito verificador de la cédula (RF:0039, RNE23, D64). Parte de CP-02 d).
- */
+// Dígito verificador de la cédula (RF:0039)
 class CedulaUruguayaTest extends TestCase
 {
     public function test_acepta_cedulas_validas()

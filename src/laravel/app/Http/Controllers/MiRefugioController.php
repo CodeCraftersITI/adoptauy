@@ -6,13 +6,7 @@ use App\Models\CuentaBancaria;
 use App\Models\Refugio;
 use Illuminate\Http\Request;
 
-/**
- * "Mi refugio": lo que el refugio administra de su perfil público (protegido con rol:Refugio).
- *  - Ubicación en el mapa: el refugio toca el mapa y se guardan la latitud y la longitud (RF:0038).
- *  - Cuentas bancarias para donaciones: agregar (RF:0035), ver (RF:0036) y quitar (RF:0037).
- * Solo un refugio Validado publica cuentas (RNE04). Cada refugio maneja solo las suyas:
- * el ID_Usuario sale de la sesión, nunca del formulario (CP-21).
- */
+// "Mi refugio" (RF:0038, RF:0035, RF:0036, RF:0037)
 class MiRefugioController extends Controller
 {
     // GET /mi-refugio

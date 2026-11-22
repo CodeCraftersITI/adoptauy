@@ -8,15 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Panel de administración (todas sus rutas están protegidas con rol:Administrador).
- * Por ahora: solicitudes de registro de refugios (RF:0005 alta, RF:0044 rechazo).
- * Las transiciones válidas son las de la tabla de 13.2.1: solo una solicitud
- * "Pendiente de validación" puede pasar a "Validado" o a "Rechazado".
- */
+// Panel de administración, solo con rol:Administrador (RF:0005, RF:0044)
 class AdminController extends Controller
 {
-    // GET /admin: lista de solicitudes pendientes, la más vieja primero (plazo de 5 días hábiles, RNE06)
+    // GET /admin
     public function index()
     {
         $pendientes = Refugio::where('Estado_Validacion', 'Pendiente de validación')

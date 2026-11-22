@@ -5,14 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PublicacionAnimal;
 use Illuminate\Http\Request;
 
-/**
- * Publicaciones en el panel del Administrador (rutas protegidas con rol:Administrador):
- *  - Listado de todas las publicaciones, de cualquier estado (RF:0004).
- *  - Consulta con filtros por fecha, tipo, especie y usuario (RF:0002), y por tipo de
- *    publicante: las de particulares (RF:0011) o las de refugios (RF:0012).
- *  - Baja: la publicación pasa a Archivado o Archivada (RF:0001, D68). Es la transición
- *    "Retiro de la publicación" de 13.2.2, que el Administrador también puede hacer.
- */
+// Publicaciones en el panel del Administrador (RF:0004, RF:0002, RF:0011, RF:0012, RF:0001)
 class AdminPublicacionController extends Controller
 {
     private const POR_PAGINA = 20;

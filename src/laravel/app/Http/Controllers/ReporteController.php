@@ -7,13 +7,7 @@ use App\Models\Reporte;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 
-/**
- * Reportar una publicación, a un particular o a un refugio (RF:0059, CP-30), con un motivo
- * de la lista de 13.2.5 que corresponde. Lo puede hacer un usuario registrado (rol:Particular,Refugio).
- * Al guardarlo se aplican los umbrales automáticos (RF:0061). RNE22: un usuario no se reporta
- * a sí mismo ni reporta dos veces lo mismo.
- * Qué se reporta llega en la dirección: /reportar?publicacion=ID o /reportar?usuario=ID
- */
+// Reportar una publicación, a un particular o a un refugio (RF:0059), con un motivo de la lista (RF:0061)
 class ReporteController extends Controller
 {
     // GET /reportar?publicacion=ID o ?usuario=ID
@@ -71,8 +65,7 @@ class ReporteController extends Controller
         return redirect($objeto['volver'])->with('exito', 'Gracias por avisar. El Administrador va a revisar el reporte.');
     }
 
-    // Arma los datos de lo que se reporta: tipo (Publicación, Particular o Refugio), la
-    // publicación o el usuario, un texto para mostrar y a dónde volver. Si no existe, 404
+    // Arma los datos de lo que se reporta
     private function objetoReportado(Request $request)
     {
         if ($request->filled('publicacion'))
@@ -122,8 +115,7 @@ class ReporteController extends Controller
         ];
     }
 
-    // Un particular no tiene página propia: se vuelve a la página desde donde se lo reportó
-    // (?volver=/...). Solo se aceptan direcciones del propio sitio, que empiezan con una sola "/"
+    // Se vuelve a la página desde donde se reportó (solo direcciones del propio sitio)
     private function paginaDeVuelta(Request $request)
     {
         $volver = $request->input('volver', '');

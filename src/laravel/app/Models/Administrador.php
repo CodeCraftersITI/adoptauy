@@ -5,9 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Administrador de la plataforma (tabla Administrador, 15.2.1).
- */
+// Administrador de la plataforma (tabla Administrador)
 class Administrador extends Model
 {
     use HasFactory;

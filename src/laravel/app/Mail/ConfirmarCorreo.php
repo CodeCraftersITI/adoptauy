@@ -7,12 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-/**
- * Correo para confirmar la dirección del Particular que se registró con el formulario
- * (RF:0043, RF:0063, 13.2.6). Lleva el enlace que arma ConfirmacionCorreoController.
- * Se envía con: Mail::to($correo)->send(new ConfirmarCorreo($usuario, $enlace));
- * En desarrollo se ve en Mailpit: http://localhost:8025
- */
+// Correo para confirmar la dirección del Particular que se registró con el formulario (RF:0043, RF:0063)
 class ConfirmarCorreo extends Mailable
 {
     public $usuario;

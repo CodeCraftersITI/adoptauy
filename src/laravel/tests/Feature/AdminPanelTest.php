@@ -13,10 +13,7 @@ use Database\Factories\UsuarioFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Panel del Administrador: publicaciones (RF:0001, RF:0002, RF:0004, RF:0011, RF:0012),
- * refugios (RF:0006, RF:0008, RF:0009) y particulares (RF:0010, RF:0014).
- */
+// Panel del Administrador (RF:0001, RF:0002, RF:0004, RF:0011, RF:0012, RF:0006, RF:0008, RF:0009, RF:0010, RF:0014)
 class AdminPanelTest extends TestCase
 {
     use RefreshDatabase;

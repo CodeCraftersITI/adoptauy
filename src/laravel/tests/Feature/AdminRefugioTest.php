@@ -10,10 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
-/**
- * Validación o rechazo de la solicitud de refugio por el Administrador
- * (RF:0005, RF:0044, RNE05). Caso CP-18.
- */
+// Validación o rechazo de la solicitud de refugio por el Administrador (RF:0005, RF:0044)
 class AdminRefugioTest extends TestCase
 {
     use RefreshDatabase;

@@ -5,17 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Persona física registrada (tabla Particular, 15.2.1). RF:0039.
- * RNF:0013: la CI nunca se muestra a otros usuarios.
- */
+// Persona física registrada (tabla Particular) (RF:0039)
 class Particular extends Model
 {
     use HasFactory;
     use ColumnasPermitidas;
 
-    // Columnas que puede leer cada usuario de MySQL (16.3.4): la cédula solo la lee el registro
-    // para no repetirla, y el Administrador (RNF:0013)
+    // Columnas que puede leer cada usuario de MySQL
     public const COLUMNAS_POR_CONEXION = [
         'publico' => ['ID_Usuario', 'CI'],
         'particular' => ['ID_Usuario', 'Nombre', 'Apellido', 'Telefono'],
@@ -33,8 +29,7 @@ class Particular extends Model
 
     protected $fillable = ['ID_Usuario', 'CI', 'Nombre', 'Apellido', 'Telefono'];
 
-    // Reglas y mensajes de nombre, apellido y teléfono (13.2.1). Están escritas una sola vez y
-    // las usan el registro (RF:0039), el registro con Google (RF:0066) y el perfil (RF:0016)
+    // Reglas y mensajes de nombre, apellido y teléfono (RF:0039, RF:0066, RF:0016)
     public const REGLAS = [
         'nombre' => 'required|min:2|max:50',
         'apellido' => 'required|min:2|max:50',

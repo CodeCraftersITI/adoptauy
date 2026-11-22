@@ -32,7 +32,9 @@ docker compose up -d --build
 echo "Preparando Laravel (la primera vez tarda unos minutos)..."
 until docker compose exec -T app test -f storage/.preparado 2>/dev/null; do sleep 5; printf '.'; done
 echo
-docker compose wait usuarios-bd >/dev/null   # usuarios de MySQL del documento (16.3.4)
+# Usuarios de MySQL del documento (16.3.4): el servicio usuarios-bd termina solo
+until [ "$(docker compose ps -a --format '{{.State}}' usuarios-bd)" = "exited" ]; do sleep 2; done
+[ "$(docker compose ps -a --format '{{.ExitCode}}' usuarios-bd)" = 0 ] || { docker compose logs usuarios-bd; exit 1; }
 docker compose ps
 PUERTO=$(grep -E '^HTTPS_PORT=' .env 2>/dev/null | cut -d= -f2); PUERTO=${PUERTO:-8443}
 [[ "$PUERTO" == 443 ]] && SUFIJO="" || SUFIJO=":$PUERTO"
