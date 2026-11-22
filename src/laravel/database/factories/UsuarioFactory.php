@@ -21,6 +21,14 @@ class UsuarioFactory extends Factory
             'Email' => fake()->unique()->userName() . '@prueba.uy',
             'Contraseña' => Hash::make(self::CONTRASEÑA),
             'Tipo_Usuario' => 'Particular',
+            // Las cuentas de prueba ya tienen el correo confirmado (RF:0043), así pueden ingresar
+            'Email_Verificado' => now(),
         ];
+    }
+
+    // Cuenta que todavía no confirmó el correo: Usuario::factory()->sinConfirmar()->create()
+    public function sinConfirmar()
+    {
+        return $this->state(['Email_Verificado' => null]);
     }
 }

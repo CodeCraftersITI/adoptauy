@@ -24,7 +24,7 @@ Cambios respecto del diagrama del Hito 1:
 | Solicitud_Adopcion | Entidad nueva, entre Particular (solicitante) y Publicacion_Adopcion. | D6, D14 |
 | Adopcion | Entidad nueva, generada por la solicitud Adoptada. | D14, D16 |
 | Seguimiento | Entidad débil nueva de Adopcion, una por adopción. | D36 |
-| Reporte | Entidad nueva: un Usuario reporta a un Usuario o a una Publicacion_Animal. | D8, D18, RNE15 |
+| Reporte | Entidad nueva: un Usuario reporta a un Usuario o a una Publicacion_Animal. Detalle guarda el texto del motivo Otro y Fecha_Resolucion la fecha en que lo resuelve el Administrador. | D8, D18, RNE15, D97 |
 
 #### 15.1.2. RNE
 Las restricciones dadas de baja conservan su código; las nuevas continúan desde RNE16.
@@ -90,7 +90,7 @@ La clave primaria de cada tabla figura primero, en negrita.
 
 - Seguimiento(ID_Adopcion, Fecha_Aviso, Fecha_Limite, URL_Foto, Fecha_Envio, Estado_Evidencia) FK: ID_Adopcion (Adopcion). Estado_Evidencia: Pendiente, Enviada, Aprobada o Rechazada.
 
-- Reporte(ID_Reporte, ID_Usuario_Reportante, ID_Usuario_Reportado, ID_Publicacion_Reportada, Motivo, Fecha_Reporte, Estado_Reporte, Medida) FK: ID_Usuario_Reportante (Usuario), ID_Usuario_Reportado (Usuario), ID_Publicacion_Reportada (Publicacion_Animal). Estado_Reporte: Pendiente, Desestimado o Confirmado. Medida: Aviso, Suspensión o Baja lógica
+- Reporte(ID_Reporte, ID_Usuario_Reportante, ID_Usuario_Reportado, ID_Publicacion_Reportada, Motivo, Detalle, Fecha_Reporte, Estado_Reporte, Medida, Fecha_Resolucion) FK: ID_Usuario_Reportante (Usuario), ID_Usuario_Reportado (Usuario), ID_Publicacion_Reportada (Publicacion_Animal). Estado_Reporte: Pendiente, Desestimado o Confirmado. Medida: Aviso, Suspensión o Baja lógica
 Se eliminó la tabla Necesidad_Refugio (D17).
 
 El modelo físico en MySQL, con estas restricciones, está en `docs/base-de-datos/adoptauy.sql`.

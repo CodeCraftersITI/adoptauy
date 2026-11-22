@@ -50,11 +50,12 @@ class PublicacionTest extends TestCase
     private function datosAdopcion($cambios = [])
     {
         return array_merge([
+            'tipo' => 'Adopción',
             'especie' => 'Perro',
             'raza' => 'mestizo',
             'sexo' => 'Macho',
-            'edad_anios' => 0,
-            'edad_meses' => 8,
+            'edad' => 8,
+            'edad_unidad' => 'meses',
             'tamanio' => 'Mediano',
             'salud' => 'Sano, vacunas al día',
             'esterilizacion' => 'Esterilizado',
@@ -67,12 +68,13 @@ class PublicacionTest extends TestCase
     private function datosPerdida($cambios = [])
     {
         return array_merge([
+            'tipo' => 'Perdida',
             'nombre_mascota' => 'Luna',
             'especie' => 'Gato',
             'raza' => 'siamesa',
             'sexo' => 'Hembra',
             'caracteristicas' => 'Collar rojo',
-            'fecha_extravio' => now()->subDays(2)->toDateString(),
+            'fecha' => now()->subDays(2)->toDateString(),
             'zona' => 'Malvín',
             'contacto' => '098 765 432',
             'fotos' => $this->fotos(2),
@@ -81,15 +83,36 @@ class PublicacionTest extends TestCase
 
     // ---------- Adopción ----------
 
+    // Edad con número y unidad (corrección del docente): se guarda siempre en meses (RNE12)
+    public function test_la_edad_en_meses_o_en_anios_se_guarda_en_meses()
+    {
+        $sesion = $this->sesionParticular();
+
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['edad' => 4, 'edad_unidad' => 'meses']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['edad' => 2, 'edad_unidad' => 'años']))->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('Publicacion_Adopcion', ['Edad_Meses' => 4]);
+        $this->assertDatabaseHas('Publicacion_Adopcion', ['Edad_Meses' => 24]);
+    }
+
+    public function test_sin_tipo_o_con_un_tipo_inventado_no_se_publica()
+    {
+        $sesion = $this->sesionParticular();
+
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['tipo' => '']))->assertSessionHasErrors('tipo');
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['tipo' => 'Venta']))->assertSessionHasErrors('tipo');
+        $this->assertDatabaseCount('Publicacion_Animal', 0);
+    }
+
     public function test_el_formulario_de_adopcion_se_muestra()
     {
-        $this->withSession($this->sesionParticular())->get('/publicar/adopcion')->assertOk()->assertSee('Publicar en adopción');
+        $this->withSession($this->sesionParticular())->get('/publicar')->assertOk()->assertSee('Publicar mascota')->assertSee('En adopción');
     }
 
     public function test_cp06_alta_valida_queda_en_adopcion_y_aparece_en_el_inicio()
     {
         $this->withSession($this->sesionParticular())
-            ->post('/publicar/adopcion', $this->datosAdopcion())
+            ->post('/publicar', $this->datosAdopcion())
             ->assertRedirect('/cuenta');
 
         $publicacion = PublicacionAnimal::first();
@@ -108,8 +131,8 @@ class PublicacionTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion(['fotos' => $this->fotos(1)]))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion(['fotos' => $this->fotos(6)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['fotos' => $this->fotos(1)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['fotos' => $this->fotos(6)]))->assertSessionHasNoErrors();
 
         $this->assertDatabaseCount('Publicacion_Animal', 2);
         $this->assertDatabaseCount('Foto_Animal', 7);
@@ -119,8 +142,8 @@ class PublicacionTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion(['fotos' => []]))->assertSessionHasErrors('fotos');
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion(['fotos' => $this->fotos(7)]))->assertSessionHasErrors('fotos');
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['fotos' => []]))->assertSessionHasErrors('fotos');
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['fotos' => $this->fotos(7)]))->assertSessionHasErrors('fotos');
 
         $this->assertDatabaseCount('Publicacion_Animal', 0);
     }
@@ -129,13 +152,13 @@ class PublicacionTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion(['especie' => '']))->assertSessionHasErrors('especie');
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['especie' => '']))->assertSessionHasErrors('especie');
 
         $exe = UploadedFile::fake()->create('virus.jpg', 10, 'application/x-msdownload');
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion(['fotos' => [$exe]]))->assertSessionHasErrors('fotos.0');
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['fotos' => [$exe]]))->assertSessionHasErrors('fotos.0');
 
         $grande = UploadedFile::fake()->create('grande.jpg', 9 * 1024, 'image/jpeg');
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion(['fotos' => [$grande]]))->assertSessionHasErrors('fotos.0');
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion(['fotos' => [$grande]]))->assertSessionHasErrors('fotos.0');
 
         $this->assertDatabaseCount('Publicacion_Animal', 0);
     }
@@ -145,7 +168,7 @@ class PublicacionTest extends TestCase
         $refugio = Refugio::factory()->validado()->create();
         $sesion = ['id_usuario' => $refugio->ID_Usuario, 'tipo' => 'Refugio', 'nombre' => $refugio->Nombre_Refugio];
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion())->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion())->assertSessionHasNoErrors();
 
         $this->assertEquals($refugio->ID_Usuario, PublicacionAnimal::first()->ID_Usuario);
     }
@@ -155,7 +178,7 @@ class PublicacionTest extends TestCase
     public function test_cp09_alta_valida_queda_vigente_con_vencimiento_a_30_dias_y_es_publica()
     {
         $this->withSession($this->sesionParticular())
-            ->post('/publicar/perdida', $this->datosPerdida())
+            ->post('/publicar', $this->datosPerdida())
             ->assertRedirect('/cuenta');
 
         $perdida = PublicacionPerdida::first();
@@ -172,10 +195,10 @@ class PublicacionTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/perdida', $this->datosPerdida(['fotos' => $this->fotos(1)]))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/perdida', $this->datosPerdida(['fotos' => $this->fotos(3)]))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/perdida', $this->datosPerdida(['fotos' => []]))->assertSessionHasErrors('fotos');
-        $this->withSession($sesion)->post('/publicar/perdida', $this->datosPerdida(['fotos' => $this->fotos(4)]))->assertSessionHasErrors('fotos');
+        $this->withSession($sesion)->post('/publicar', $this->datosPerdida(['fotos' => $this->fotos(1)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosPerdida(['fotos' => $this->fotos(3)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosPerdida(['fotos' => []]))->assertSessionHasErrors('fotos');
+        $this->withSession($sesion)->post('/publicar', $this->datosPerdida(['fotos' => $this->fotos(4)]))->assertSessionHasErrors('fotos');
 
         $this->assertDatabaseCount('Publicacion_Perdida', 2);
     }
@@ -184,10 +207,10 @@ class PublicacionTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/perdida', $this->datosPerdida(['zona' => '']))->assertSessionHasErrors('zona');
+        $this->withSession($sesion)->post('/publicar', $this->datosPerdida(['zona' => '']))->assertSessionHasErrors('zona');
         $this->withSession($sesion)
-            ->post('/publicar/perdida', $this->datosPerdida(['fecha_extravio' => now()->addDay()->toDateString()]))
-            ->assertSessionHasErrors('fecha_extravio');
+            ->post('/publicar', $this->datosPerdida(['fecha' => now()->addDay()->toDateString()]))
+            ->assertSessionHasErrors('fecha');
 
         $this->assertDatabaseCount('Publicacion_Animal', 0);
     }
@@ -196,11 +219,9 @@ class PublicacionTest extends TestCase
 
     public function test_cp11_sin_sesion_los_formularios_y_los_post_redirigen_a_ingresar()
     {
-        $this->get('/publicar/adopcion')->assertRedirect('/ingresar');
-        $this->get('/publicar/perdida')->assertRedirect('/ingresar');
-        $this->get('/publicar/encontrada')->assertRedirect('/ingresar');
-        $this->post('/publicar/adopcion', $this->datosAdopcion())->assertRedirect('/ingresar');
-        $this->post('/publicar/perdida', $this->datosPerdida())->assertRedirect('/ingresar');
+        $this->get('/publicar')->assertRedirect('/ingresar');
+        $this->post('/publicar', $this->datosAdopcion())->assertRedirect('/ingresar');
+        $this->post('/publicar', $this->datosPerdida())->assertRedirect('/ingresar');
 
         $this->assertDatabaseCount('Publicacion_Animal', 0);
     }
@@ -210,14 +231,14 @@ class PublicacionTest extends TestCase
         $admin = Administrador::factory()->create();
         $sesion = ['id_usuario' => $admin->ID_Usuario, 'tipo' => 'Administrador', 'nombre' => 'Administrador'];
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->datosAdopcion())->assertForbidden();
+        $this->withSession($sesion)->post('/publicar', $this->datosAdopcion())->assertForbidden();
         $this->assertDatabaseCount('Publicacion_Animal', 0);
     }
 
     public function test_mi_cuenta_muestra_mis_publicaciones_con_su_estado()
     {
         $sesion = $this->sesionParticular();
-        $this->withSession($sesion)->post('/publicar/perdida', $this->datosPerdida());
+        $this->withSession($sesion)->post('/publicar', $this->datosPerdida());
 
         $this->withSession($sesion)->get('/cuenta')
             ->assertSee('Luna')

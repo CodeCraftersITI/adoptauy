@@ -69,7 +69,7 @@ class GoogleController extends Controller
         {
             // El Refugio y el Administrador nunca se vinculan con Google (D93), y una cuenta
             // inhabilitada o dada de baja no entra. Mismo mensaje en todos los casos.
-            if ($usuario->Tipo_Usuario != 'Particular' || in_array($usuario->Estado_Usuario, ['Inhabilitado', 'Baja']))
+            if ($usuario->Tipo_Usuario != 'Particular' || in_array($usuario->Estado_Usuario, ['Suspendido', 'Inhabilitado', 'Baja']))
             {
                 return redirect('/ingresar')->with('error', self::MENSAJE_ERROR);
             }
@@ -130,23 +130,13 @@ class GoogleController extends Controller
             'telefono' => str_replace(' ', '', $request->input('telefono') ?? ''),
         ]);
 
+        // Nombre, apellido y teléfono usan las reglas compartidas del modelo Particular
         $request->validate([
             'ci' => ['required', new CedulaUruguaya, 'unique:Particular,CI'],
-            'nombre' => 'required|min:2|max:50',
-            'apellido' => 'required|min:2|max:50',
-            'telefono' => 'required|regex:/^[0-9]{8,9}$/',
-        ], [
+        ] + Particular::REGLAS, [
             'ci.required' => 'Ingresá tu cédula.',
             'ci.unique' => 'Ya existe una cuenta con esa cédula.',
-            'nombre.required' => 'Ingresá tu nombre.',
-            'nombre.min' => 'El nombre debe tener al menos 2 letras.',
-            'nombre.max' => 'El nombre puede tener hasta 50 letras.',
-            'apellido.required' => 'Ingresá tu apellido.',
-            'apellido.min' => 'El apellido debe tener al menos 2 letras.',
-            'apellido.max' => 'El apellido puede tener hasta 50 letras.',
-            'telefono.required' => 'Ingresá tu teléfono.',
-            'telefono.regex' => 'El teléfono debe tener 8 o 9 números.',
-        ]);
+        ] + Particular::MENSAJES);
 
         // Por si mientras completaba alguien registró ese correo o esa cuenta de Google
         if (Usuario::where('Email', $google['email'])->orWhere('Google_ID', $google['id'])->exists())

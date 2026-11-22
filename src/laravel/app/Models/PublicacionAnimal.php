@@ -44,6 +44,18 @@ class PublicacionAnimal extends Model
         return $this->perdida->Tipo_Aviso;
     }
 
+    // ¿Se puede editar? Adoptado y Resuelta son estados finales (13.2.2): ya no se editan
+    public function sePuedeEditar()
+    {
+        return !in_array($this->estado(), ['Adoptado', 'Resuelta']);
+    }
+
+    // Reportes recibidos por esta publicación (RF:0059)
+    public function reportes()
+    {
+        return $this->hasMany(Reporte::class, 'ID_Publicacion_Reportada');
+    }
+
     public function fotos()
     {
         return $this->hasMany(FotoAnimal::class, 'ID_Publicacion');

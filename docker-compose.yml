@@ -39,6 +39,8 @@ x-php: &php
     MAIL_PASSWORD: ${MAIL_PASSWORD:-}
     MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-responder@adoptauy.local}
     APP_URL: ${APP_URL:-https://localhost:8443}
+    ANTIBOT_ACTIVO: ${ANTIBOT_ACTIVO:-true}     # freno contra bots (D99); solo se apaga para la prueba de carga
+    LIMITES_ACTIVOS: ${LIMITES_ACTIVOS:-true}
   depends_on:
     db:
       condition: service_healthy
@@ -75,6 +77,28 @@ services:
     environment:
       HTTPS_PORT: ${HTTPS_PORT:-8443}         # para que la redirección de HTTP vaya al puerto correcto
     depends_on: [app]
+    networks: [backend]
+
+  # ---------- Pruebas funcionales con Dusk (perfil "pruebas": no arrancan con el up de siempre) ----------
+  #   docker compose --profile pruebas up -d
+  #   docker compose exec app php artisan dusk
+  pruebas-web:                      # el sitio contra la base adoptauy_test, para que Dusk no toque la de desarrollo
+    <<: *php
+    profiles: ["pruebas"]
+    # Servidor de PHP directo (no "artisan serve": ese arranca otro proceso que no hereda estas
+    # variables y terminaría leyendo src/laravel/.env, con la base de desarrollo)
+    command: ["php", "-S", "0.0.0.0:8000", "-t", "/var/www/laravel/public", "/var/www/laravel/tests/Browser/servidor.php"]
+    environment:
+      <<: *php-env
+      PHP_CLI_SERVER_WORKERS: "4"
+      DB_DATABASE: adoptauy_test
+      APP_URL: http://pruebas-web:8000
+      MAIL_MAILER: log
+
+  selenium:                         # Chrome sin pantalla que maneja Dusk
+    image: selenium/standalone-chromium:4.27.0
+    profiles: ["pruebas"]
+    shm_size: 2gb
     networks: [backend]
 
   db:                               # MySQL 8.4 LTS

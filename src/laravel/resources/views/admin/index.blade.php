@@ -6,12 +6,13 @@
 @section('contenido')
 <div class="seccion">
     <h1 class="pagina-titulo">Panel de administración</h1>
+    @include('partials.menu-admin')
 
     <h2 class="seccion-titulo">Solicitudes de refugio pendientes</h2>
     <p class="apagado">Cada solicitud se resuelve en un máximo de 5 días hábiles desde su fecha.</p>
 
     <div class="tarjeta tabla-caja">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Refugio</th>
@@ -29,18 +30,18 @@
                             <strong>{{ $refugio->Nombre_Refugio }}</strong><br>
                             <span class="apagado">{{ $refugio->Ubicacion }}</span>
                         </td>
-                        <td>
+                        <td data-etiqueta="Contacto">
                             {{ $refugio->usuario->Email }}<br>
                             @foreach ($refugio->contactos as $contacto)
                                 <span class="apagado">{{ $contacto->Dato_Contacto }}</span><br>
                             @endforeach
                         </td>
-                        <td>{{ date('d/m/Y H:i', strtotime($refugio->Fecha_Solicitud)) }}</td>
-                        <td>
+                        <td data-etiqueta="Fecha de solicitud">{{ date('d/m/Y H:i', strtotime($refugio->Fecha_Solicitud)) }}</td>
+                        <td data-etiqueta="Documentos">
                             <a href="/admin/refugios/{{ $refugio->ID_Usuario }}/documento/certificado" target="_blank">Certificado</a><br>
                             <a href="/admin/refugios/{{ $refugio->ID_Usuario }}/documento/comprobante" target="_blank">Comprobante</a>
                         </td>
-                        <td>
+                        <td class="celda-acciones">
                             <div class="acciones-fila">
                                 {{-- Los formularios solo envían GET o POST: @method('PUT') simula el PUT --}}
                                 <form action="/admin/refugios/{{ $refugio->ID_Usuario }}/validar" method="POST">

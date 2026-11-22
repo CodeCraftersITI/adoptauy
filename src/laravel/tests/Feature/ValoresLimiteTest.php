@@ -104,11 +104,12 @@ class ValoresLimiteTest extends TestCase
     private function adopcion($cambios = [])
     {
         return array_merge([
+            'tipo' => 'Adopción',
             'especie' => 'Perro',
             'raza' => 'mestizo',
             'sexo' => 'Macho',
-            'edad_anios' => 0,
-            'edad_meses' => 8,
+            'edad' => 8,
+            'edad_unidad' => 'meses',
             'tamanio' => 'Mediano',
             'salud' => 'Sano',
             'esterilizacion' => 'Esterilizado',
@@ -120,12 +121,13 @@ class ValoresLimiteTest extends TestCase
     private function perdida($cambios = [])
     {
         return array_merge([
+            'tipo' => 'Perdida',
             'nombre_mascota' => 'Luna',
             'especie' => 'Gato',
             'raza' => 'siamesa',
             'sexo' => 'Hembra',
             'caracteristicas' => 'Collar rojo',
-            'fecha_extravio' => now()->subDays(2)->toDateString(),
+            'fecha' => now()->subDays(2)->toDateString(),
             'zona' => 'Malvín',
             'contacto' => '098765432',
             'fotos' => $this->fotos(1),
@@ -136,11 +138,11 @@ class ValoresLimiteTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['raza' => 'a']))->assertSessionHasErrors('raza');
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['raza' => 'a']))->assertSessionHasErrors('raza');
         $this->assertDatabaseCount('Publicacion_Animal', 0);
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['raza' => 'Pug']))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['raza' => 'ab']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['raza' => 'Pug']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['raza' => 'ab']))->assertSessionHasNoErrors();
         $this->assertDatabaseCount('Publicacion_Animal', 2);
     }
 
@@ -148,8 +150,8 @@ class ValoresLimiteTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['raza' => str_repeat('a', 51)]))->assertSessionHasErrors('raza');
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['raza' => str_repeat('a', 50)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['raza' => str_repeat('a', 51)]))->assertSessionHasErrors('raza');
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['raza' => str_repeat('a', 50)]))->assertSessionHasNoErrors();
         $this->assertDatabaseCount('Publicacion_Animal', 1);
     }
 
@@ -157,11 +159,11 @@ class ValoresLimiteTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['ubicacion' => 'Pr']))->assertSessionHasErrors('ubicacion');
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['ubicacion' => 'Pr']))->assertSessionHasErrors('ubicacion');
         $this->assertDatabaseCount('Publicacion_Animal', 0);
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['ubicacion' => 'Cerro']))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['ubicacion' => 'Paz']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['ubicacion' => 'Cerro']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['ubicacion' => 'Paz']))->assertSessionHasNoErrors();
         $this->assertDatabaseCount('Publicacion_Animal', 2);
     }
 
@@ -169,8 +171,8 @@ class ValoresLimiteTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['ubicacion' => str_repeat('a', 101)]))->assertSessionHasErrors('ubicacion');
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['ubicacion' => str_repeat('a', 100)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['ubicacion' => str_repeat('a', 101)]))->assertSessionHasErrors('ubicacion');
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['ubicacion' => str_repeat('a', 100)]))->assertSessionHasNoErrors();
         $this->assertDatabaseCount('Publicacion_Animal', 1);
     }
 
@@ -179,8 +181,8 @@ class ValoresLimiteTest extends TestCase
         // RNE12: Edad_Meses no puede ser negativa y no tiene máximo
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['edad_anios' => -1]))->assertSessionHasErrors('edad_anios');
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['edad_anios' => 31, 'edad_meses' => 0]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['edad' => -1]))->assertSessionHasErrors('edad');
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['edad' => 31, 'edad_unidad' => 'años']))->assertSessionHasNoErrors();
         $this->assertDatabaseHas('Publicacion_Adopcion', ['Edad_Meses' => 372]);
     }
 
@@ -190,9 +192,9 @@ class ValoresLimiteTest extends TestCase
         // 6000 años desbordaría la columna y la base devolvería un error 500
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/adopcion', $this->adopcion(['edad_anios' => 6000]))
+        $this->withSession($sesion)->post('/publicar', $this->adopcion(['edad' => 6000, 'edad_unidad' => 'años']))
             ->assertStatus(302)
-            ->assertSessionHasErrors('edad_anios');
+            ->assertSessionHasErrors('edad');
         $this->assertDatabaseCount('Publicacion_Animal', 0);
     }
 
@@ -200,10 +202,10 @@ class ValoresLimiteTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/perdida', $this->perdida(['zona' => 'Pr']))->assertSessionHasErrors('zona');
+        $this->withSession($sesion)->post('/publicar', $this->perdida(['zona' => 'Pr']))->assertSessionHasErrors('zona');
         $this->assertDatabaseCount('Publicacion_Animal', 0);
 
-        $this->withSession($sesion)->post('/publicar/perdida', $this->perdida(['zona' => 'Paz']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->perdida(['zona' => 'Paz']))->assertSessionHasNoErrors();
         $this->assertDatabaseCount('Publicacion_Animal', 1);
     }
 
@@ -213,12 +215,12 @@ class ValoresLimiteTest extends TestCase
 
         foreach (['1234567', '0987654321', 'luna@correo.uy', 'Instagram @luna'] as $invalido)
         {
-            $this->withSession($sesion)->post('/publicar/perdida', $this->perdida(['contacto' => $invalido]))->assertSessionHasErrors('contacto');
+            $this->withSession($sesion)->post('/publicar', $this->perdida(['contacto' => $invalido]))->assertSessionHasErrors('contacto');
         }
         $this->assertDatabaseCount('Publicacion_Animal', 0);
 
-        $this->withSession($sesion)->post('/publicar/perdida', $this->perdida(['contacto' => '29012345']))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/perdida', $this->perdida(['contacto' => '098 765 432']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->perdida(['contacto' => '29012345']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->perdida(['contacto' => '098 765 432']))->assertSessionHasNoErrors();
         $this->assertDatabaseCount('Publicacion_Animal', 2);
         $this->assertDatabaseHas('Publicacion_Perdida', ['Contacto' => '098765432']);
     }

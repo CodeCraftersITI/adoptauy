@@ -49,12 +49,13 @@ class MascotaEncontradaTest extends TestCase
     private function datosEncontrada($cambios = [])
     {
         return array_merge([
+            'tipo' => 'Encontrada',
             'nombre_mascota' => '',
             'especie' => 'Perro',
             'raza' => 'mestizo',
             'sexo' => 'Macho',
             'caracteristicas' => 'Marrón, collar verde sin chapita',
-            'fecha_hallazgo' => now()->subDay()->toDateString(),
+            'fecha' => now()->subDay()->toDateString(),
             'zona' => 'Prado',
             'contacto' => '2901 2345',
             'fotos' => $this->fotos(2),
@@ -64,7 +65,7 @@ class MascotaEncontradaTest extends TestCase
     public function test_cp47_alta_valida_sin_nombre_queda_vigente_con_vencimiento_a_30_dias()
     {
         $this->withSession($this->sesionParticular())
-            ->post('/publicar/encontrada', $this->datosEncontrada())
+            ->post('/publicar', $this->datosEncontrada())
             ->assertSessionHasNoErrors()
             ->assertRedirect('/cuenta');
 
@@ -88,11 +89,11 @@ class MascotaEncontradaTest extends TestCase
     {
         $sesion = $this->sesionParticular();
 
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['nombre_mascota' => 'Toby']))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['nombre_mascota' => 'Toby']))->assertSessionHasNoErrors();
         $this->assertDatabaseHas('Publicacion_Perdida', ['Tipo_Aviso' => 'Encontrada', 'Nombre_Mascota' => 'Toby']);
 
-        $perdida = $this->datosEncontrada(['fecha_extravio' => now()->subDay()->toDateString()]);
-        $this->withSession($sesion)->post('/publicar/perdida', $perdida)->assertSessionHasErrors('nombre_mascota');
+        $perdida = $this->datosEncontrada(['tipo' => 'Perdida']);
+        $this->withSession($sesion)->post('/publicar', $perdida)->assertSessionHasErrors('nombre_mascota');
         $this->assertDatabaseCount('Publicacion_Perdida', 1);
     }
 
@@ -101,15 +102,15 @@ class MascotaEncontradaTest extends TestCase
         $sesion = $this->sesionParticular();
 
         // Fotos: se aceptan 1 y 3, se rechazan 0 y 4 (RNE01)
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['fotos' => $this->fotos(1)]))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['fotos' => $this->fotos(3)]))->assertSessionHasNoErrors();
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['fotos' => []]))->assertSessionHasErrors('fotos');
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['fotos' => $this->fotos(4)]))->assertSessionHasErrors('fotos');
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['fotos' => $this->fotos(1)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['fotos' => $this->fotos(3)]))->assertSessionHasNoErrors();
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['fotos' => []]))->assertSessionHasErrors('fotos');
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['fotos' => $this->fotos(4)]))->assertSessionHasErrors('fotos');
 
         // Fecha del hallazgo futura, zona de 2 caracteres y contacto que no es un teléfono
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['fecha_hallazgo' => now()->addDay()->toDateString()]))->assertSessionHasErrors('fecha_hallazgo');
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['zona' => 'Pr']))->assertSessionHasErrors('zona');
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada(['contacto' => 'luna@correo.uy']))->assertSessionHasErrors('contacto');
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['fecha' => now()->addDay()->toDateString()]))->assertSessionHasErrors('fecha');
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['zona' => 'Pr']))->assertSessionHasErrors('zona');
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada(['contacto' => 'luna@correo.uy']))->assertSessionHasErrors('contacto');
 
         $this->assertDatabaseCount('Publicacion_Perdida', 2);
     }
@@ -118,24 +119,24 @@ class MascotaEncontradaTest extends TestCase
 
     public function test_el_invitado_es_enviado_a_ingresar()
     {
-        $this->get('/publicar/encontrada')->assertRedirect('/ingresar');
-        $this->post('/publicar/encontrada', $this->datosEncontrada())->assertRedirect('/ingresar');
+        $this->get('/publicar')->assertRedirect('/ingresar');
+        $this->post('/publicar', $this->datosEncontrada())->assertRedirect('/ingresar');
         $this->assertDatabaseCount('Publicacion_Animal', 0);
     }
 
     public function test_el_particular_y_el_refugio_publican_y_el_administrador_no()
     {
-        $this->withSession($this->sesionParticular())->get('/publicar/encontrada')->assertOk()->assertSee('Mascota encontrada');
+        $this->withSession($this->sesionParticular())->get('/publicar?tipo=Encontrada')->assertOk()->assertSee('Mascota encontrada');
 
         $refugio = Refugio::factory()->validado()->create();
         $this->withSession(['id_usuario' => $refugio->ID_Usuario, 'tipo' => 'Refugio', 'nombre' => 'Refugio'])
-            ->post('/publicar/encontrada', $this->datosEncontrada())
+            ->post('/publicar', $this->datosEncontrada())
             ->assertSessionHasNoErrors();
         $this->assertDatabaseCount('Publicacion_Perdida', 1);
 
         $admin = Administrador::factory()->create();
         $this->withSession(['id_usuario' => $admin->ID_Usuario, 'tipo' => 'Administrador', 'nombre' => 'Administrador'])
-            ->post('/publicar/encontrada', $this->datosEncontrada())
+            ->post('/publicar', $this->datosEncontrada())
             ->assertForbidden();
         $this->assertDatabaseCount('Publicacion_Perdida', 1);
     }
@@ -143,7 +144,7 @@ class MascotaEncontradaTest extends TestCase
     public function test_mi_cuenta_muestra_la_encontrada_con_su_tipo()
     {
         $sesion = $this->sesionParticular();
-        $this->withSession($sesion)->post('/publicar/encontrada', $this->datosEncontrada());
+        $this->withSession($sesion)->post('/publicar', $this->datosEncontrada());
 
         $this->withSession($sesion)->get('/cuenta')
             ->assertSee('Sin nombre')

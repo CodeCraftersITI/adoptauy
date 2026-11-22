@@ -23,6 +23,7 @@
 
     <form action="/publicaciones/{{ $publicacion->ID_Publicacion }}/solicitar" method="POST" class="tarjeta formulario">
         @csrf
+        @include('partials.antibot')
 
         <strong>Estos datos se van a compartir con quien publicó</strong>
         <dl class="datos">
