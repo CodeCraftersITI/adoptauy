@@ -49,7 +49,7 @@ Sitio: https://localhost:8443 (certificado autofirmado; HTTP en el 8080 redirige
 - `docs/contexto/plan-pruebas.md`: estrategia, herramientas y casos CP-01 a CP-50.
 - `docs/contexto/infraestructura.md`: stack, red, servidores, servicios y entorno local.
 - `docs/contexto/alcance.md`: objetivos, alcance, hitos, decisiones D1 a D95 y temas pendientes.
-- `docs/diagramas/AdoptaUY-Diagramas.drawio`: todos los diagramas en pestañas (DER, MER, casos de uso, clases, secuencia SEC-1 a SEC-9, estados, implementación y red). Es la versión al día. `AdoptaUY-Diagrama-de-implementacion.drawio`: el diagrama de implementación anterior.
+- `docs/diagramas/AdoptaUY-Diagramas.drawio`: todos los diagramas en pestañas (DER, MER, casos de uso, clases, secuencia SEC-1 a SEC-10, estados EST-1 a EST-8, implementación y red). Es la versión al día. `AdoptaUY-Diagrama-de-implementacion.drawio`: el diagrama de implementación anterior.
 - `docs/diagramas/uml/`: los mismos diagramas en PlantUML, sin Continuar con Google. Si difieren del draw.io, manda el draw.io.
 
 Las reglas de negocio (estados, plazos y umbrales) se cargan siempre:
